@@ -1,0 +1,20 @@
+services:
+  onehaus-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: onehaus_family_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    volumes:
+      # Постоянное хранилище для данных семейной синхронизации
+      - onehaus_family_data:/app/data/families
+
+volumes:
+  onehaus_family_data:
+    name: onehaus_family_data

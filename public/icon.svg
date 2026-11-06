@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E15A42" />
+      <stop offset="50%" stop-color="#E7634B" />
+      <stop offset="100%" stop-color="#EA7038" />
+    </linearGradient>
+    <linearGradient id="roofGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#FFF0EB" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+
+  <!-- Inner subtle ambient circle -->
+  <circle cx="256" cy="256" r="210" fill="none" stroke="#FFFFFF" stroke-opacity="0.15" stroke-width="4" />
+
+  <!-- House roof & structure with warm drop shadow -->
+  <g filter="url(#shadow)">
+    <!-- Roof outline -->
+    <path d="M128 240 L256 128 L384 240 L356 264 L256 176 L156 264 Z" fill="url(#roofGrad)" />
+    <!-- Chimney -->
+    <path d="M330 156 L330 200 L356 220 L356 156 Z" fill="#FFE2D6" />
+
+    <!-- House Body Base Card -->
+    <rect x="156" y="248" width="200" height="152" rx="24" fill="#FFFFFF" />
+
+    <!-- Calendar header strip inside house -->
+    <path d="M156 272 Q156 248 180 248 L332 248 Q356 248 356 272 L356 288 L156 288 Z" fill="#FFEFEA" />
+
+    <!-- Calendar top rings -->
+    <rect x="194" y="236" width="12" height="24" rx="6" fill="#E15A42" />
+    <rect x="306" y="236" width="12" height="24" rx="6" fill="#E15A42" />
+
+    <!-- Dynamic Checkmark in center representing tasks & order in home -->
+    <circle cx="256" cy="340" r="34" fill="#E15A42" />
+    <path d="M242 340 L252 350 L272 330" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

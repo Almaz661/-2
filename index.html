@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Дом без хаоса — Семейный органайзер</title>
+    <meta name="description" content="Полноценный русскоязычный центр управления домом и семейный органайзер: задачи и ротация обязанностей, общий календарь, списки покупок, аптечка со сроками годности, счётчики ЖКХ, меню и инвентарь." />
+    <meta property="og:title" content="Дом без хаоса — Семейный органайзер" />
+    <meta property="og:description" content="Полноценный русскоязычный центр управления домом и семейный органайзер: задачи и ротация обязанностей, общий календарь, списки покупок, аптечка со сроками годности, счётчики ЖКХ, меню и инвентарь." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#E15A42" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ДомБезХаоса" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+      // HMR: Disabled in AI Studio iframe. Suppress Vite client WebSocket disconnection noise.
+      window.addEventListener('unhandledrejection', function(event) {
+        var msg = (event && event.reason && (event.reason.message || event.reason.stack || '')) + '';
+        if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('@vite/client') !== -1) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      }, true);
+      window.addEventListener('error', function(event) {
+        var msg = (event && (event.message || '')) + '';
+        var src = (event && (event.filename || '')) + '';
+        if (msg.indexOf('WebSocket') !== -1 || src.indexOf('@vite/client') !== -1) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      }, true);
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
