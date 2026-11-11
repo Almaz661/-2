@@ -107,9 +107,9 @@ export const DocModal: React.FC<DocModalProps> = ({ isOpen, onClose, docToEdit }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-lg bg-[#FCFBF8] rounded-3xl border border-[#EBE7DF] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="px-6 py-4 border-b border-[#EBE7DF] flex items-center justify-between bg-white">
-          <h3 className="text-base font-bold text-[#1F1D1A]">
+      <div className="w-full max-w-lg bg-[var(--surface-2)] rounded-2xl border border-[var(--line)] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="px-6 py-4 border-b border-[var(--line)] flex items-center justify-between bg-[var(--surface)]">
+          <h3 className="text-base font-semibold text-[var(--text)]">
             {docToEdit ? 'Редактировать документ' : 'Сохранить документ в дом'}
           </h3>
           <button
@@ -122,7 +122,7 @@ export const DocModal: React.FC<DocModalProps> = ({ isOpen, onClose, docToEdit }
 
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
           <div>
-            <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+            <label className="block text-xs font-semibold text-[var(--text)] mb-1">
               Название документа *
             </label>
             <input
@@ -131,19 +131,19 @@ export const DocModal: React.FC<DocModalProps> = ({ isOpen, onClose, docToEdit }
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Например: Полис ОСАГО, Договор купли-продажи..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E3DFD5] text-sm text-[#1F1D1A] focus:outline-none focus:ring-2 focus:ring-[#E15A42]/30 focus:border-[#E15A42]"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Категория
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as DocumentCategory)}
-                className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#1F1D1A]"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-xs text-[var(--text)]"
               >
                 {CATEGORIES.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -154,13 +154,13 @@ export const DocModal: React.FC<DocModalProps> = ({ isOpen, onClose, docToEdit }
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 К кому относится?
               </label>
               <select
                 value={memberId || ''}
                 onChange={(e) => setMemberId(e.target.value || undefined)}
-                className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#1F1D1A]"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-xs text-[var(--text)]"
               >
                 <option value="">На всю семью</option>
                 {members.map((m) => (
@@ -174,7 +174,7 @@ export const DocModal: React.FC<DocModalProps> = ({ isOpen, onClose, docToEdit }
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Номер документа / полиса
               </label>
               <input
@@ -182,12 +182,12 @@ export const DocModal: React.FC<DocModalProps> = ({ isOpen, onClose, docToEdit }
                 value={documentNumber}
                 onChange={(e) => setDocumentNumber(e.target.value)}
                 placeholder="ХХХ 123456789"
-                className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#1F1D1A]"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-xs text-[var(--text)]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Кем выдан / Организация
               </label>
               <input
@@ -195,40 +195,40 @@ export const DocModal: React.FC<DocModalProps> = ({ isOpen, onClose, docToEdit }
                 value={issuer}
                 onChange={(e) => setIssuer(e.target.value)}
                 placeholder="Ингосстрах, Росреестр..."
-                className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#1F1D1A]"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-xs text-[var(--text)]"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Дата выдачи
               </label>
               <input
                 type="date"
                 value={issuedDate}
                 onChange={(e) => setIssuedDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#1F1D1A]"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-xs text-[var(--text)]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Срок действия (до)
               </label>
               <input
                 type="date"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#1F1D1A]"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-xs text-[var(--text)]"
               />
             </div>
           </div>
 
           {/* Загрузка скана / фото */}
           <div>
-            <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+            <label className="block text-xs font-semibold text-[var(--text)] mb-1">
               Скан или фото документа
             </label>
             <input
@@ -240,10 +240,10 @@ export const DocModal: React.FC<DocModalProps> = ({ isOpen, onClose, docToEdit }
             />
 
             {fileData ? (
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-white border border-stone-200 text-xs">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-[var(--surface)] border border-stone-200 text-xs">
                 <div className="flex items-center space-x-2 truncate">
-                  <Paperclip className="w-4 h-4 text-[#E15A42] shrink-0" />
-                  <span className="font-medium text-[#1F1D1A] truncate">{fileName || 'Скан документа'}</span>
+                  <Paperclip className="w-4 h-4 text-[var(--accent)] shrink-0" />
+                  <span className="font-medium text-[var(--text)] truncate">{fileName || 'Скан документа'}</span>
                 </div>
                 <button
                   type="button"
@@ -260,16 +260,16 @@ export const DocModal: React.FC<DocModalProps> = ({ isOpen, onClose, docToEdit }
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full py-3 rounded-2xl border border-dashed border-stone-300 hover:border-stone-400 bg-white text-stone-600 text-xs font-semibold flex items-center justify-center space-x-2 transition-colors cursor-pointer"
+                className="w-full py-3 rounded-2xl border border-dashed border-stone-300 hover:border-stone-400 bg-[var(--surface)] text-stone-600 text-xs font-semibold flex items-center justify-center space-x-2 transition-colors cursor-pointer"
               >
-                <Upload className="w-4 h-4 text-[#E15A42]" />
+                <Upload className="w-4 h-4 text-[var(--accent)]" />
                 <span>Загрузить фото или скан (сохраняется в браузер)</span>
               </button>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+            <label className="block text-xs font-semibold text-[var(--text)] mb-1">
               Заметки
             </label>
             <textarea
@@ -277,11 +277,11 @@ export const DocModal: React.FC<DocModalProps> = ({ isOpen, onClose, docToEdit }
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Где лежит оригинал, условия продления..."
-              className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#1F1D1A] resize-none"
+              className="w-full px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-xs text-[var(--text)] resize-none"
             />
           </div>
 
-          <div className="pt-4 flex items-center justify-end space-x-3 border-t border-[#EBE7DF]">
+          <div className="pt-4 flex items-center justify-end space-x-3 border-t border-[var(--line)]">
             <button
               type="button"
               onClick={onClose}
@@ -291,7 +291,7 @@ export const DocModal: React.FC<DocModalProps> = ({ isOpen, onClose, docToEdit }
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-[#E15A42] hover:bg-[#D04931] text-white text-xs font-bold shadow-md shadow-orange-600/20 active:scale-[0.98] transition-all cursor-pointer"
+              className="px-5 py-2.5 rounded-full bg-[var(--accent)] hover:brightness-110 text-white text-xs font-semibold active:scale-[0.98] transition-all cursor-pointer"
             >
               {docToEdit ? 'Сохранить' : 'Сохранить документ'}
             </button>

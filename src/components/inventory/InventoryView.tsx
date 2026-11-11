@@ -21,9 +21,21 @@ import {
 import { useHousehold } from '../../context/HouseholdContext';
 import { InventoryCategory, InventoryItem } from '../../types';
 import { InventoryItemModal } from './InventoryItemModal';
+import { TechCheckBoard } from './TechCheckBoard';
+import { HomePassport } from './HomePassport';
+import { Btn, Card, EmptyState, IconBtn, PageWrap, Segmented, Slide } from '../ui/mercury';
 
 export const InventoryView: React.FC = () => {
-  const { inventory, deleteInventoryItem, setIsSOSOpen, showToast } = useHousehold();
+  const [mode, setMode] = React.useState<'items' | 'tech' | 'passport'>(() => {
+    try {
+      const v = localStorage.getItem('dbh_inventory_mode');
+      localStorage.removeItem('dbh_inventory_mode');
+      return v === 'tech' || v === 'passport' ? v : 'items';
+    } catch {
+      return 'items';
+    }
+  });
+  const { inventory, deleteInventoryItem, setIsSOSOpen, showToast, members } = useHousehold();
 
   const [activeCategory, setActiveCategory] = useState<InventoryCategory | 'all'>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,21 +56,21 @@ export const InventoryView: React.FC = () => {
 
     if (diffDays < 0) {
       return (
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
+        <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
           Гарантия истекла
         </span>
       );
     }
     if (diffDays <= 60) {
       return (
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 flex items-center space-x-1">
+        <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 flex items-center space-x-1">
           <ShieldAlert className="w-3 h-3 text-amber-600" />
           <span>Истекает ({diffDays} дн.)</span>
         </span>
       );
     }
     return (
-      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 flex items-center space-x-1">
+      <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 flex items-center space-x-1">
         <Shield className="w-3 h-3 text-emerald-600" />
         <span>Гарантия до {expiry.toLocaleDateString('ru-RU')}</span>
       </span>
@@ -68,11 +80,11 @@ export const InventoryView: React.FC = () => {
   const getCategoryIcon = (cat: InventoryCategory) => {
     switch (cat) {
       case 'vehicles':
-        return <Car className="w-4 h-4 text-blue-600" />;
+        return <Car className="w-4 h-4 text-[var(--accent)]" />;
       case 'pets':
         return <Dog className="w-4 h-4 text-amber-600" />;
       case 'electronics':
-        return <Tv className="w-4 h-4 text-purple-600" />;
+        return <Tv className="w-4 h-4 text-[var(--accent)]" />;
       case 'subscriptions':
         return <CreditCard className="w-4 h-4 text-emerald-600" />;
       default:
@@ -80,257 +92,207 @@ export const InventoryView: React.FC = () => {
     }
   };
 
-  return (
-    <div className="p-8 space-y-6 max-w-7xl mx-auto">
-      {/* Верхняя строка управления */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {/* Табы категорий */}
-        <div className="flex items-center space-x-1 p-1 rounded-2xl bg-[#EFECE4] border border-[#E3DFD5] overflow-x-auto">
-          {[
-            { id: 'all', label: 'Все предметы' },
-            { id: 'appliances', label: 'Бытовая техника' },
-            { id: 'electronics', label: 'Гаджеты' },
-            { id: 'vehicles', label: 'Автомобиль' },
-            { id: 'pets', label: 'Питомцы' },
-            { id: 'subscriptions', label: 'Подписки' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveCategory(tab.id as any)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                activeCategory === tab.id
-                  ? 'bg-white text-[#1F1D1A] shadow-xs'
-                  : 'text-[#6B6456] hover:text-[#1F1D1A]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+  const CATS: { id: InventoryCategory | 'all'; label: string }[] = [
+    { id: 'all', label: 'Все' },
+    { id: 'appliances' as InventoryCategory, label: 'Техника' },
+    { id: 'electronics' as InventoryCategory, label: 'Гаджеты' },
+    { id: 'vehicles' as InventoryCategory, label: 'Автомобили' },
+    { id: 'pets' as InventoryCategory, label: 'Питомцы' },
+    { id: 'subscriptions' as InventoryCategory, label: 'Подписки' },
+  ];
 
-        <button
-          onClick={() => {
-            setItemToEdit(null);
-            setIsModalOpen(true);
-          }}
-          className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-[#E15A42] hover:bg-[#D04931] text-white text-xs font-bold shadow-md shadow-orange-600/20 active:scale-[0.98] transition-all cursor-pointer self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>
-            {activeCategory === 'pets'
-              ? 'Добавить питомца'
-              : activeCategory === 'vehicles'
-              ? 'Добавить автомобиль'
-              : 'Добавить предмет'}
-          </span>
-        </button>
+  const daysTo = (d?: string) => (d ? Math.ceil((new Date(d).getTime() - Date.now()) / 86400000) : null);
+  const fmt = (d: string) => new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  // Главная дата строки: то, о чём нужно помнить по этому предмету
+  const keyDate = (item: InventoryItem): { label: string; date?: string } => {
+    if (item.category === 'vehicles') {
+      const cands = [
+        { label: 'ТО', date: item.vehicleDetails?.nextMaintenanceDate },
+        { label: 'Страховка', date: item.vehicleDetails?.insuranceExpiry },
+      ].filter((c) => c.date) as { label: string; date: string }[];
+      cands.sort((a, b) => a.date.localeCompare(b.date));
+      return cands[0] || { label: 'Сроки' };
+    }
+    if (item.category === 'pets') return { label: 'Прививка', date: item.petDetails?.nextVaccinationDate };
+    if (item.category === 'subscriptions') return { label: 'Списание', date: item.subscriptionDetails?.nextPaymentDate };
+    if (item.nextServiceDate) return { label: 'Обслуживание', date: item.nextServiceDate };
+    return { label: 'Гарантия', date: item.warrantyExpiry };
+  };
+
+  const detail = (item: InventoryItem) => {
+    if (item.category === 'vehicles') return [item.vehicleDetails?.licensePlate, item.vehicleDetails?.mileage ? `${item.vehicleDetails.mileage.toLocaleString('ru-RU')} км` : null];
+    if (item.category === 'pets') return [item.petDetails?.breed, item.petDetails?.chipNumber ? `чип ${item.petDetails.chipNumber}` : null];
+    if (item.category === 'subscriptions' && item.subscriptionDetails)
+      return [`${item.subscriptionDetails.cost} в ${item.subscriptionDetails.billingCycle === 'monthly' ? 'месяц' : 'год'}`];
+    if (item.category === 'electronics' && item.gadgetDetails) {
+      const g = item.gadgetDetails;
+      const owner = g.ownerId ? members.find((m) => m.id === g.ownerId)?.name : null;
+      const days = g.lastBackup ? Math.floor((Date.now() - new Date(g.lastBackup).getTime()) / 86400000) : null;
+      return [g.kind, owner, item.model, days === null ? null : days > 60 ? `копия ${days} дн. назад — пора` : `копия ${days} дн. назад`];
+    }
+    return [item.model, item.serialNumber ? `S/N ${item.serialNumber}` : null];
+  };
+
+  const sortedItems = filteredItems.slice().sort((a, b) => (keyDate(a).date || '9999').localeCompare(keyDate(b).date || '9999'));
+
+  const openNew = () => {
+    setItemToEdit(null);
+    setIsModalOpen(true);
+  };
+
+  return (
+    <PageWrap>
+      {/* Имущество и техосмотр дома — один раздел */}
+      <Segmented
+        value={mode}
+        onChange={setMode}
+        options={[
+          { id: 'items', label: 'Имущество' },
+          { id: 'tech', label: 'Техосмотр дома' },
+          { id: 'passport', label: 'Паспорт дома' },
+        ]}
+      />
+      {mode === 'passport' ? (
+        <HomePassport />
+      ) : mode === 'tech' ? (
+        <TechCheckBoard />
+      ) : (
+      <>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Segmented value={activeCategory} onChange={setActiveCategory} options={CATS} />
+        <Btn variant="primary" icon={<Plus className="w-4 h-4" />} onClick={openNew} className="ml-auto">
+          Добавить
+        </Btn>
       </div>
 
-      {/* Сетка предметов инвентаря */}
-      {filteredItems.length === 0 ? (
-        <div className="bg-white rounded-3xl p-12 text-center border border-[#EBE7DF] space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 mx-auto flex items-center justify-center">
-            {activeCategory === 'pets' ? <Dog className="w-6 h-6" /> : <Package className="w-6 h-6" />}
-          </div>
-          <p className="text-sm font-bold text-stone-700">
-            {activeCategory === 'pets' ? 'В семье пока не добавлены питомцы' : 'В этой категории пока пусто'}
-          </p>
-          <p className="text-xs text-stone-500">
-            {activeCategory === 'pets'
-              ? 'Добавьте собаку, кошку или другого любимца, чтобы хранить чип, вакцинации и диету'
-              : 'Добавьте предмет, чтобы всегда знать где он лежит и когда кончается гарантия'}
-          </p>
-          <button
-            onClick={() => {
-              setItemToEdit(null);
-              setIsModalOpen(true);
-            }}
-            className="px-4 py-2 rounded-xl bg-[#E15A42] text-white text-xs font-bold hover:bg-[#D04931] cursor-pointer"
-          >
-            {activeCategory === 'pets' ? '+ Добавить питомца' : '+ Добавить предмет'}
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-3xl p-5 border border-[#EBE7DF] shadow-xs hover:border-[#E15A42]/50 hover:shadow-md transition-all flex flex-col justify-between space-y-4"
-            >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-2xl bg-[#FAF8F3] border border-[#EBE7DF] flex items-center justify-center">
-                      {getCategoryIcon(item.category)}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-sm text-[#1F1D1A] leading-snug">
-                        {item.name}
-                      </h3>
-                      <span className="text-[10px] font-semibold text-[#8A8477] bg-[#F2EFE8] px-2 py-0.5 rounded-md mt-0.5 inline-block">
-                        {item.locationZone}
-                      </span>
+      <Card className="p-2 sm:p-3">
+        <Slide k={activeCategory} index={CATS.findIndex((c) => c.id === activeCategory)}>
+        {sortedItems.length === 0 ? (
+          <EmptyState
+            icon={<Package className="w-5 h-5" />}
+            title="Здесь пока пусто"
+            text="Добавьте технику, автомобиль, питомца или подписку — напомним о гарантии, ТО и платежах."
+            action={
+              <Btn variant="primary" icon={<Plus className="w-4 h-4" />} onClick={openNew}>
+                Добавить
+              </Btn>
+            }
+          />
+        ) : (
+          <>
+            <div className="hidden md:grid grid-cols-[44px_1fr_140px_190px_88px] gap-x-3 px-3 pt-2 pb-2 text-xs text-[var(--muted)] border-b border-[var(--line)]">
+              <span />
+              <span>Предмет</span>
+              <span>Где</span>
+              <span>Ближайший срок</span>
+              <span />
+            </div>
+            {sortedItems.map((item) => {
+              const k = keyDate(item);
+              const d = daysTo(k.date);
+              const late = d !== null && d < 0;
+              const soon = d !== null && d >= 0 && d <= 60;
+              const info = detail(item).filter(Boolean).join(', ');
+              const chip = item.petDetails?.chipNumber;
+              return (
+                <div
+                  key={item.id}
+                  className="group grid grid-cols-[44px_1fr_auto_auto] md:grid-cols-[44px_1fr_140px_190px_88px] items-center gap-x-3 px-2 sm:px-3 py-3 rounded-xl border-t border-[var(--line)] first:border-t-0 hover:bg-[var(--surface-3)] transition-colors"
+                >
+                  <span className="w-10 h-10 rounded-full grid place-items-center border border-[var(--line-strong)] text-[var(--muted)]">
+                    {item.category === 'vehicles' ? (
+                      <Car className="w-4 h-4" />
+                    ) : item.category === 'pets' ? (
+                      <Dog className="w-4 h-4" />
+                    ) : item.category === 'electronics' ? (
+                      <Tv className="w-4 h-4" />
+                    ) : item.category === 'subscriptions' ? (
+                      <CreditCard className="w-4 h-4" />
+                    ) : (
+                      <Package className="w-4 h-4" />
+                    )}
+                  </span>
+
+                  <div className="min-w-0">
+                    <div className="text-[16px] font-medium text-[var(--text)] line-clamp-2 md:line-clamp-1 break-words">{item.name}</div>
+                    <div className="flex items-center gap-1 text-[14px] text-[var(--muted)] mt-0.5 min-w-0">
+                      <span className="truncate">{info || item.notes || '—'}</span>
+                      {chip && (
+                        <IconBtn
+                          title="Скопировать номер чипа"
+                          aria-label="Скопировать номер чипа"
+                          className="!w-6 !h-6 shrink-0"
+                          onClick={() => {
+                            navigator.clipboard.writeText(chip);
+                            setCopiedChipId(item.id);
+                            showToast('Номер чипа скопирован', 'info');
+                            window.setTimeout(() => setCopiedChipId(null), 1500);
+                          }}
+                        >
+                          {copiedChipId === item.id ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        </IconBtn>
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-1">
-                    <button
+                  <span className="hidden md:block text-sm text-[var(--text-2)] truncate">{item.locationZone}</span>
+
+                  <span
+                    className={`text-[14px] md:text-sm tabular-nums text-right md:text-left max-w-[120px] md:max-w-none ${ late ? 'text-amber-700 font-medium' : soon ? 'text-amber-600 font-medium' : 'text-[var(--text-2)]' }`}
+                  >
+                    {k.date ? (late ? 'Пора' : soon ? `через ${d} дн.` : fmt(k.date)) : '—'}
+                    <span className="block text-[14px] font-normal text-[var(--muted)]">
+                      {k.label}
+                      {k.date && (late || soon) ? `, ${new Date(k.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}` : ''}
+                    </span>
+                  </span>
+
+                  <div className="flex items-center justify-end gap-0.5 hover-actions opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                    {item.category === 'pets' && (
+                      <IconBtn title="Экстренная ветпомощь" aria-label="Экстренная ветпомощь" onClick={() => setIsSOSOpen(true)}>
+                        <ShieldAlert className="w-4 h-4" />
+                      </IconBtn>
+                    )}
+                    <IconBtn
+                      title="Редактировать"
+                      aria-label="Редактировать"
                       onClick={() => {
                         setItemToEdit(item);
                         setIsModalOpen(true);
                       }}
-                      className="p-2 rounded-xl text-stone-500 hover:text-stone-800 hover:bg-stone-100 border border-stone-200 transition-all cursor-pointer shadow-2xs"
-                      title={item.category === 'pets' ? 'Редактировать питомца' : 'Редактировать предмет'}
                     >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => setItemToDelete(item)}
-                      className="p-2 rounded-xl text-stone-500 hover:text-rose-600 hover:bg-rose-50 border border-stone-200 transition-all cursor-pointer shadow-2xs"
-                      title={item.category === 'pets' ? 'Удалить питомца' : 'Удалить предмет'}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                      <Edit2 className="w-4 h-4" />
+                    </IconBtn>
+                    <IconBtn danger title="Удалить" aria-label="Удалить" onClick={() => setItemToDelete(item)}>
+                      <Trash2 className="w-4 h-4" />
+                    </IconBtn>
                   </div>
                 </div>
-
-                {/* Детали модели / серийника */}
-                {item.model && (
-                  <div className="text-xs text-[#5C564B]">
-                    <span className="text-[#8A8477]">Модель:</span> {item.model}
-                  </div>
-                )}
-                {item.serialNumber && (
-                  <div className="text-[11px] text-[#8A8477] font-mono">
-                    S/N: {item.serialNumber}
-                  </div>
-                )}
-
-                {/* Специфика авто */}
-                {item.vehicleDetails && (
-                  <div className="p-3 rounded-2xl bg-blue-50/60 border border-blue-100 text-xs space-y-1">
-                    <div className="font-bold text-blue-900">
-                      Госномер: {item.vehicleDetails.licensePlate}
-                    </div>
-                    {item.vehicleDetails.insuranceExpiry && (
-                      <div className="text-blue-700 text-[11px]">
-                        ОСАГО/КАСКО до:{' '}
-                        {new Date(item.vehicleDetails.insuranceExpiry).toLocaleDateString(
-                          'ru-RU'
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Специфика питомца */}
-                {item.petDetails && (
-                  <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-xs space-y-2">
-                    <div className="font-bold text-amber-950 flex items-center justify-between">
-                      <span>Порода: {item.petDetails.breed || 'Не указана'}</span>
-                      <span className="text-[10px] bg-amber-200/70 text-amber-900 px-2 py-0.5 rounded-full font-bold">
-                        Питомец
-                      </span>
-                    </div>
-
-                    {item.petDetails.chipNumber && (
-                      <div className="flex items-center justify-between pt-1 border-t border-amber-200/60 text-[11px]">
-                        <span className="text-amber-800 font-medium">Микрочип:</span>
-                        <div className="flex items-center space-x-1.5 font-mono text-stone-800">
-                          <span>{item.petDetails.chipNumber}</span>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(item.petDetails!.chipNumber!);
-                              setCopiedChipId(item.id);
-                              showToast(`Чип питомца ${item.name} скопирован в буфер`, 'success');
-                              setTimeout(() => setCopiedChipId(null), 2000);
-                            }}
-                            className="p-1 rounded text-stone-500 hover:text-amber-900 hover:bg-amber-100 cursor-pointer"
-                            title="Скопировать номер микрочипа"
-                          >
-                            {copiedChipId === item.id ? (
-                              <Check className="w-3.5 h-3.5 text-emerald-600" />
-                            ) : (
-                              <Copy className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {item.petDetails.nextVaccinationDate && (
-                      <div className="text-amber-900 text-[11px] font-medium flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-                        <span>
-                          Прививка до:{' '}
-                          <strong>
-                            {new Date(item.petDetails.nextVaccinationDate).toLocaleDateString('ru-RU')}
-                          </strong>
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Быстрая кнопка перехода в SOS Ветклинику */}
-                    <button
-                      onClick={() => setIsSOSOpen(true)}
-                      className="w-full mt-1 py-1.5 px-2.5 rounded-xl bg-amber-600/15 hover:bg-amber-600/25 text-amber-900 font-bold text-[11px] flex items-center justify-center space-x-1.5 transition-colors cursor-pointer border border-amber-300"
-                    >
-                      <ShieldAlert className="w-3.5 h-3.5 text-amber-700" />
-                      <span>Экстренная ветклиника (в SOS)</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* Специфика подписки */}
-                {item.subscriptionDetails && (
-                  <div className="p-3 rounded-2xl bg-purple-50/60 border border-purple-100 text-xs space-y-1">
-                    <div className="font-bold text-purple-900">
-                      {item.subscriptionDetails.cost} ₽ в месяц
-                    </div>
-                    <div className="text-purple-700 text-[11px]">
-                      Следующее списание:{' '}
-                      {new Date(
-                        item.subscriptionDetails.nextPaymentDate
-                      ).toLocaleDateString('ru-RU')}
-                    </div>
-                  </div>
-                )}
-
-                {item.notes && (
-                  <p className="text-xs text-[#8A8477] bg-[#FAF8F5] p-2.5 rounded-xl border border-stone-100 leading-relaxed">
-                    {item.notes}
-                  </p>
-                )}
-              </div>
-
-              {/* Статус гарантии */}
-              {item.warrantyExpiry && (
-                <div className="pt-2 border-t border-[#F0ECE1]">
-                  {getWarrantyStatus(item.warrantyExpiry)}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+              );
+            })}
+          </>
+        )}
+        </Slide>
+      </Card>
 
       {/* Модальное окно подтверждения удаления предмета/питомца */}
       {itemToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-stone-200 space-y-4">
+          <div className="w-full max-w-sm bg-[var(--surface)] rounded-2xl p-6 shadow-2xl border border-[var(--line)] space-y-4">
             <div className="flex items-center space-x-3 text-rose-600">
               <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center">
                 <Trash2 className="w-5 h-5 text-rose-600" />
               </div>
-              <h3 className="font-bold text-base text-[#1F1D1A]">Удалить запись?</h3>
+              <h3 className="font-semibold text-base text-[var(--text)]">Удалить запись?</h3>
             </div>
-            <p className="text-xs text-[#5C564B] leading-relaxed">
+            <p className="text-xs text-[var(--text-2)] leading-relaxed">
               Вы уверены, что хотите удалить «{itemToDelete.name}» из инвентаря дома?
             </p>
             <div className="flex items-center justify-end space-x-2 pt-2">
               <button
                 onClick={() => setItemToDelete(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 cursor-pointer"
+                className="px-4 py-2 rounded-full text-sm font-medium text-[var(--text-2)] hover:bg-[var(--surface-3)]"
               >
                 Отмена
               </button>
@@ -340,7 +302,7 @@ export const InventoryView: React.FC = () => {
                   showToast(`«${itemToDelete.name}» удалено`, 'info');
                   setItemToDelete(null);
                 }}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-sm"
+                className="px-4 py-2 rounded-full bg-red-600 hover:bg-red-500 text-white text-sm font-medium transition active:scale-95"
               >
                 Удалить
               </button>
@@ -358,6 +320,8 @@ export const InventoryView: React.FC = () => {
         }}
         itemToEdit={itemToEdit}
       />
-    </div>
+      </>
+      )}
+    </PageWrap>
   );
 };

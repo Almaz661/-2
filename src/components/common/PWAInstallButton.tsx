@@ -4,7 +4,7 @@ import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 interface PWAInstallButtonProps {
   className?: string;
-  variant?: 'primary' | 'outline' | 'compact' | 'sidebar';
+  variant?: 'primary' | 'outline' | 'compact' | 'sidebar' | 'menu';
 }
 
 export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
@@ -46,16 +46,29 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
         <button
           type="button"
           onClick={handleClick}
-          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-[#E8E2D4] hover:border-[#E15A42] text-[#4A443B] hover:text-[#E15A42] hover:bg-orange-50/50 transition-all cursor-pointer shadow-2xs ${className}`}
+          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold bg-[var(--surface)] border border-[var(--line)] hover:border-[var(--accent)] text-[var(--text-2)] hover:text-[var(--accent)] hover:bg-orange-50/50 transition-all cursor-pointer shadow-none ${className}`}
           title="Установить приложение на устройство для быстрой оффлайн-работы"
         >
           <div className="flex items-center space-x-2">
-            <Download className="w-3.5 h-3.5 text-[#E15A42]" />
+            <Download className="w-3.5 h-3.5 text-[var(--accent)]" />
             <span>Установить приложение</span>
           </div>
-          <span className="text-[10px] bg-orange-100 text-[#E15A42] px-1.5 py-0.5 rounded-md font-bold">
+          <span className="text-[12px] bg-orange-100 text-[var(--accent)] px-1.5 py-0.5 rounded-md font-semibold">
             PWA
           </span>
+        </button>
+      );
+    }
+
+    if (variant === 'menu') {
+      return (
+        <button
+          type="button"
+          onClick={handleClick}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left text-[var(--text)] hover:bg-[var(--surface-3)] transition-colors ${className}`}
+        >
+          <Download className="w-4 h-4 text-[var(--muted)]" />
+          Установить на экран устройства
         </button>
       );
     }
@@ -65,7 +78,7 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
         <button
           type="button"
           onClick={handleClick}
-          className={`p-2 rounded-xl text-[#7A746B] hover:text-[#E15A42] hover:bg-white border border-transparent hover:border-[#E5DFD3] transition-colors cursor-pointer ${className}`}
+          className={`p-2 rounded-xl text-[var(--muted)] hover:text-[var(--accent)] hover:bg-[var(--surface)] border border-transparent hover:border-[var(--line)] transition-colors cursor-pointer ${className}`}
           title="Установить Дом без хаоса на рабочий стол"
         >
           <Download className="w-4 h-4" />
@@ -78,7 +91,7 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
         <button
           type="button"
           onClick={handleClick}
-          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#E15A42] to-[#EA7038] text-white text-xs font-bold shadow-xs hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer ${className}`}
+          className={`flex items-center space-x-2 px-4 py-2.5 rounded-full bg-[var(--accent)] text-white text-xs font-semibold shadow-[var(--shadow)] hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer ${className}`}
         >
           <Download className="w-4 h-4" />
           <span>Установить на устройство</span>
@@ -91,9 +104,9 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
       <button
         type="button"
         onClick={handleClick}
-        className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E3DFD5] hover:border-[#E15A42] text-[#1F1D1A] hover:text-[#E15A42] text-xs font-medium transition-all shadow-2xs cursor-pointer ${className}`}
+        className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-[var(--surface)] border border-[var(--line)] hover:border-[var(--accent)] text-[var(--text)] hover:text-[var(--accent)] text-xs font-medium transition-all shadow-none cursor-pointer ${className}`}
       >
-        <Download className="w-3.5 h-3.5 text-[#E15A42]" />
+        <Download className="w-3.5 h-3.5 text-[var(--accent)]" />
         <span>Установить PWA</span>
       </button>
     );
@@ -106,38 +119,38 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
       {/* Информационная подсказка по установке (особенно для iOS Safari / Desktop) */}
       {showIOSModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#FAF7F2] rounded-3xl max-w-sm w-full border border-[#E5DFD3] shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-[var(--surface-3)] rounded-2xl max-w-sm w-full border border-[var(--line)] shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Smartphone className="w-5 h-5 text-[#E15A42]" />
-                <h3 className="font-bold text-sm text-[#1F1E1C]">
+                <Smartphone className="w-5 h-5 text-[var(--accent)]" />
+                <h3 className="font-semibold text-sm text-[var(--text)]">
                   {isIOS ? 'Установка на iPhone / iPad' : 'Установка приложения'}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowIOSModal(false)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-[#7A746B] hover:text-[#1F1E1C] hover:bg-[#EDE8DC] cursor-pointer"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--line)] cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs text-[#5C564B]">
+            <div className="space-y-3 text-xs text-[var(--text-2)]">
               {isIOS ? (
                 <>
                   <p>Чтобы приложение работало автономно без интернета на вашем устройстве Apple:</p>
-                  <ol className="space-y-2 list-decimal list-inside bg-white p-3.5 rounded-2xl border border-[#E8E2D4]">
+                  <ol className="space-y-2 list-decimal list-inside bg-[var(--surface)] p-3.5 rounded-2xl border border-[var(--line)]">
                     <li>
-                      Нажмите кнопку <strong className="text-[#1F1E1C]">«Поделиться»</strong>{' '}
-                      <Share2 className="w-3.5 h-3.5 inline text-[#E15A42]" /> в нижней панели Safari.
+                      Нажмите кнопку <strong className="text-[var(--text)]">«Поделиться»</strong>{' '}
+                      <Share2 className="w-3.5 h-3.5 inline text-[var(--accent)]" /> в нижней панели Safari.
                     </li>
                     <li>
                       Прокрутите вниз и выберите{' '}
-                      <strong className="text-[#1F1E1C]">«На экран "Домой"»</strong>.
+                      <strong className="text-[var(--text)]">«На экран "Домой"»</strong>.
                     </li>
                     <li>
-                      Нажмите <strong className="text-[#1F1E1C]">«Добавить»</strong> в правом верхнем углу.
+                      Нажмите <strong className="text-[var(--text)]">«Добавить»</strong> в правом верхнем углу.
                     </li>
                   </ol>
                 </>
@@ -146,9 +159,9 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
                   <p>
                     Приложение «Дом без хаоса» поддерживает работу без интернета через Service Worker и IndexedDB.
                   </p>
-                  <p className="bg-white p-3 rounded-2xl border border-[#E8E2D4]">
+                  <p className="bg-[var(--surface)] p-3 rounded-2xl border border-[var(--line)]">
                     В строке адреса браузера (или в меню «...») нажмите значок{' '}
-                    <strong className="text-[#1F1E1C]">«Установить приложение»</strong>, чтобы открывать органайзер прямо с рабочего стола даже в оффлайн-режиме.
+                    <strong className="text-[var(--text)]">«Установить приложение»</strong>, чтобы открывать органайзер прямо с рабочего стола даже в оффлайн-режиме.
                   </p>
                 </>
               )}
@@ -157,7 +170,7 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
             <button
               type="button"
               onClick={() => setShowIOSModal(false)}
-              className="w-full py-2.5 rounded-xl bg-[#E15A42] text-white text-xs font-bold hover:brightness-105 cursor-pointer"
+              className="w-full py-2.5 rounded-full bg-[var(--accent)] text-white text-xs font-semibold hover:brightness-105 cursor-pointer"
             >
               Понятно
             </button>

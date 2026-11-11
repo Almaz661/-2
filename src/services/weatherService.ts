@@ -1,3 +1,4 @@
+import { formatLocalDate } from '../utils/dateUtils';
 export interface WeatherCurrent {
   temperature: number;
   apparentTemperature: number;
@@ -46,6 +47,22 @@ export interface CityLocation {
   admin1?: string;
   latitude: number;
   longitude: number;
+}
+
+/** Город для погоды: сохранённый пользователем, иначе — по стране дома (Нидерланды → Амстердам и т. д.) */
+export function defaultWeatherCity(): CityLocation {
+  try {
+    const saved = localStorage.getItem('onehaus_weather_location');
+    if (saved) return JSON.parse(saved);
+    const region = JSON.parse(localStorage.getItem('onehaus_v4_household_region') || '""');
+    const byRegion: Record<string, string> = { NL: 'ams', DE: 'ber', RU: 'mow', GR: 'ath', KZ: 'ala', GE: 'tbs', FR: 'par', GB: 'lon', PL: 'waw' };
+    const id = byRegion[region];
+    const c = POPULAR_CITIES.find((x) => x.id === id);
+    if (c) return c;
+  } catch {
+    /* по умолчанию */
+  }
+  return POPULAR_CITIES[0];
 }
 
 export const POPULAR_CITIES: CityLocation[] = [
@@ -196,7 +213,7 @@ export async function fetchWeather(lat: number, lon: number, cityName: string, c
   // Почасовой прогноз: берем ближайшие 24 часа, начиная с ТЕКУЩЕГО часа (а не со старых часов полуночи!)
   const currentIsoHour = json.current?.time ? json.current.time.slice(0, 13) : '';
   const now = new Date();
-  const todayYMD = json.current?.time ? json.current.time.split('T')[0] : now.toISOString().split('T')[0];
+  const todayYMD = json.current?.time ? json.current.time.split('T')[0] : formatLocalDate(now);
 
   const hourly: WeatherHourlyItem[] = [];
   if (json.hourly && Array.isArray(json.hourly.time)) {

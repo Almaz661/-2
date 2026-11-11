@@ -1,4 +1,5 @@
 import React from 'react';
+import { applies } from '../../utils/homeProfile';
 import {
   Calendar,
   CheckCircle2,
@@ -12,18 +13,35 @@ import {
   UtensilsCrossed,
   AlertTriangle,
   ArrowRight,
+  ChevronRight,
   ShieldAlert,
   Camera,
   Receipt,
   Pill,
   Gauge,
-  Gift,
 } from 'lucide-react';
 import { useHousehold } from '../../context/HouseholdContext';
 import { NavTab } from '../layout/Sidebar';
 import { MemberAvatar } from '../common/MemberAvatar';
 import { WeatherWidget } from './WeatherWidget';
-import { getLocalDateString, getDaysUntilBirthday } from '../../utils/dateUtils';
+import { WeatherChip } from './WeatherChip';
+import { TodayWeather } from './TodayWeather';
+import { HomeProfilePrompt } from '../home/HomeProfilePrompt';
+import { seasonOf, sekkiOf } from '../../utils/season';
+import { MINUTES, planForDate } from '../../services/cleaningPlan';
+import { groupItems } from '../../utils/cleaningOrder';
+import { WEEK } from '../../data/homeRoutine';
+import { useRoutine } from '../../services/routine';
+import { markCleanItem, readCleanMap, subscribeCleanMap, markDay } from '../../services/cleanMapStore';
+import { MAP_ITEMS, SECTORS } from '../../data/cleaningMap';
+import { CountUp, Slide } from '../ui/mercury';
+import { occursOn } from '../../utils/dateUtils';
+import { useAssistantSignals } from '../assistant/useAssistant';
+import { useStarterZones } from '../zones/useStarterZones';
+import { computeZones } from '../../services/zones';
+import { PhotoBanner } from '../ui/PhotoBanner';
+import { timeOfDayPhoto } from '../../utils/photos';
+import { formatLocalDate } from '../../utils/dateUtils';
 
 interface DashboardViewProps {
   onNavigate: (tab: NavTab) => void;
@@ -54,10 +72,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     medicines,
     meters,
     setIsSOSOpen,
-    assistantLogs,
+    showToast,
+    taskPacks,
   } = useHousehold();
 
-  const todayStr = getLocalDateString(new Date());
+  const todayStr = formatLocalDate(new Date());
   const currentMonthStr = todayStr.substring(0, 7);
 
   // Счётчики, по которым ещё не переданы показания за текущий месяц
@@ -78,29 +97,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const pendingTodayTasks = todayTasks.filter((t) => !t.completed);
   const completedTodayTasks = todayTasks.filter((t) => t.completed);
 
-  // Дни рождения и повторяющиеся события сегодняшнего дня
   const todayEvents = events.filter((e) => {
-    const isToday =
-      e.date === todayStr ||
-      ((e.isBirthday || e.recurrence === 'yearly' || /день\s+рождени|д\.?р\./i.test(e.title)) &&
-        e.date.slice(5) === todayStr.slice(5));
-    if (!isToday) return false;
+    if (!occursOn(e, todayStr)) return false;
     if (activeMemberId && !e.memberIds.includes(activeMemberId)) return false;
     return true;
   });
 
-  // Ближайшие дни рождения семьи (в течение 7 дней)
-  const upcomingBirthdays = events
-    .filter((e) => e.isBirthday || e.recurrence === 'yearly' || /день\s+рождени|д\.?р\./i.test(e.title))
+  // Ближайшие праздники и семейные события (в ближайшие 7 дней)
+  const upcomingHolidays = events
+    .filter((e) => e.isHoliday || e.category === 'holiday')
     .map((e) => {
-      const bday = getDaysUntilBirthday(e.date);
-      return {
-        event: e,
-        ...bday,
-      };
+      const eDate = new Date(e.date + 'T00:00:00');
+      const todayZero = new Date(todayStr + 'T00:00:00');
+      const diffDays = Math.round((eDate.getTime() - todayZero.getTime()) / (1000 * 3600 * 24));
+      return { event: e, diffDays };
     })
-    .filter((b) => b.daysLeft >= 0 && b.daysLeft <= 7)
-    .sort((a, b) => a.daysLeft - b.daysLeft);
+    .filter((item) => item.diffDays >= 0 && item.diffDays <= 7)
+    .sort((a, b) => a.diffDays - b.diffDays);
 
   // План на ужин сегодня
   const todayMeal = mealPlan.find((m) => m.date === todayStr);
@@ -167,499 +180,446 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   // Приветствие по времени суток
   const currentHour = new Date().getHours();
-  let greeting = 'Добрый день!';
-  if (currentHour >= 5 && currentHour < 12) greeting = 'Доброе утро!';
-  else if (currentHour >= 18 && currentHour < 23) greeting = 'Уютного вечера!';
-  else if (currentHour >= 23 || currentHour < 5) greeting = 'Доброй ночи!';
+  let greeting = 'Добрый день';
+  if (currentHour >= 5 && currentHour < 12) greeting = 'Доброе утро';
+  else if (currentHour >= 18 && currentHour < 23) greeting = 'Добрый вечер';
+  else if (currentHour >= 23 || currentHour < 5) greeting = 'Доброй ночи';
+
+  const activeMember = members.find((m) => m.id === activeMemberId);
+  const dateLabel = (() => {
+    const d = new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+    return d.charAt(0).toUpperCase() + d.slice(1);
+  })();
+  const openShopping = shoppingItems.filter((i) => !i.completed);
+  const assistantSignals = useAssistantSignals();
+  const urgentCount = assistantSignals.filter((sg) => sg.severity !== 'info').length;
+  const zones = computeZones(tasks);
+  const addStarterZones = useStarterZones();
+  const openZone = (zone: string) => {
+    try {
+      localStorage.setItem('dbh_tasks_view', 'zones');
+      localStorage.setItem('dbh_tasks_zone', zone);
+    } catch {
+      /* нет хранилища */
+    }
+    onNavigate('tasks');
+  };
+
+  // Единая лента «Сегодня»: задачи, события и сроки в одном списке
+  type FeedKind = 'task' | 'event' | 'deadline';
+  interface FeedRow {
+    key: string;
+    kind: FeedKind;
+    title: string;
+    sub?: string;
+    right?: string;
+    done?: boolean;
+    warn?: boolean;
+    rotation?: boolean;
+    onOpen: () => void;
+    onToggle?: () => void;
+  }
+  const [filter, setFilter] = React.useState<'all' | FeedKind>('all');
+
+  const feed: FeedRow[] = [
+    ...todayEvents
+      .slice()
+      .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
+      .map((ev) => ({
+        key: `e-${ev.id}`,
+        kind: 'event' as const,
+        title: ev.title,
+        sub: [ev.location, ev.memberIds.map((id) => members.find((m) => m.id === id)?.name).filter(Boolean).join(', ')]
+          .filter(Boolean)
+          .join(' — '),
+        right: ev.startTime || 'Весь день',
+        onOpen: () => onNavigate('calendar'),
+      })),
+    ...todayTasks
+      .slice()
+      .sort((a, b) => Number(a.completed) - Number(b.completed) || (a.dueTime || '99').localeCompare(b.dueTime || '99'))
+      .map((task) => ({
+        key: `t-${task.id}`,
+        kind: 'task' as const,
+        title: task.title,
+        sub: [task.zone, members.find((m) => m.id === task.assigneeId)?.name].filter(Boolean).join(' — '),
+        right: task.dueTime || '',
+        done: task.completed,
+        rotation: task.isRotation,
+        onOpen: () => toggleTaskCompletion(task.id),
+        onToggle: () => toggleTaskCompletion(task.id),
+      })),
+    // Сигналы главного ассистента по всем разделам (сроки, аптечка, имущество, счётчики, просрочки)
+    ...assistantSignals
+      .filter((sg) => sg.domain !== 'calendar')
+      .map((sg) => ({
+        key: `a-${sg.key}`,
+        kind: 'deadline' as const,
+        title: sg.title,
+        sub: sg.sub,
+        right: sg.when,
+        warn: sg.severity !== 'info',
+        onOpen: () => onNavigate(sg.domain as NavTab),
+      })),
+  ];
+  const visibleFeed = filter === 'all' ? feed : feed.filter((r) => r.kind === filter);
+  const counts = {
+    all: feed.length,
+    task: feed.filter((r) => r.kind === 'task').length,
+    event: feed.filter((r) => r.kind === 'event').length,
+    deadline: feed.filter((r) => r.kind === 'deadline').length,
+  };
+
+  const notices: { key: string; text: string; action: string; onClick: () => void }[] = [];
+  if (unsubmittedMeters.length > 0)
+    notices.push({
+      key: 'meters',
+      text: `Пора передать показания счётчиков: осталось ${unsubmittedMeters.length}`,
+      action: 'Ввести',
+      onClick: () => onNavigate('utilities'),
+    });
+  if (upcomingHolidays.length > 0) {
+    const h = upcomingHolidays[0];
+    notices.push({
+      key: 'holiday',
+      text:
+        h.diffDays === 0
+          ? `Сегодня: ${h.event.title}`
+          : h.diffDays === 1
+          ? `Завтра: ${h.event.title}`
+          : `Через ${h.diffDays} дн.: ${h.event.title}`,
+      action: 'Календарь',
+      onClick: () => onNavigate('calendar'),
+    });
+  }
+
+  const kpis = [
+    { id: 'tasks' as NavTab, label: 'Задачи сегодня', Icon: CheckSquare, value: pendingTodayTasks.length, sub: `из ${todayTasks.length}` },
+    { id: 'calendar' as NavTab, label: 'События', Icon: Calendar, value: todayEvents.length, sub: todayEvents[0]?.startTime ? `первое в ${todayEvents[0].startTime}` : 'свободный день' },
+    { id: 'shopping' as NavTab, label: 'Купить', Icon: ShoppingCart, value: openShopping.length, sub: 'позиций в списках' },
+    { id: 'tasks' as NavTab, label: 'Ассистент заметил', Icon: AlertTriangle, value: urgentCount, sub: 'сроки и дела, требующие внимания', warn: urgentCount > 0 },
+  ];
+
+  // ── Японская версия главного экрана: 4 блока, ничего лишнего ─────────────
+  const plan = planForDate(new Date());
+  const [cleanMarks, setCleanMarks] = React.useState(readCleanMap);
+  React.useEffect(() => subscribeCleanMap(() => setCleanMarks(readCleanMap())), []);
+  const cleanDoneToday = (id: string) => markDay(cleanMarks[id]) === todayStr;
+  const cleaningToday = [...plan.detailed, ...plan.rare];
+  const cleaningLeft = cleaningToday.filter((i) => !cleanDoneToday(i.id)).length;
+  const [showAll, setShowAll] = React.useState(false);
+  const [showWeather, setShowWeather] = React.useState(false);
+
+  // День — только на сегодня и в одной части дома: события, задача дня (одной строкой), редкая уборка дня, дела на сегодня.
+  // Просроченное и сроки от ассистента — не списком, а тихой строкой внизу.
+  type DayRow = { key: string; title: string; sub: string; right?: string; done?: boolean; tone?: 'warn' | 'theme'; onClick: () => void; check?: boolean };
+  const urgent = assistantSignals.filter((sg) => sg.severity !== 'info' && sg.domain !== 'calendar' && sg.domain !== 'tasks');
+  const overdue = filteredTasks.filter((t) => !t.completed && t.dueDate && t.dueDate < todayStr);
+  const dueToday = filteredTasks.filter((t) => !t.completed && t.dueDate === todayStr).sort((a, b) => (a.dueTime || '99').localeCompare(b.dueTime || '99'));
+  const dayClean = [...plan.detailed, ...plan.rare];
+  const detailedLeft = dayClean.filter((i) => !cleanDoneToday(i.id)).length;
+  const [planOpen, setPlanOpen] = React.useState(true);
+  // В дни без уборки (пн, чт, выходные) — список дел темы дня из расписания v2 и подсказка о ближайшей уборке
+  const themeDay = WEEK.find((w) => w.day === new Date().getDay())!;
+  const themeItems = themeDay.items;
+  const routine = useRoutine();
+  const nextCleaning = (() => {
+    for (let k = 1; k <= 7; k++) {
+      const d = new Date();
+      d.setDate(d.getDate() + k);
+      const p = planForDate(d);
+      if (p.detailed.length + p.rare.length) return { p, d, n: p.detailed.length + p.rare.length };
+    }
+    return null;
+  })();
+  const openRoutine = () => {
+    try {
+      localStorage.setItem('dbh_tasks_view', 'checklists');
+    } catch {
+      /* нет хранилища */
+    }
+    onNavigate('tasks');
+  };
+  const dayRows: DayRow[] = [
+    ...todayEvents
+      .slice()
+      .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
+      .map((ev) => ({
+        key: `e-${ev.id}`,
+        title: ev.title,
+        sub: ev.location || 'Календарь',
+        right: ev.allDay || !ev.startTime ? 'весь день' : ev.startTime,
+        onClick: () => onNavigate('calendar'),
+      })),
+    {
+      key: 'theme',
+      title: `${plan.zoneIcon} ${plan.isRestDay ? plan.zoneTitle : `Задача дня: ${plan.zoneTitle}`}`,
+      sub: plan.isRestDay
+        ? 'Облегчённый день — только небольшие дела по необходимости'
+        : dayClean.length
+        ? `${detailedLeft ? `Осталось ${detailedLeft} из ${dayClean.length}` : 'Всё сделано'} · ≈ ${plan.detailed.length * MINUTES.detailed + plan.rare.length * MINUTES.rare} мин · ${planOpen ? 'свернуть' : 'нажмите — план по порядку'}`
+        : `${themeItems.length} дел по теме дня · ${planOpen ? 'свернуть' : 'нажмите — открыть список'}`,
+      tone: 'theme' as const,
+      onClick: () => setPlanOpen((v) => !v),
+    },
+    ...dueToday.map((t) => ({
+      key: `t-${t.id}`,
+      title: t.title,
+      sub: [t.zone, members.find((m) => m.id === t.assigneeId)?.name].filter(Boolean).join(' · '),
+      right: t.dueTime || '',
+      check: true,
+      onClick: () => toggleTaskCompletion(t.id),
+    })),
+  ];
+  const shownRows = showAll ? dayRows : dayRows.slice(0, 7);
+  const backlog = [
+    overdue.length ? { key: 'od', label: `Отложенные дела: ${overdue.length}`, go: () => onNavigate('tasks') } : null,
+    urgent.length ? { key: 'as', label: `Сроки от ассистента: ${urgent.length}`, go: () => onNavigate(urgent[0].domain as NavTab) } : null,
+  ].filter(Boolean) as { key: string; label: string; go: () => void }[];
+
+  // Состояние дома — по «Карте уборки» (4 зоны)
+  const mapZones = SECTORS.map((sec) => {
+    const items = MAP_ITEMS.filter((i) => i.sector === sec.id && applies(i.needs) && cleanMarks[i.id]);
+    const need = items.reduce((mx, i) => {
+      const d = new Date(cleanMarks[i.id]);
+      const days = Math.round((new Date(todayStr + 'T00:00:00').getTime() - new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) / 86400000);
+      return Math.max(mx, days / i.intervalDays);
+    }, 0);
+    return { ...sec, marked: items.length, need, level: (need >= 1 ? 'due' : need >= 0.7 ? 'soon' : 'fresh') as 'due' | 'soon' | 'fresh' };
+  });
+  const openMap = () => {
+    try {
+      localStorage.setItem('dbh_tasks_view', 'map');
+    } catch {
+      /* нет хранилища */
+    }
+    onNavigate('tasks');
+  };
+  const card = 'bg-[var(--surface)] border border-[var(--line)] rounded-2xl shadow-[var(--shadow)]';
+  // Кисэцукан: время года, японский сезон «сэкки» и сезонные чек-листы
+  const season = seasonOf();
+  const sekki = sekkiOf();
+  const seasonPacks = taskPacks.filter((p) => p.season === season.id && applies(p.needs));
+  const openChecklists = () => {
+    try {
+      localStorage.setItem('dbh_tasks_view', 'checklists');
+    } catch {
+      /* нет хранилища */
+    }
+    onNavigate('tasks');
+  };
 
   return (
-    <div className="p-8 space-y-6 max-w-7xl mx-auto">
-      {/* Приветственный баннер с быстрой статистикой */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#FAF6EE] via-[#F4EFE5] to-[#EFE7D8] p-6 sm:p-8 border border-[#E8E2D4] shadow-xs">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur-xs text-xs font-semibold text-[#8C522C] mb-2.5 border border-[#EADFCF]">
-              <Heart className="w-3.5 h-3.5 text-[#E15A42] fill-[#E15A42]" />
-              <span>{householdName} • Гармония в каждом дне</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1F1D1A] tracking-tight">
-              {greeting}{' '}
-              <span className="text-[#8A8477] font-medium text-lg sm:text-xl block sm:inline">
-                Сегодня под контролем:
-              </span>
-            </h1>
-          </div>
-
-          {/* Быстрые карточки сводки: Задачи, События, Покупки, SOS */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+    <div className="px-4 py-6 sm:px-8 sm:py-8 max-w-5xl mx-auto space-y-8">
+      {/* 1. Приветствие: число дня крупно, как на листке отрывного календаря; рядом — день, сезон и тема */}
+      <PhotoBanner photo={timeOfDayPhoto()} slot="home" className="h-[240px] sm:h-[280px]" onError={(msg) => showToast(msg, 'error')}>
+        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-9 text-white">
+          <div className="flex items-end gap-5 sm:gap-7">
             <div
-              onClick={() => onNavigate('tasks')}
-              className="bg-white/80 backdrop-blur-xs px-3.5 py-3 rounded-2xl border border-stone-200/60 shadow-2xs hover:bg-white transition-all cursor-pointer"
+              className="font-[family-name:var(--font-display)] font-light leading-[0.8] tracking-[-0.04em] text-[88px] sm:text-[120px] tabular-nums"
+              aria-hidden="true"
             >
-              <div className="text-[11px] font-semibold text-[#8A8477]">Задачи на сегодня</div>
-              <div className="text-xl font-bold text-[#1F1D1A] mt-0.5">
-                {pendingTodayTasks.length}{' '}
-                <span className="text-xs font-normal text-stone-500">
-                  / {todayTasks.length}
-                </span>
-              </div>
+              {new Date().getDate()}
             </div>
-
-            <div
-              onClick={() => onNavigate('calendar')}
-              className="bg-white/80 backdrop-blur-xs px-3.5 py-3 rounded-2xl border border-stone-200/60 shadow-2xs hover:bg-white transition-all cursor-pointer"
-            >
-              <div className="text-[11px] font-semibold text-[#8A8477]">События дня</div>
-              <div className="text-xl font-bold text-[#1F1D1A] mt-0.5">
-                {todayEvents.length}
+            <div className="pb-1.5 min-w-0">
+              <div className="text-[15px] text-white/80">
+                {new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }).replace(/^\d+\s*/, '')}, {new Date().toLocaleDateString('ru-RU', { weekday: 'long' })} · {sekki.ru.toLowerCase()}
               </div>
-            </div>
-
-            <div
-              onClick={() => onNavigate('shopping')}
-              className="bg-white/80 backdrop-blur-xs px-3.5 py-3 rounded-2xl border border-stone-200/60 shadow-2xs hover:bg-white transition-all cursor-pointer"
-            >
-              <div className="text-[11px] font-semibold text-[#8A8477]">К покупке</div>
-              <div className="text-xl font-bold text-[#1F1D1A] mt-0.5">
-                {shoppingItems.filter((i) => !i.completed).length}
-              </div>
-            </div>
-
-            {/* Плитка быстрого перехода в SOS */}
-            <div
-              onClick={() => setIsSOSOpen(true)}
-              className="bg-gradient-to-br from-red-600 to-rose-700 text-white px-3.5 py-3 rounded-2xl shadow-sm hover:brightness-110 active:scale-95 transition-all cursor-pointer border border-red-500/50 flex flex-col justify-between"
-              title="Открыть экстренный режим SOS (без пароля)"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-red-100 uppercase tracking-wider">Экстренно</span>
-                <ShieldAlert className="w-3.5 h-3.5 text-white animate-pulse" />
-              </div>
-              <div className="text-lg font-black mt-0.5 tracking-tight flex items-baseline justify-between">
-                <span>SOS</span>
-                <span className="text-[11px] font-semibold text-red-100">112 • ЖКХ</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Интерактивный виджет прогноза погоды */}
-      <WeatherWidget />
-
-      {/* Напоминания о днях рождения в семье (сегодня, завтра, за 7 дней) */}
-      {upcomingBirthdays.length > 0 && (
-        <div className="space-y-2.5">
-          {upcomingBirthdays.map(({ event: bEvent, daysLeft, turnsAge, nextDate }) => {
-            const isToday = daysLeft === 0;
-            const isTomorrow = daysLeft === 1;
-            return (
-              <div
-                key={bEvent.id}
-                onClick={() => onNavigate('calendar')}
-                className={`p-4 rounded-3xl border transition-all cursor-pointer shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                  isToday
-                    ? 'bg-gradient-to-r from-pink-50 via-rose-50 to-amber-50 border-pink-300 ring-2 ring-pink-400/20'
-                    : isTomorrow
-                    ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300'
-                    : 'bg-gradient-to-r from-[#FAF8F3] to-[#F5EFE3] border-[#E8E2D4]'
-                }`}
-              >
-                <div className="flex items-center space-x-3.5">
-                  <div
-                    className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 ${
-                      isToday ? 'bg-pink-100 text-pink-600 animate-bounce' : 'bg-amber-100 text-amber-700'
-                    }`}
-                  >
-                    <Gift className="w-5 h-5 text-[#E15A42]" />
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-2 flex-wrap">
-                      <span className="text-xs font-black text-[#1F1D1A]">
-                        {isToday
-                          ? '🎉 Сегодня день рождения!'
-                          : isTomorrow
-                          ? '🎂 Завтра день рождения!'
-                          : `🎁 Через ${daysLeft} ${daysLeft >= 2 && daysLeft <= 4 ? 'дня' : 'дней'} день рождения`}
-                      </span>
-                      {turnsAge && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-stone-700 border border-stone-200">
-                          Исполняется {turnsAge} лет
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-[#554F44] font-medium mt-0.5">
-                      <strong>{bEvent.title}</strong> • {nextDate} {bEvent.startTime ? `в ${bEvent.startTime}` : ''}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-[#E15A42] shrink-0 self-end sm:self-auto">
-                  <span>В календарь</span>
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Напоминание о передаче показаний счётчиков ЖКХ */}
-      {unsubmittedMeters.length > 0 && (
-        <div
-          onClick={() => onNavigate('utilities')}
-          className="bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50 border border-cyan-200/80 rounded-3xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs hover:border-cyan-400 transition-all cursor-pointer group"
-        >
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 text-cyan-700 flex items-center justify-center shrink-0">
-              <Gauge className="w-5 h-5 text-cyan-600" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs font-bold text-[#1F1E1C]">
-                  Пора передать показания счётчиков ЖКХ (15–25 число)
-                </span>
-                <span className="px-2 py-0.5 rounded-md bg-cyan-100 text-cyan-800 text-[10px] font-bold">
-                  Осталось: {unsubmittedMeters.length}
-                </span>
-              </div>
-              <p className="text-xs text-[#6B655B] mt-0.5">
-                Холодная/горячая вода, электричество и отопление за текущий месяц. Нажмите для быстрой записи.
+              <h1 className="text-[28px] sm:text-[36px] leading-[1.1] mt-1">
+                {greeting}
+                {activeMember ? `, ${activeMember.name}` : ''}
+              </h1>
+              <p className="text-[16px] text-white/85 mt-1.5">
+                {plan.zoneIcon}{' '}
+                {plan.isRestDay ? `Сегодня ${plan.zoneTitle.toLowerCase()}.` : `Сегодня — ${plan.zoneTitle.toLowerCase()}${cleaningLeft ? `, по уборке ${cleaningLeft}` : ''}.`}
               </p>
             </div>
-          </div>
-
-          <div className="flex items-center space-x-1 text-xs font-bold text-cyan-700 group-hover:text-cyan-900 shrink-0">
-            <span>Ввести показания</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            <div className="ml-auto pb-2 hidden sm:block">
+              <WeatherChip onClick={() => setShowWeather((v) => !v)} />
+            </div>
           </div>
         </div>
-      )}
+      </PhotoBanner>
+      {/* Прогноз на сегодня; «на неделю» — подробный виджет с выбором города */}
+      <TodayWeather card={card} onMore={() => setShowWeather((v) => !v)} />
+      {showWeather && <WeatherWidget />}
 
-      {/* Основная сетка виджетов (iPad Landscape: 3 колонки) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Колонка 1: Задачи и рутины на сегодня (5 колонок) */}
-        <div className="lg:col-span-5 bg-white rounded-3xl p-6 border border-[#EBE7DF] shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#F0ECE1]">
-            <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
-                <CheckSquare className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="font-bold text-[#1F1D1A] text-sm">Задачи и рутины</h3>
-                <p className="text-[11px] text-[#8A8477]">
-                  {pendingTodayTasks.length > 0
-                    ? `Осталось выполнить: ${pendingTodayTasks.length}`
-                    : 'Все задачи на сегодня выполнены!'}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onNewTask}
-              className="p-1.5 rounded-xl hover:bg-[#F3EFE6] text-[#E15A42] transition-colors cursor-pointer"
-              title="Добавить задачу"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </div>
+      {/* Профиль дома — пока не заполнен */}
+      <HomeProfilePrompt card={card} />
 
-          {/* Список задач */}
-          <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
-            {todayTasks.length === 0 ? (
-              <div className="text-center py-10 px-4 text-[#8A8477]">
-                <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-emerald-400 stroke-[1.5]" />
-                <p className="text-xs font-medium">На сегодня задач нет</p>
-                <button
-                  onClick={onNewTask}
-                  className="mt-2 text-xs text-[#E15A42] font-semibold hover:underline"
-                >
-                  + Назначить поручение
-                </button>
-              </div>
-            ) : (
-              todayTasks.map((task) => {
-                const assignee = members.find((m) => m.id === task.assigneeId);
-                return (
-                  <div
-                    key={task.id}
-                    onClick={() => toggleTaskCompletion(task.id)}
-                    className={`group p-3 rounded-2xl border transition-all cursor-pointer flex items-start space-x-3 ${
-                      task.completed
-                        ? 'bg-[#F9F8F5] border-[#EBE7DF] opacity-60'
-                        : 'bg-white border-[#E6E1D6] hover:border-[#E15A42]/50 hover:shadow-xs'
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      className={`mt-0.5 w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${
-                        task.completed
-                          ? 'bg-emerald-500 border-emerald-500 text-white'
-                          : 'border-stone-300 group-hover:border-[#E15A42]'
-                      }`}
-                    >
-                      {task.completed && <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />}
-                    </button>
-
-                    <div className="flex-1 overflow-hidden">
-                      <div className="flex items-center space-x-2">
-                        <span
-                          className={`text-xs font-semibold truncate ${
-                            task.completed
-                              ? 'line-through text-stone-400'
-                              : 'text-[#1F1D1A]'
-                          }`}
-                        >
-                          {task.title}
-                        </span>
-                        {task.isRotation && (
-                          <span
-                            title="Ротация обязанностей"
-                            className="inline-flex items-center text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded-md font-medium"
-                          >
-                            <RefreshCw className="w-2.5 h-2.5 mr-0.5" />
-                            Очередь
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center space-x-2 mt-1 text-[11px] text-[#8A8477]">
-                        <span className="font-medium px-1.5 py-0.2 rounded bg-[#F2EFE8] text-[#5C564B]">
-                          {task.zone}
-                        </span>
-                        {task.dueTime && (
-                          <span className="flex items-center space-x-1">
-                            <Clock className="w-3 h-3" />
-                            <span>{task.dueTime}</span>
-                          </span>
-                        )}
-                        {assignee && (
-                          <div className="flex items-center space-x-1.5">
-                            <MemberAvatar member={assignee} size="2xs" />
-                            <span>{assignee.name}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          <button
-            onClick={() => onNavigate('tasks')}
-            className="w-full py-2.5 text-center text-xs font-semibold text-[#8C522C] hover:bg-[#FAF7F0] rounded-xl transition-colors flex items-center justify-center space-x-1"
-          >
-            <span>Смотреть все задачи и пакеты</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+      {/* 2. День — 5–7 главных дел */}
+      <section>
+        <div className="flex items-baseline justify-between px-1 mb-3">
+          <h2 className="text-lg font-semibold text-[var(--text)]">Сегодня</h2>
+          <button type="button" onClick={() => onNavigate('tasks')} className="text-sm text-[var(--muted)] hover:text-[var(--text)] transition-colors px-2 py-2 -mr-2 -my-2 rounded-lg">
+            Все дела
           </button>
         </div>
-
-        {/* Колонка 2: Календарь на сегодня + Ужин (4 колонки) */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* События дня */}
-          <div className="bg-white rounded-3xl p-6 border border-[#EBE7DF] shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[#F0ECE1]">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
-                  <Calendar className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-[#1F1D1A] text-sm">Расписание дня</h3>
-                  <p className="text-[11px] text-[#8A8477]">
-                    {todayEvents.length > 0
-                      ? `${todayEvents.length} событий запланировано`
-                      : 'На сегодня встреч нет'}
-                  </p>
-                </div>
-              </div>
+        <div className={`${card} p-2`}>
+          {dayRows.length === 0 ? (
+            <p className="px-4 py-10 text-center text-[16px] text-[var(--text-2)]">Сегодня тихий день. Всё под контролем.</p>
+          ) : (
+            shownRows.map((r) => (
+              <React.Fragment key={r.key}>
               <button
-                onClick={onNewEvent}
-                className="p-1.5 rounded-xl hover:bg-[#F3EFE6] text-blue-600 transition-colors cursor-pointer"
-                title="Добавить событие"
+                key={r.key}
+                type="button"
+                onClick={r.onClick}
+                className="group w-full flex items-center gap-4 px-3 py-3.5 rounded-xl text-left hover:bg-[var(--surface-3)] transition-colors border-b border-[var(--line)] last:border-b-0"
               >
-                <Plus className="w-4 h-4" />
+                {r.check ? (
+                  <span
+                    className={`w-6 h-6 shrink-0 rounded-full border grid place-items-center transition-colors ${
+                      r.done ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'border-[var(--line-strong)] text-transparent group-hover:border-[var(--accent)]'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  </span>
+                ) : (
+                  <span className={`w-6 h-6 shrink-0 grid place-items-center ${r.tone === 'warn' ? 'text-amber-600' : r.tone === 'theme' ? 'text-[var(--accent)]' : 'text-[var(--muted)]'}`}>
+                    <span className={r.tone === 'theme' ? 'w-2.5 h-2.5 rounded-full bg-current' : 'w-1.5 h-1.5 rounded-full bg-current'} />
+                  </span>
+                )}
+                <span className="flex-1 min-w-0">
+                  <span className={`block text-[16px] truncate ${r.done ? 'line-through text-[var(--muted)]' : 'text-[var(--text)]'} ${r.tone === 'theme' ? 'font-medium' : ''}`}>{r.title}</span>
+                  <span className="block text-[14px] text-[var(--muted)] truncate mt-0.5">{r.sub}</span>
+                </span>
+                {r.right && <span className={`text-sm tabular-nums shrink-0 ${r.tone ? 'text-amber-600' : 'text-[var(--text-2)]'}`}>{r.right}</span>}
               </button>
-            </div>
-
-            <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
-              {todayEvents.length === 0 ? (
-                <div className="text-center py-6 text-[#8A8477]">
-                  <p className="text-xs">Свободный день без записей</p>
+              {r.key === 'theme' && planOpen && !dayClean.length && (
+                <div className="ml-10 mr-2 mb-2 rounded-xl bg-[var(--surface-2)] border border-[var(--line)] p-2">
+                  {themeItems.map((i) => {
+                    const ok = !!routine.checks[i.id];
+                    return (
+                      <button key={i.id} type="button" onClick={() => routine.toggle(i.id)} className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-left hover:bg-[var(--surface-3)]">
+                        <span className={`w-5 h-5 shrink-0 rounded-full border grid place-items-center ${ok ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'border-[var(--line-strong)] text-transparent'}`}>
+                          <CheckCircle2 className="w-3 h-3" />
+                        </span>
+                        <span className={`flex-1 text-sm ${ok ? 'line-through text-[var(--muted)]' : 'text-[var(--text)]'}`}>{i.title}</span>
+                      </button>
+                    );
+                  })}
+                  {nextCleaning && (
+                    <p className="px-2 pt-2 pb-1 text-[14px] text-[var(--muted)]">
+                      Уборки сегодня нет. Следующая —{' '}
+                      {nextCleaning.d.toLocaleDateString('ru-RU', { weekday: 'long' })}: {nextCleaning.p.zoneTitle.toLowerCase()}, {nextCleaning.n} дел по порядку.
+                    </p>
+                  )}
                 </div>
-              ) : (
-                todayEvents.map((ev) => {
-                  return (
-                    <div
-                      key={ev.id}
-                      className="p-3 rounded-2xl bg-[#FBF9F5] border border-[#EBE7DF] hover:bg-white transition-all space-y-1.5"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-[#1F1D1A] truncate">
-                          {ev.title}
-                        </span>
-                        <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
-                          {ev.startTime}
-                        </span>
-                      </div>
-                      {ev.location && (
-                        <p className="text-[11px] text-[#8A8477] truncate">📍 {ev.location}</p>
-                      )}
-                      {/* Участники события */}
-                      <div className="flex items-center space-x-1 pt-1">
-                        {ev.memberIds.map((mId) => {
-                          const member = members.find((m) => m.id === mId);
-                          if (!member) return null;
-                          return (
-                            <MemberAvatar
-                              key={mId}
-                              member={member}
-                              size="xs"
-                              className="ring-1 ring-white"
-                            />
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })
               )}
-            </div>
-
-            <button
-              onClick={() => onNavigate('calendar')}
-              className="w-full py-2 text-center text-xs font-semibold text-blue-700 hover:bg-blue-50 rounded-xl transition-colors flex items-center justify-center space-x-1"
-            >
-              <span>Открыть полный календарь</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Виджет «Ужин сегодня» */}
-          <div
-            onClick={() => onNavigate('meals')}
-            className="bg-gradient-to-br from-[#FAF5EE] to-[#F5ECE0] rounded-3xl p-5 border border-[#E9DFD0] shadow-xs hover:border-[#E15A42]/50 transition-all cursor-pointer group"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#9E653A] flex items-center space-x-1.5">
-                <UtensilsCrossed className="w-3.5 h-3.5 text-[#E15A42]" />
-                <span>Ужин сегодня</span>
-              </span>
-              <span className="text-[11px] font-medium text-[#E15A42] group-hover:underline">
-                К меню недели →
-              </span>
-            </div>
-            <h4 className="text-sm font-bold text-[#1F1D1A] group-hover:text-[#E15A42] transition-colors leading-snug">
-              {dinnerTitle}
-            </h4>
-            {dinnerRecipe && (
-              <p className="text-xs text-[#8A8477] mt-1">
-                ⏱ {dinnerRecipe.prepTimeMinutes + dinnerRecipe.cookTimeMinutes} мин •{' '}
-                {dinnerRecipe.servings} порции
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Колонка 3: Быстрые покупки + Важные сроки дома (3 колонки) */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Экспресс-список покупок */}
-          <div className="bg-white rounded-3xl p-6 border border-[#EBE7DF] shadow-xs space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-[#F0ECE1]">
-              <div className="flex items-center space-x-2">
-                <ShoppingCart className="w-4 h-4 text-rose-500" />
-                <h3 className="font-bold text-[#1F1D1A] text-sm">Срочно купить</h3>
-              </div>
-              <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">
-                {shoppingItems.filter((i) => !i.completed).length}
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              {quickShoppingItems.length === 0 ? (
-                <p className="text-xs text-[#8A8477] py-4 text-center">
-                  Все покупки сделаны!
-                </p>
-              ) : (
-                quickShoppingItems.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => toggleShoppingItem(item.id)}
-                    className="flex items-center justify-between p-2 rounded-xl hover:bg-[#FAF8F3] transition-colors cursor-pointer group"
-                  >
-                    <div className="flex items-center space-x-2 overflow-hidden">
-                      <span className="w-4 h-4 rounded border border-stone-300 group-hover:border-rose-500 flex items-center justify-center shrink-0" />
-                      <span className="text-xs text-[#1F1D1A] truncate">{item.title}</span>
+              {r.key === 'theme' && planOpen && dayClean.length > 0 && (
+                <div className="ml-10 mr-2 mb-2 rounded-xl bg-[var(--surface-2)] border border-[var(--line)] p-2">
+                  {groupItems(dayClean).map(({ group, items }) => (
+                    <div key={group.key} className="py-1">
+                      <div className="px-2 pt-1 pb-0.5 text-[13px] font-medium text-[var(--muted)]">
+                        {group.icon} {group.label}
+                      </div>
+                      {items.map((i) => {
+                        const ok = cleanDoneToday(i.id);
+                        return (
+                          <button key={i.id} type="button" onClick={() => markCleanItem(i.id)} className="w-full flex items-center gap-3 px-2 py-2 rounded-lg text-left hover:bg-[var(--surface-3)]">
+                            <span className={`w-5 h-5 shrink-0 rounded-full border grid place-items-center ${ok ? 'bg-[var(--accent)] border-[var(--accent)] text-white' : 'border-[var(--line-strong)] text-transparent'}`}>
+                              <CheckCircle2 className="w-3 h-3" />
+                            </span>
+                            <span className={`flex-1 text-sm ${ok ? 'line-through text-[var(--muted)]' : 'text-[var(--text)]'}`}>{i.title}</span>
+                            
+                          </button>
+                        );
+                      })}
                     </div>
-                    {item.quantity && (
-                      <span className="text-[10px] text-[#8A8477] bg-[#F2EFE8] px-1.5 py-0.5 rounded shrink-0">
-                        {item.quantity}
-                      </span>
-                    )}
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
-            </div>
-
-            <button
-              onClick={() => onNavigate('shopping')}
-              className="w-full py-2 text-center text-xs font-semibold text-rose-700 hover:bg-rose-50 rounded-xl transition-colors flex items-center justify-center space-x-1"
-            >
-              <span>Все списки покупок</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Быстрый доступ к сканеру чеков */}
-          <div
-            onClick={() => onNavigate('receipts')}
-            className="bg-gradient-to-tr from-[#FFF5F2] to-[#FFF0EB] rounded-3xl p-5 border border-[#F5D5CB] shadow-xs hover:border-[#E15A42] transition-all cursor-pointer group"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#E15A42] flex items-center space-x-1.5">
-                <Camera className="w-3.5 h-3.5" />
-                <span>Быстрый ввод расходов</span>
-              </span>
-              <span className="text-[11px] font-semibold text-[#E15A42] group-hover:underline flex items-center">
-                <span>Сканировать</span>
-                <ArrowRight className="w-3 h-3 ml-0.5" />
-              </span>
-            </div>
-            <h4 className="text-sm font-bold text-[#1F1D1A] group-hover:text-[#E15A42] transition-colors leading-snug">
-              Сканировать чек с покупками
-            </h4>
-            <p className="text-xs text-[#8A8477] mt-1">
-              Распознавание чека камерой, проверка строк и сохранение расходов
-            </p>
-          </div>
-
-          {/* Важные сроки (страховки, ТО, документы) */}
-          {criticalItems.length > 0 && (
-            <div className="bg-amber-50/80 rounded-3xl p-5 border border-amber-200 shadow-xs space-y-2.5">
-              <div className="flex items-center space-x-2 text-amber-900 font-bold text-xs">
-                <ShieldAlert className="w-4 h-4 text-amber-600" />
-                <span>Напоминания о сроках</span>
-              </div>
-              <div className="space-y-2">
-                {criticalItems.map((c, i) => (
-                  <div
-                    key={i}
-                    onClick={() =>
-                      onNavigate(c.type === 'doc' ? 'docs' : c.type === 'medicine' ? 'firstaid' : 'inventory')
-                    }
-                    className="p-2.5 rounded-xl bg-white border border-amber-200/70 hover:shadow-xs transition-all cursor-pointer"
-                  >
-                    <div className="text-xs font-bold text-[#1F1D1A] truncate">
-                      {c.title}
-                    </div>
-                    <div className="text-[11px] text-amber-700 font-medium">{c.info}</div>
-                  </div>
-                ))}
-              </div>
+              </React.Fragment>
+            ))
+          )}
+          {backlog.length > 0 && (
+            <div className="flex flex-wrap gap-x-5 gap-y-1 px-3 py-3 border-t border-[var(--line)] text-[14px] text-[var(--muted)]">
+              <span>Не на сегодня, но ждёт:</span>
+              {backlog.map((b) => (
+                <button key={b.key} type="button" onClick={b.go} className="text-[var(--text-2)] hover:text-[var(--text)] underline-offset-4 hover:underline py-1 -my-1">
+                  {b.label}
+                </button>
+              ))}
             </div>
           )}
+          {dayRows.length > 7 && (
+            <button
+              type="button"
+              onClick={() => setShowAll((v) => !v)}
+              className="w-full px-3 py-3 text-sm text-[var(--muted)] hover:text-[var(--text)] transition-colors"
+            >
+              {showAll ? 'Свернуть' : `Ещё ${dayRows.length - 7}`}
+            </button>
+          )}
         </div>
-      </div>
+      </section>
+
+      {/* 3. Состояние дома — одна строка */}
+      <section>
+        <div className="flex items-baseline justify-between px-1 mb-3">
+          <h2 className="text-lg font-semibold text-[var(--text)]">Дом</h2>
+          <button type="button" onClick={openMap} className="text-sm text-[var(--muted)] hover:text-[var(--text)] transition-colors px-2 py-2 -mr-2 -my-2 rounded-lg">
+            Карта уборки
+          </button>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {mapZones.map((z) => (
+            <button key={z.id} type="button" onClick={openMap} className={`${card} p-4 text-left hover:bg-[var(--surface-3)] transition-colors`}>
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-[16px] font-medium text-[var(--text)]">{z.title}</span>
+                <span className={`text-xs ${!z.marked ? 'text-[var(--muted)]' : z.level === 'due' ? 'text-amber-700' : z.level === 'soon' ? 'text-amber-600' : 'text-emerald-600'}`}>
+                  {!z.marked ? '—' : z.level === 'due' ? 'пора' : z.level === 'soon' ? 'скоро' : 'порядок'}
+                </span>
+              </div>
+              <div className="mt-3 h-1 rounded-full bg-[var(--surface-3)] overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-[width] duration-700 ${z.level === 'due' ? 'bg-amber-500' : z.level === 'soon' ? 'bg-amber-400' : 'bg-emerald-500'}`}
+                  style={{ width: z.marked ? `${Math.max(6, Math.min(100, z.need * 100))}%` : '0%' }}
+                />
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Сезон: тихая строка с сезонными чек-листами */}
+      {seasonPacks.length > 0 && (
+        <button
+          type="button"
+          onClick={openChecklists}
+          className={`${card} w-full p-4 sm:p-5 text-left flex items-start gap-4 hover:bg-[var(--surface-3)] transition-colors`}
+          style={{ borderLeft: '3px solid var(--season)' }}
+        >
+          <span className="text-2xl leading-none">{season.icon}</span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-[16px] font-medium text-[var(--text)]">
+              {season.title}: {season.phrase}
+            </span>
+            <span className="block text-[14px] text-[var(--muted)] mt-1">
+              {seasonPacks
+                .map((p) => {
+                  const live = tasks.filter((t) => t.packName === p.title);
+                  return live.length ? `${p.title} — ${live.filter((t) => t.completed).length} из ${live.length}` : p.title;
+                })
+                .join(' · ')}
+            </span>
+          </span>
+          <span className="text-sm shrink-0" style={{ color: 'var(--season)' }}>
+            Чек-листы
+          </span>
+        </button>
+      )}
+
+      {/* 4. Одна тихая строка: ужин и покупки */}
+      <p className="text-[16px] text-[var(--text-2)] px-1 flex flex-wrap gap-x-6 gap-y-2">
+        <button type="button" onClick={() => onNavigate('meals')} className="hover:text-[var(--text)] transition-colors py-2 -my-2 text-left">
+          🍽 Ужин: <span className="font-medium text-[var(--text)]">{dinnerTitle}</span>
+        </button>
+        <button type="button" onClick={() => onNavigate('shopping')} className="hover:text-[var(--text)] transition-colors py-2 -my-2 text-left">
+          🛒 Купить: <span className="font-medium text-[var(--text)]">{openShopping.length}</span>
+        </button>
+      </p>
     </div>
   );
 };

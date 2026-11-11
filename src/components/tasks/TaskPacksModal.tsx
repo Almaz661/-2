@@ -26,16 +26,16 @@ export const TaskPacksModal: React.FC<TaskPacksModalProps> = ({ isOpen, onClose 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-2xl bg-[#FCFBF8] rounded-3xl border border-[#EBE7DF] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-        <div className="px-6 py-5 border-b border-[#EBE7DF] flex items-center justify-between bg-white">
+      <div className="w-full max-w-2xl bg-[var(--surface-2)] rounded-2xl border border-[var(--line)] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        <div className="px-6 py-5 border-b border-[var(--line)] flex items-center justify-between bg-[var(--surface)]">
           <div>
             <div className="flex items-center space-x-2">
-              <Sparkles className="w-5 h-5 text-[#E15A42]" />
-              <h3 className="text-lg font-bold text-[#1F1D1A]">
+              <Sparkles className="w-5 h-5 text-[var(--accent)]" />
+              <h3 className="text-lg font-semibold text-[var(--text)]">
                 Пакеты задач OneHaus (Task Packs)
               </h3>
             </div>
-            <p className="text-xs text-[#8A8477] mt-0.5">
+            <p className="text-xs text-[var(--muted)] mt-0.5">
               Готовые наборы домашних обязанностей для сезонных и регулярных бытовых сценариев
             </p>
           </div>
@@ -51,27 +51,27 @@ export const TaskPacksModal: React.FC<TaskPacksModalProps> = ({ isOpen, onClose 
           {taskPacks.map((pack) => (
             <div
               key={pack.id}
-              className="p-5 rounded-2xl bg-white border border-[#E5DFD1] hover:border-[#E15A42]/50 hover:shadow-xs transition-all space-y-3"
+              className="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--line)] hover:border-[var(--accent)]/50 hover:shadow-[var(--shadow)] transition-all space-y-3"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-2xl bg-[#F7F4EC] text-[#8C522C] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-2xl bg-[var(--surface-3)] text-[var(--accent-strong)] flex items-center justify-center">
                     {getPackIcon(pack.icon)}
                   </div>
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h4 className="font-bold text-sm text-[#1F1D1A]">{pack.title}</h4>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                      <h4 className="font-semibold text-sm text-[var(--text)]">{pack.title}</h4>
+                      <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
                         {pack.badge}
                       </span>
                     </div>
-                    <p className="text-xs text-[#8A8477] mt-0.5">{pack.description}</p>
+                    <p className="text-xs text-[var(--muted)] mt-0.5">{pack.description}</p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => handleApply(pack.id)}
-                  className="px-4 py-2 rounded-xl bg-[#E15A42] hover:bg-[#D04931] text-white text-xs font-bold shadow-xs active:scale-[0.98] transition-all cursor-pointer flex items-center space-x-1.5 shrink-0"
+                  className="px-4 py-2 rounded-full bg-[var(--accent)] hover:brightness-110 text-white text-xs font-semibold shadow-[var(--shadow)] active:scale-[0.98] transition-all cursor-pointer flex items-center space-x-1.5 shrink-0"
                 >
                   <span>Применить</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -83,9 +83,9 @@ export const TaskPacksModal: React.FC<TaskPacksModalProps> = ({ isOpen, onClose 
                 {pack.tasks.map((t, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center space-x-2 text-xs text-[#5C564B] bg-[#FAF8F3] px-2.5 py-1.5 rounded-lg"
+                    className="flex items-center space-x-2 text-xs text-[var(--text-2)] bg-[var(--surface-2)] px-2.5 py-1.5 rounded-lg"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#E15A42]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
                     <span className="truncate">{t.title}</span>
                   </div>
                 ))}

@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import { applies } from '../utils/homeProfile';
+import { groupByRoom } from '../utils/cleaningOrder';
 import {
   CalendarEvent,
   DocumentItem,
@@ -24,15 +26,6 @@ import {
   CloudSyncStatus,
   AppModuleId,
 } from '../types';
-import {
-  AssistantActionLog,
-  AssistantSettings,
-  runAssistantAudit,
-  getAssistantLogs,
-  saveAssistantLogs,
-  getAssistantSettings,
-  saveAssistantSettings,
-} from '../services/householdAssistant';
 import {
   INITIAL_CONTACTS,
   INITIAL_DOCS,
@@ -67,10 +60,12 @@ import {
   OfflineDbStats,
 } from '../services/offlineDatabase';
 import { normalizeProductTitle } from '../utils/receiptNormalizer';
-import { parseShoppingInput } from '../utils/shoppingParser';
+import { detectShoppingCategory, parseShoppingInput } from '../utils/shoppingParser';
 import { recalculateMeterReadings, getPreviousReadingForMeter } from '../utils/utilityCalculations';
 import { getCountryPresetById, CountryPreset } from '../utils/countryPresets';
 import { getCurrencySymbol } from '../utils/currencyConstants';
+import { checkUpcomingHolidayReminders } from '../services/notificationService';
+import { formatLocalDate } from '../utils/dateUtils';
 
 interface ToastMessage {
   id: string;
@@ -100,9 +95,13 @@ interface HouseholdContextType {
   // Tasks
   tasks: TaskItem[];
   taskPacks: TaskPack[];
-  addTask: (task: Omit<TaskItem, 'id'>) => void;
-  updateTask: (id: string, updates: Partial<TaskItem>) => void;
-  deleteTask: (id: string) => void;
+  addTask: (task: Omit<TaskItem, 'id'>, options?: { silent?: boolean }) => void;
+  /** Добавить много задач одним действием (план до конца года) */
+  addTasksBulk: (tasks: Omit<TaskItem, 'id'>[]) => void;
+  /** Удалить все невыполненные задачи набора (например, «План до конца года») */
+  removeTasksByPack: (packName: string) => number;
+  updateTask: (id: string, updates: Partial<TaskItem>, options?: { silent?: boolean }) => void;
+  deleteTask: (id: string, options?: { silent?: boolean }) => void;
   toggleTaskCompletion: (id: string) => void;
   applyTaskPack: (packId: string) => void;
 
@@ -112,18 +111,25 @@ interface HouseholdContextType {
   updateEvent: (id: string, updates: Partial<CalendarEvent>) => void;
   deleteEvent: (id: string) => void;
   exportCalendarIcs: () => void;
+  importHolidaysToCalendar: (holidays: Array<Omit<CalendarEvent, 'id'>>) => number;
 
   // Shopping
   shoppingLists: ShoppingList[];
   activeShoppingListId: string;
   setActiveShoppingListId: (id: string) => void;
   shoppingItems: ShoppingItem[];
-  addShoppingItem: (item: Omit<ShoppingItem, 'id' | 'createdAt'>) => void;
-  addShoppingItems: (items: Array<Omit<ShoppingItem, 'id' | 'createdAt'>>) => void;
+  addShoppingItem: (item: Omit<ShoppingItem, 'id' | 'createdAt'>, options?: { forceCategory?: boolean }) => void;
+  /** Заново разложить товары по отделам магазина (по названию) */
+  recategorizeShoppingItems: (listId?: string) => number;
+  addShoppingItems: (items: Array<Omit<ShoppingItem, 'id' | 'createdAt'>>, options?: { silent?: boolean }) => void;
   toggleShoppingItem: (id: string) => void;
   deleteShoppingItem: (id: string) => void;
   clearCompletedShoppingItems: (listId: string) => void;
   addShoppingList: (name: string, icon: string) => void;
+  updateShoppingList: (id: string, updates: Partial<ShoppingList>) => void;
+  /** Удалить список вместе с его товарами (основной список удалить нельзя) */
+  deleteShoppingList: (id: string) => void;
+  updateShoppingItem: (id: string, updates: Partial<ShoppingItem>) => void;
   importRecipeIngredientsToShopping: (
     recipe: Recipe | Omit<Recipe, 'id'>,
     targetListId?: string,
@@ -232,29 +238,13 @@ interface HouseholdContextType {
   setHouseholdCurrency: (currency: string) => void;
 
   // Family Cloud Sync (Облачная семейная синхронизация)
-  // Family Cloud Sync & Security (Облачная семейная синхронизация и защита)
   familyCode: string | null;
-  familyPin: string | null;
-  setFamilyPin: (pin: string | null) => void;
   cloudSyncStatus: CloudSyncStatus;
   lastCloudSync: string | null;
-  connectFamilyCode: (code: string, pin?: string) => Promise<boolean>;
-  generateNewFamilyCode: (pin?: string) => Promise<string>;
+  connectFamilyCode: (code: string) => Promise<boolean>;
+  generateNewFamilyCode: () => Promise<string>;
   disconnectFamilyCode: () => void;
   syncWithCloud: () => Promise<boolean>;
-
-  // Главный автономный ассистент дома (Autonomous Household Assistant)
-  assistantSettings: AssistantSettings;
-  setAssistantSettings: (settings: AssistantSettings) => void;
-  assistantLogs: AssistantActionLog[];
-  runAssistantNow: () => void;
-
-  // Тема оформления (Светлая / Тёмная)
-  theme: 'light' | 'dark' | 'system';
-  setTheme: (theme: 'light' | 'dark' | 'system') => void;
-
-  // Контроль памяти браузера
-  storageWarning: string | null;
 
   // Module Visibility (Кастомизация меню и дашборда)
   visibleModules: Record<AppModuleId, boolean>;
@@ -315,6 +305,8 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, React.Dispatch<Re
       localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(dataToStore));
     } catch (error) {
       console.warn(`Error setting localStorage key "${key}":`, error);
+      // Память браузера переполнена — предупреждаем человека, а не теряем данные молча
+      window.dispatchEvent(new CustomEvent('dbh:storage-error', { detail: key }));
     }
   }, [key, storedValue]);
 
@@ -445,6 +437,11 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (events && events.length >= 0) {
       saveAllEventsToIDB(events).then(() => {
         getOfflineDbStats().then(setOfflineStats).catch(() => {});
+      });
+
+      // Проверка приближающихся праздников и дат для автоматических напоминаний
+      checkUpcomingHolidayReminders(events, (_ev, msg) => {
+        showToast(msg, 'info');
       });
     }
   }, [events]);
@@ -695,7 +692,7 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       prev.map((meter) => {
         if (meter.id !== meterId) return meter;
 
-        const effectiveDate = dateStr || new Date().toISOString().split('T')[0];
+        const effectiveDate = dateStr || formatLocalDate(new Date());
         const month = effectiveDate.substring(0, 7);
 
         // Ищем существующую запись за эту же дату для обновления, иначе добавляем новое показание
@@ -1125,29 +1122,52 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4000);
   };
+  // Предупреждение, если данные не поместились в память устройства (не чаще раза в 10 минут)
+  useEffect(() => {
+    let last = 0;
+    const on = () => {
+      if (Date.now() - last < 10 * 60 * 1000) return;
+      last = Date.now();
+      showToast('Память устройства заполнена — последние изменения могут не сохраниться. Сделайте резервную копию в «Настройки → Данные» и удалите старые фото чеков.', 'error');
+    };
+    window.addEventListener('dbh:storage-error', on);
+    return () => window.removeEventListener('dbh:storage-error', on);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
   // --- Tasks Logic (including Chore Rotation) ---
-  const addTask = (taskData: Omit<TaskItem, 'id'>) => {
+  const addTask = (taskData: Omit<TaskItem, 'id'>, options?: { silent?: boolean }) => {
     const newTask: TaskItem = {
       ...taskData,
       id: 'task_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
     };
     setTasks((prev) => [newTask, ...prev]);
-    showToast('Задача создана: ' + newTask.title, 'success');
+    if (!options?.silent) showToast('Задача создана: ' + newTask.title, 'success');
   };
 
-  const updateTask = (id: string, updates: Partial<TaskItem>) => {
+  const addTasksBulk = (list: Omit<TaskItem, 'id'>[]) => {
+    const stamp = Date.now().toString(36);
+    setTasks((prev) => [...list.map((t, i) => ({ ...t, id: `task_${stamp}_${i}` })), ...prev]);
+  };
+  const removeTasksByPack = (packName: string) => {
+    const n = tasks.filter((t) => t.packName === packName && !t.completed).length;
+    setTasks((prev) => prev.filter((t) => !(t.packName === packName && !t.completed)));
+    return n;
+  };
+
+  const updateTask = (id: string, updates: Partial<TaskItem>, options?: { silent?: boolean }) => {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
-    showToast('Задача обновлена', 'info');
+    if (!options?.silent) showToast('Задача обновлена', 'info');
   };
 
-  const deleteTask = (id: string) => {
+  const deleteTask = (id: string, options?: { silent?: boolean }) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
-    showToast('Задача удалена', 'info');
+    if (!options?.silent) showToast('Задача удалена', 'info');
   };
 
   const toggleTaskCompletion = (id: string) => {
@@ -1196,8 +1216,10 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const pack = taskPacks.find((p) => p.id === packId);
     if (!pack) return;
 
-    const todayStr = new Date().toISOString().split('T')[0];
-    const newTasks: TaskItem[] = pack.tasks.map((t, idx) => ({
+    const todayStr = formatLocalDate(new Date());
+    // Только пункты, которые подходят этому дому (профиль дома)
+    // По комнатам и приборам — чтобы в списке дел не бегать по дому
+    const newTasks: TaskItem[] = groupByRoom(pack.tasks.filter((t) => applies(t.needs))).flatMap((g) => g.items).map((t, idx) => ({
       id: 'pack_task_' + Date.now() + '_' + idx,
       title: t.title,
       description: t.description || `Из набора «${pack.title}»`,
@@ -1241,6 +1263,34 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     showToast('Событие удалено', 'info');
   };
 
+  const importHolidaysToCalendar = (newHolidays: Array<Omit<CalendarEvent, 'id'>>): number => {
+    if (!newHolidays || newHolidays.length === 0) return 0;
+    let addedCount = 0;
+    setEvents((prev) => {
+      const existingSet = new Set(prev.map((e) => `${(e.title || '').trim().toLowerCase()}_${e.date}`));
+      const toAdd: CalendarEvent[] = [];
+      newHolidays.forEach((item, idx) => {
+        const key = `${(item.title || '').trim().toLowerCase()}_${item.date}`;
+        if (!existingSet.has(key)) {
+          existingSet.add(key);
+          toAdd.push({
+            ...item,
+            id: 'holiday_' + Date.now().toString(36) + '_' + idx + Math.random().toString(36).substring(2, 5),
+          });
+          addedCount++;
+        }
+      });
+      return [...toAdd, ...prev];
+    });
+
+    if (addedCount > 0) {
+      showToast(`Импортировано праздников: ${addedCount}. Напоминания настроены!`, 'success');
+    } else {
+      showToast('Все выбранные праздники уже есть в вашем календаре', 'info');
+    }
+    return addedCount;
+  };
+
   const exportCalendarIcs = () => {
     let icsContent = [
       'BEGIN:VCALENDAR',
@@ -1262,6 +1312,24 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       icsContent.push(`SUMMARY:${ev.title}`);
       if (ev.description) icsContent.push(`DESCRIPTION:${ev.description.replace(/\n/g, '\\n')}`);
       if (ev.location) icsContent.push(`LOCATION:${ev.location}`);
+
+      // Добавляем автоматические напоминания (VALARM) для Apple Calendar, Google Calendar и Outlook
+      if (ev.reminderDaysBefore && ev.reminderDaysBefore.length > 0) {
+        ev.reminderDaysBefore.forEach((days) => {
+          icsContent.push('BEGIN:VALARM');
+          icsContent.push('ACTION:DISPLAY');
+          icsContent.push(`DESCRIPTION:Напоминание: ${ev.title}`);
+          icsContent.push(`TRIGGER:-P${days}D`);
+          icsContent.push('END:VALARM');
+        });
+      } else if (ev.reminderMinutes) {
+        icsContent.push('BEGIN:VALARM');
+        icsContent.push('ACTION:DISPLAY');
+        icsContent.push(`DESCRIPTION:Напоминание: ${ev.title}`);
+        icsContent.push(`TRIGGER:-PT${ev.reminderMinutes}M`);
+        icsContent.push('END:VALARM');
+      }
+
       icsContent.push('END:VEVENT');
     });
 
@@ -1275,15 +1343,41 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast('Файл календаря .ics успешно скачан!', 'success');
+    showToast('Файл календаря .ics успешно скачан с напоминаниями!', 'success');
   };
 
   // --- Shopping Lists Logic ---
-  const addShoppingItem = (itemData: Omit<ShoppingItem, 'id' | 'createdAt'>) => {
+  const recategorizeShoppingItems = (listId?: string) => {
+    let changed = 0;
+    setShoppingItems((prev) =>
+      prev.map((it) => {
+        if (listId && it.listId !== listId) return it;
+        const cat = detectShoppingCategory(it.title, it.category);
+        if (cat !== it.category) changed++;
+        return cat === it.category ? it : { ...it, category: cat };
+      })
+    );
+    return changed;
+  };
+
+  // Один раз: переложить товары, которые раньше легли не в свой отдел (старая ошибка с «Овощами»)
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('dbh_shop_recat_v1')) return;
+      localStorage.setItem('dbh_shop_recat_v1', '1');
+      recategorizeShoppingItems();
+    } catch {
+      /* нет хранилища */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const addShoppingItem = (itemData: Omit<ShoppingItem, 'id' | 'createdAt'>, options?: { forceCategory?: boolean }) => {
     // Автоматический парсинг входящей строки: разбивает по запятым, переносам строк и союзам («и», «да», «плюс», «+»)
     const parsed = parseShoppingInput(itemData.title, {
       defaultCategory: itemData.category,
       defaultQuantity: itemData.quantity,
+      forceCategory: options?.forceCategory,
     });
 
     if (parsed.length > 1) {
@@ -1317,7 +1411,7 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     showToast(`Товар «${newItem.title}» добавлен в список`, 'success');
   };
 
-  const addShoppingItems = (itemsData: Array<Omit<ShoppingItem, 'id' | 'createdAt'>>) => {
+  const addShoppingItems = (itemsData: Array<Omit<ShoppingItem, 'id' | 'createdAt'>>, options?: { silent?: boolean }) => {
     if (!itemsData || itemsData.length === 0) return;
     const allCreated: ShoppingItem[] = [];
 
@@ -1348,13 +1442,27 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
 
     setShoppingItems((prev) => [...allCreated, ...prev]);
-    showToast(`Добавлено позиций: ${allCreated.length}`, 'success');
+    if (!options?.silent) showToast(`Добавлено позиций: ${allCreated.length}`, 'success');
   };
 
   const toggleShoppingItem = (id: string) => {
     setShoppingItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, completed: !item.completed } : item))
     );
+  };
+
+  const updateShoppingItem = (id: string, updates: Partial<ShoppingItem>) => {
+    setShoppingItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...updates } : i)));
+  };
+  const updateShoppingList = (id: string, updates: Partial<ShoppingList>) => {
+    setShoppingLists((prev) => prev.map((l) => (l.id === id ? { ...l, ...updates } : l)));
+  };
+  const deleteShoppingList = (id: string) => {
+    const list = shoppingLists.find((l) => l.id === id);
+    if (!list || list.isDefault) return;
+    setShoppingLists((prev) => prev.filter((l) => l.id !== id));
+    setShoppingItems((prev) => prev.filter((i) => i.listId !== id));
+    showToast(`Список «${list.name}» удалён`, 'info');
   };
 
   const deleteShoppingItem = (id: string) => {
@@ -1647,7 +1755,7 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(backupData, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `onehaus-backup-${new Date().toISOString().split('T')[0]}.json`);
+    downloadAnchor.setAttribute('download', `onehaus-backup-${formatLocalDate(new Date())}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -1859,143 +1967,6 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, [familyCode]);
 
-  // ==================== ТЕМА ОФОРМЛЕНИЯ (LIGHT / DARK / SYSTEM) ====================
-  const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
-    try {
-      return (localStorage.getItem('onehaus_theme') as any) || 'light';
-    } catch {
-      return 'light';
-    }
-  });
-
-  const setTheme = (t: 'light' | 'dark' | 'system') => {
-    setThemeState(t);
-    try {
-      localStorage.setItem('onehaus_theme', t);
-    } catch {}
-    if (t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
-
-  useEffect(() => {
-    if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
-
-  // ==================== ГЛАВНЫЙ АВТОНОМНЫЙ АССИСТЕНТ ДОМА ====================
-  const [assistantLogs, setAssistantLogs] = useState<AssistantActionLog[]>(getAssistantLogs);
-  const [assistantSettings, setAssistantSettingsState] = useState<AssistantSettings>(getAssistantSettings);
-
-  const setAssistantSettings = (s: AssistantSettings) => {
-    setAssistantSettingsState(s);
-    saveAssistantSettings(s);
-    showToast('Настройки ассистента сохранены', 'success');
-  };
-
-  const runAssistantNow = () => {
-    const result = runAssistantAudit({
-      documents: docs,
-      medicines,
-      inventory,
-      utilityMeters: meters,
-      tasks,
-      events,
-      settings: assistantSettings,
-    });
-
-    if (result.newTasks.length > 0) {
-      result.newTasks.forEach((t) => addTask(t));
-    }
-    if (result.newShoppingItems.length > 0) {
-      result.newShoppingItems.forEach((s) => addShoppingItem(s));
-    }
-    if (result.newLogs.length > 0) {
-      const updated = [...result.newLogs, ...assistantLogs].slice(0, 100);
-      setAssistantLogs(updated);
-      saveAssistantLogs(updated);
-      result.alerts.forEach((alert) => showToast(alert, 'info'));
-    } else {
-      showToast('Ассистент: всё в полном порядке, новых задач не требуется!', 'success');
-    }
-  };
-
-  // Автоматический фоновый аудит ассистента через 3.5 секунды после запуска
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (assistantSettings.enabled) {
-        const result = runAssistantAudit({
-          documents: docs,
-          medicines,
-          inventory,
-          utilityMeters: meters,
-          tasks,
-          events,
-          settings: assistantSettings,
-        });
-
-        if (result.newTasks.length > 0) {
-          result.newTasks.forEach((t) => addTask(t));
-        }
-        if (result.newShoppingItems.length > 0) {
-          result.newShoppingItems.forEach((s) => addShoppingItem(s));
-        }
-        if (result.newLogs.length > 0) {
-          setAssistantLogs((prev) => {
-            const updated = [...result.newLogs, ...prev].slice(0, 100);
-            saveAssistantLogs(updated);
-            return updated;
-          });
-        }
-      }
-    }, 3500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // ==================== МОНИТОРИНГ ХРАНИЛИЩА БРАУЗЕРА ====================
-  const [storageWarning, setStorageWarning] = useState<string | null>(null);
-
-  useEffect(() => {
-    try {
-      let totalBytes = 0;
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k) {
-          totalBytes += (localStorage.getItem(k) || '').length * 2;
-        }
-      }
-      const mb = Math.round((totalBytes / (1024 * 1024)) * 10) / 10;
-      if (mb >= 4.0) {
-        setStorageWarning(`Хранилище браузера заполнено на ${mb} МБ из ~5 МБ. Рекомендуется сделать экспорт резервной копии.`);
-      } else {
-        setStorageWarning(null);
-      }
-    } catch {}
-  }, [tasks, events, shoppingItems, recipes, docs]);
-
-  // ==================== СЕМЕЙНЫЙ ПИН-КОД И ЗАЩИТА ====================
-  const [familyPin, setFamilyPinState] = useState<string | null>(() => {
-    try {
-      return localStorage.getItem('onehaus_family_pin') || null;
-    } catch {
-      return null;
-    }
-  });
-
-  const setFamilyPin = (pin: string | null) => {
-    setFamilyPinState(pin);
-    try {
-      if (pin) localStorage.setItem('onehaus_family_pin', pin);
-      else localStorage.removeItem('onehaus_family_pin');
-    } catch {}
-  };
-
   // Фоновое автоматическое сохранение в облако при изменении данных семьи
   const isCloudMountRef = useRef(true);
   useEffect(() => {
@@ -2090,7 +2061,7 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         role: 'Владелец',
         color: {
           bg: 'bg-orange-50',
-          text: 'text-[#E15A42]',
+          text: 'text-[var(--accent)]',
           border: 'border-orange-200',
           hex: '#E15A42',
           badgeBg: 'bg-orange-100',
@@ -2194,6 +2165,8 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setActiveMemberId,
         tasks,
         taskPacks,
+        addTasksBulk,
+        removeTasksByPack,
         addTask,
         updateTask,
         deleteTask,
@@ -2204,10 +2177,15 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         updateEvent,
         deleteEvent,
         exportCalendarIcs,
+        importHolidaysToCalendar,
         shoppingLists,
         activeShoppingListId,
         setActiveShoppingListId,
         shoppingItems,
+        recategorizeShoppingItems,
+        updateShoppingItem,
+        updateShoppingList,
+        deleteShoppingList,
         addShoppingItem,
         addShoppingItems,
         toggleShoppingItem,
@@ -2289,21 +2267,12 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         householdCurrency,
         setHouseholdCurrency,
         familyCode,
-        familyPin,
-        setFamilyPin,
         cloudSyncStatus,
         lastCloudSync,
         connectFamilyCode,
         generateNewFamilyCode,
         disconnectFamilyCode,
         syncWithCloud,
-        assistantSettings,
-        setAssistantSettings,
-        assistantLogs,
-        runAssistantNow,
-        theme,
-        setTheme,
-        storageWarning,
         visibleModules,
         toggleModuleVisibility,
         toasts,

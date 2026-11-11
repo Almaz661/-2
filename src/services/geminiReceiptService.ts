@@ -2,6 +2,7 @@ import { ScannedReceipt, ReceiptItemLine, ReceiptLanguage } from '../types';
 import { parseReceiptText } from './receiptParser';
 import { runLocalOCR, OCRProgress } from './ocrService';
 import { prepareImageForOCR } from '../utils/receiptImageProcessor';
+import { formatLocalDate } from '../utils/dateUtils';
 
 export interface GeminiReceiptResponse {
   storeName?: string;
@@ -82,7 +83,7 @@ export async function parseReceiptWithGemini(
           id: receiptId,
           storeName: data.storeName || 'Супермаркет',
           rawStoreName: data.storeName,
-          date: data.date || new Date().toISOString().split('T')[0],
+          date: data.date || formatLocalDate(new Date()),
           time: data.time || new Date().toTimeString().slice(0, 5),
           totalAmount: typeof data.totalAmount === 'number' ? data.totalAmount : sumItems,
           taxAmount: data.taxAmount,
@@ -148,7 +149,7 @@ export async function parseReceiptWithGemini(
     id: receiptId,
     storeName: fallbackData.storeName || 'Покупки',
     rawStoreName: fallbackData.rawStoreName,
-    date: fallbackData.date || new Date().toISOString().split('T')[0],
+    date: fallbackData.date || formatLocalDate(new Date()),
     time: fallbackData.time,
     totalAmount: fallbackData.totalAmount,
     taxAmount: fallbackData.taxAmount,

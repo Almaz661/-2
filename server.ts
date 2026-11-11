@@ -530,8 +530,8 @@ async function startServer() {
 
     // Если ключа нет или он плейсхолдер — мгновенный возврат через эвристический парсер
     if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') {
-      const fallbackResult = parseWithRuleEngine(safeText || '', members);
-      return res.json(fallbackResult);
+      // Нет ключа ИИ — 503: приложение разберёт текст на устройстве (тот же проверенный тестами движок, что и офлайн)
+      return res.status(503).json({ error: 'AI недоступен — разбор выполняется на устройстве' });
     }
 
     try {
@@ -619,8 +619,75 @@ ${membersList}
     } catch (err: any) {
       console.warn('Gemini API call failed, falling back to rule engine:', err?.message || err);
       // При любой ошибке API или сети возвращаем резервный результат без сбоя
-      const fallbackResult = parseWithRuleEngine(text || '', members);
-      return res.json(fallbackResult);
+      // При ошибке ИИ — 503: приложение разберёт текст на устройстве
+      return res.status(503).json({ error: 'AI временно недоступен — разбор выполняется на устройстве' });
+    }
+  });
+
+  // Серверный endpoint для интеллектуального распознавания и категоризации чеков через Gemini API
+  // Расшифровка голоса (используется голосовым вводом приложения)
+  app.post('/api/ai/transcribe', aiRateLimiter, async (req, res) => {
+    try {
+      const { audioBase64, mimeType = 'audio/webm', language = 'ru' } = req.body;
+
+      if (!audioBase64) {
+        return res.status(400).json({ error: 'Аудиоданные не получены' });
+      }
+
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') {
+        return res.status(503).json({
+          error: 'GEMINI_API_KEY не настроен на сервере',
+          text: '',
+        });
+      }
+
+      const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          },
+        },
+      });
+
+      const audioPart = {
+        inlineData: {
+          mimeType: mimeType.split(';')[0],
+          data: audioBase64,
+        },
+      };
+
+      const langPrompt =
+        language === 'ru'
+          ? 'Сделай точную дословную расшифровку этой аудиозаписи на русском языке. Верни только распознанный текст без каких-либо вводных слов, пояснений и кавычек.'
+          : 'Transcribe this voice audio accurately. Return only the recognized speech text without any conversational preamble or quotes.';
+
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.5-transcribe',
+          contents: { parts: [audioPart, { text: langPrompt }] },
+        });
+
+        const transcribedText = (response.text || '').trim();
+        return res.json({ text: transcribedText, success: true });
+      } catch (primaryErr: any) {
+        console.warn('Primary transcribe failed, trying gemini-3.8-flash:', primaryErr?.message);
+        const fallbackResponse = await ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: {
+            parts: [
+              audioPart,
+              { text: 'Распознай русскую речь в этом аудиофайле. Верни исключительно распознанный текст.' },
+            ],
+          },
+        });
+        const fallbackText = (fallbackResponse.text || '').trim();
+        return res.json({ text: fallbackText, success: true });
+      }
+    } catch (err: any) {
+      console.warn('Ошибка транскрибации речи:', err?.message || err);
+      return res.status(500).json({ error: err?.message || 'Ошибка распознавания речи', text: '' });
     }
   });
 

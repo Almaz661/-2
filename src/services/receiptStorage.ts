@@ -11,35 +11,47 @@ const DB_VERSION = 1;
 const STORE_NAME = 'receipt_photos';
 
 let dbPromise: Promise<IDBDatabase> | null = null;
+let isReceiptIDBAvailable: boolean | null = null;
 
 function getDB(): Promise<IDBDatabase> {
+  if (isReceiptIDBAvailable === false) {
+    return Promise.reject(new Error('IndexedDB недоступна для чеков'));
+  }
   if (dbPromise) return dbPromise;
 
   dbPromise = new Promise((resolve, reject) => {
     if (typeof window === 'undefined' || !window.indexedDB) {
+      isReceiptIDBAvailable = false;
       dbPromise = null;
       reject(new Error('IndexedDB не поддерживается в этой среде'));
       return;
     }
 
-    const request = window.indexedDB.open(DB_NAME, DB_VERSION);
+    try {
+      const request = window.indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = (event: any) => {
-      const db = event.target.result as IDBDatabase;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'receiptId' });
-      }
-    };
+      request.onupgradeneeded = (event: any) => {
+        const db = event.target.result as IDBDatabase;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME, { keyPath: 'receiptId' });
+        }
+      };
 
-    request.onsuccess = (event: any) => {
-      resolve(event.target.result);
-    };
+      request.onsuccess = (event: any) => {
+        isReceiptIDBAvailable = true;
+        resolve(event.target.result);
+      };
 
-    request.onerror = (event: any) => {
-      console.warn('Ошибка открытия IndexedDB для чеков:', event.target.error);
+      request.onerror = (event: any) => {
+        isReceiptIDBAvailable = false;
+        dbPromise = null;
+        reject(event.target?.error || new Error('IDB blocked'));
+      };
+    } catch (err) {
+      isReceiptIDBAvailable = false;
       dbPromise = null;
-      reject(event.target.error);
-    };
+      reject(err);
+    }
   });
 
   return dbPromise;

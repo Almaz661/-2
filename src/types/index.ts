@@ -62,16 +62,26 @@ export interface TaskPack {
   category: 'cleaning' | 'maintenance' | 'seasonal' | 'family';
   icon: string;
   badge: string;
+  /** Когда актуален чек-лист: сезон или круглый год */
+  season?: 'spring' | 'summer' | 'autumn' | 'winter' | 'all';
+  /** Чек-лист «по событию»: гости, поездка, после шторма… — не по календарю */
+  trigger?: boolean;
   tasks: Array<{
     title: string;
     description?: string;
     zone: HouseholdZone;
     priority: PriorityLevel;
     subtasks?: string[];
+    /** Нужно в доме: посудомойка, котёл, частный дом… (см. utils/homeProfile) */
+    needs?: import('../utils/homeProfile').Need[];
   }>;
+  /** Набор целиком нужен только при условии (например, дача) */
+  needs?: import('../utils/homeProfile').Need[];
 }
 
 export type EventCategory = 'family' | 'kids' | 'health' | 'home' | 'work' | 'holiday';
+
+export type HolidayType = 'public' | 'family' | 'birthday' | 'anniversary' | 'tradition';
 
 export interface CalendarEvent {
   id: string;
@@ -85,8 +95,12 @@ export interface CalendarEvent {
   memberIds: string[];
   location?: string;
   reminderMinutes?: number;
-  recurrence?: 'none' | 'yearly' | 'monthly' | 'weekly' | 'daily';
-  isBirthday?: boolean;
+  isHoliday?: boolean;
+  holidayType?: HolidayType;
+  reminderDaysBefore?: number[]; // e.g. [7, 3, 1, 0]
+  reminderTime?: string; // e.g. '09:00'
+  recurringYearly?: boolean;
+  holidayCountry?: string; // e.g. 'RU', 'CY'
 }
 
 export type ShoppingCategory =
@@ -171,6 +185,12 @@ export interface InventoryItem {
   serviceIntervalDays?: number;
   lastServiceDate?: string;
   nextServiceDate?: string;
+  /** Гаджеты: ноутбук, телефон, планшет… — чей, и когда была резервная копия */
+  gadgetDetails?: {
+    kind?: string;
+    ownerId?: string;
+    lastBackup?: string;
+  };
   petDetails?: {
     breed?: string;
     chipNumber?: string;
@@ -235,10 +255,12 @@ export interface HouseholdContact {
 }
 
 export interface ParsedEntityAction {
-  type: 'task' | 'calendar' | 'shopping' | 'doc' | 'contact';
+  type: 'task' | 'calendar' | 'shopping' | 'doc' | 'contact' | 'medicine';
   title: string;
   details: string;
   data: any;
+  routedByKeyword?: string;
+  originalType?: 'task' | 'calendar' | 'shopping' | 'doc' | 'contact' | 'medicine';
 }
 
 export interface ParsedAIResponse {

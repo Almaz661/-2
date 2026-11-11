@@ -97,6 +97,29 @@ export const COUNTRY_PRESETS: CountryPreset[] = [
     ],
   },
   {
+    id: 'NL',
+    name: 'Нидерланды',
+    flag: '🇳🇱',
+    regionCode: 'NL',
+    defaultCurrency: 'EUR',
+    currencySymbol: '€',
+    description: 'Валюта EUR (€), служба 112, супермаркеты Albert Heijn / Jumbo / Dirk, вода Waternet / Vitens',
+    emergencyContacts: [
+      { name: 'Noodnummer 112', specialty: 'Единая экстренная помощь (Полиция, Скорая, Пожарные)', category: 'emergency', phone: '112' },
+      { name: 'Politie (Geen spoed)', specialty: 'Полиция Нидерландов (несрочные вопросы)', category: 'other', phone: '0900-8844' },
+      { name: 'Huisartsenpost', specialty: 'Дежурный врач/терапевт в нерабочие часы', category: 'doctor', phone: '0900-0101' },
+    ],
+    defaultShoppingLists: [
+      { id: 'list-supermarket', name: 'Albert Heijn / Jumbo', icon: '🛒' },
+      { id: 'list-pharmacy', name: 'Etos / Kruidvat / Apotheek', icon: '💊' },
+    ],
+    defaultMeters: [
+      { id: 'meter-water', name: 'Water (Вода)', type: 'cold_water', unit: 'м³', tariffRate: 1.85 },
+      { id: 'meter-electricity', name: 'Stroom (Электроэнергия)', type: 'electricity_single', unit: 'кВт⋅ч', tariffRate: 0.36 },
+      { id: 'meter-gas', name: 'Gas (Газ)', type: 'gas', unit: 'м³', tariffRate: 1.28 },
+    ],
+  },
+  {
     id: 'EU',
     name: 'Евросоюз (Германия, Испания, Франция, Италия и др.)',
     flag: '🇪🇺',

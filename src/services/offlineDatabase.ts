@@ -21,53 +21,71 @@ export const STORES = {
 } as const;
 
 let dbPromise: Promise<IDBDatabase> | null = null;
+let isIDBAvailable: boolean | null = null;
+let hasLoggedIDBError = false;
 
 /**
- * Инициализация подключения к базе данных IndexedDB
+ * Инициализация подключения к базе данных IndexedDB с безопасным перехватом iframe-ошибок
  */
 export function getOfflineDB(): Promise<IDBDatabase> {
+  if (isIDBAvailable === false) {
+    return Promise.reject(new Error('IndexedDB недоступна в данном окружении'));
+  }
   if (dbPromise) return dbPromise;
 
   dbPromise = new Promise((resolve, reject) => {
     if (typeof window === 'undefined' || !window.indexedDB) {
+      isIDBAvailable = false;
       dbPromise = null;
       return reject(new Error('IndexedDB не поддерживается вашим браузером'));
     }
 
-    const request = window.indexedDB.open(DB_NAME, DB_VERSION);
+    try {
+      const request = window.indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
-      const db = (event.target as IDBOpenDBRequest).result;
+      request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
+        const db = (event.target as IDBOpenDBRequest).result;
 
-      // 1. Хранилище задач
-      if (!db.objectStoreNames.contains(STORES.TASKS)) {
-        const taskStore = db.createObjectStore(STORES.TASKS, { keyPath: 'id' });
-        taskStore.createIndex('dueDate', 'dueDate', { unique: false });
-        taskStore.createIndex('completed', 'completed', { unique: false });
-        taskStore.createIndex('assigneeId', 'assigneeId', { unique: false });
-      }
+        // 1. Хранилище задач
+        if (!db.objectStoreNames.contains(STORES.TASKS)) {
+          const taskStore = db.createObjectStore(STORES.TASKS, { keyPath: 'id' });
+          taskStore.createIndex('dueDate', 'dueDate', { unique: false });
+          taskStore.createIndex('completed', 'completed', { unique: false });
+          taskStore.createIndex('assigneeId', 'assigneeId', { unique: false });
+        }
 
-      // 2. Хранилище событий календаря
-      if (!db.objectStoreNames.contains(STORES.EVENTS)) {
-        const eventStore = db.createObjectStore(STORES.EVENTS, { keyPath: 'id' });
-        eventStore.createIndex('date', 'date', { unique: false });
-      }
+        // 2. Хранилище событий календаря
+        if (!db.objectStoreNames.contains(STORES.EVENTS)) {
+          const eventStore = db.createObjectStore(STORES.EVENTS, { keyPath: 'id' });
+          eventStore.createIndex('date', 'date', { unique: false });
+        }
 
-      // 3. Хранилище метаданных
-      if (!db.objectStoreNames.contains(STORES.METADATA)) {
-        db.createObjectStore(STORES.METADATA, { keyPath: 'key' });
-      }
-    };
+        // 3. Хранилище метаданных
+        if (!db.objectStoreNames.contains(STORES.METADATA)) {
+          db.createObjectStore(STORES.METADATA, { keyPath: 'key' });
+        }
+      };
 
-    request.onsuccess = (event: Event) => {
-      resolve((event.target as IDBOpenDBRequest).result);
-    };
+      request.onsuccess = (event: Event) => {
+        isIDBAvailable = true;
+        resolve((event.target as IDBOpenDBRequest).result);
+      };
 
-    request.onerror = (event: Event) => {
-      console.warn('Ошибка при открытии IndexedDB offline DB:', (event.target as IDBOpenDBRequest).error);
+      request.onerror = (event: Event) => {
+        isIDBAvailable = false;
+        dbPromise = null;
+        if (!hasLoggedIDBError) {
+          hasLoggedIDBError = true;
+          // Единичное информационное сообщение без спама
+          console.info('Оффлайн-хранилище: работа через localStorage (IndexedDB ограничена в iframe)');
+        }
+        reject((event.target as IDBOpenDBRequest).error || new Error('IndexedDB blocked'));
+      };
+    } catch (syncErr) {
+      isIDBAvailable = false;
       dbPromise = null;
-      reject((event.target as IDBOpenDBRequest).error);
-    };
+      reject(syncErr);
+    }
   });
 
   return dbPromise;
@@ -81,6 +99,7 @@ export function getOfflineDB(): Promise<IDBDatabase> {
  * Загрузить все задачи из IndexedDB
  */
 export async function loadTasksFromIDB(): Promise<TaskItem[]> {
+  if (isIDBAvailable === false) return [];
   try {
     const db = await getOfflineDB();
     return new Promise((resolve, reject) => {
@@ -91,8 +110,7 @@ export async function loadTasksFromIDB(): Promise<TaskItem[]> {
       req.onsuccess = () => resolve(req.result || []);
       req.onerror = () => reject(req.error);
     });
-  } catch (error) {
-    console.warn('[IndexedDB] Ошибка загрузки задач:', error);
+  } catch {
     return [];
   }
 }
@@ -101,6 +119,7 @@ export async function loadTasksFromIDB(): Promise<TaskItem[]> {
  * Сохранить весь список задач в IndexedDB (пакетная транзакция)
  */
 export async function saveAllTasksToIDB(tasks: TaskItem[]): Promise<void> {
+  if (isIDBAvailable === false) return;
   try {
     const db = await getOfflineDB();
     return new Promise((resolve, reject) => {
@@ -108,7 +127,6 @@ export async function saveAllTasksToIDB(tasks: TaskItem[]): Promise<void> {
       const store = tx.objectStore(STORES.TASKS);
       const metaStore = tx.objectStore(STORES.METADATA);
 
-      // Очищаем текущее хранилище перед записью актуального массива
       store.clear();
 
       for (const task of tasks) {
@@ -125,8 +143,8 @@ export async function saveAllTasksToIDB(tasks: TaskItem[]): Promise<void> {
       tx.onerror = () => reject(tx.error);
       tx.onabort = () => reject(tx.error);
     });
-  } catch (error) {
-    console.warn('[IndexedDB] Ошибка сохранения задач:', error);
+  } catch {
+    // Тихо игнорируем ошибку, данные уже в localStorage
   }
 }
 
@@ -134,6 +152,7 @@ export async function saveAllTasksToIDB(tasks: TaskItem[]): Promise<void> {
  * Добавить или обновить одну задачу в IndexedDB
  */
 export async function saveTaskToIDB(task: TaskItem): Promise<void> {
+  if (isIDBAvailable === false) return;
   try {
     const db = await getOfflineDB();
     return new Promise((resolve, reject) => {
@@ -143,8 +162,8 @@ export async function saveTaskToIDB(task: TaskItem): Promise<void> {
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
-  } catch (error) {
-    console.warn('[IndexedDB] Ошибка сохранения отдельной задачи:', error);
+  } catch {
+    // Fallback в localStorage
   }
 }
 
@@ -152,6 +171,7 @@ export async function saveTaskToIDB(task: TaskItem): Promise<void> {
  * Удалить задачу из IndexedDB по id
  */
 export async function deleteTaskFromIDB(taskId: string): Promise<void> {
+  if (isIDBAvailable === false) return;
   try {
     const db = await getOfflineDB();
     return new Promise((resolve, reject) => {
@@ -161,8 +181,8 @@ export async function deleteTaskFromIDB(taskId: string): Promise<void> {
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
-  } catch (error) {
-    console.warn('[IndexedDB] Ошибка удаления задачи:', error);
+  } catch {
+    // Fallback
   }
 }
 
@@ -174,6 +194,7 @@ export async function deleteTaskFromIDB(taskId: string): Promise<void> {
  * Загрузить все события календаря из IndexedDB
  */
 export async function loadEventsFromIDB(): Promise<CalendarEvent[]> {
+  if (isIDBAvailable === false) return [];
   try {
     const db = await getOfflineDB();
     return new Promise((resolve, reject) => {
@@ -184,8 +205,7 @@ export async function loadEventsFromIDB(): Promise<CalendarEvent[]> {
       req.onsuccess = () => resolve(req.result || []);
       req.onerror = () => reject(req.error);
     });
-  } catch (error) {
-    console.warn('[IndexedDB] Ошибка загрузки событий календаря:', error);
+  } catch {
     return [];
   }
 }
@@ -194,6 +214,7 @@ export async function loadEventsFromIDB(): Promise<CalendarEvent[]> {
  * Сохранить все события календаря в IndexedDB (пакетная транзакция)
  */
 export async function saveAllEventsToIDB(events: CalendarEvent[]): Promise<void> {
+  if (isIDBAvailable === false) return;
   try {
     const db = await getOfflineDB();
     return new Promise((resolve, reject) => {
@@ -217,8 +238,8 @@ export async function saveAllEventsToIDB(events: CalendarEvent[]): Promise<void>
       tx.onerror = () => reject(tx.error);
       tx.onabort = () => reject(tx.error);
     });
-  } catch (error) {
-    console.warn('[IndexedDB] Ошибка сохранения событий календаря:', error);
+  } catch {
+    // Тихо игнорируем ошибку, данные уже в localStorage
   }
 }
 
@@ -226,6 +247,7 @@ export async function saveAllEventsToIDB(events: CalendarEvent[]): Promise<void>
  * Добавить или обновить одно событие в IndexedDB
  */
 export async function saveEventToIDB(event: CalendarEvent): Promise<void> {
+  if (isIDBAvailable === false) return;
   try {
     const db = await getOfflineDB();
     return new Promise((resolve, reject) => {
@@ -235,8 +257,8 @@ export async function saveEventToIDB(event: CalendarEvent): Promise<void> {
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
-  } catch (error) {
-    console.warn('[IndexedDB] Ошибка сохранения отдельного события:', error);
+  } catch {
+    // Fallback
   }
 }
 
@@ -244,6 +266,7 @@ export async function saveEventToIDB(event: CalendarEvent): Promise<void> {
  * Удалить событие календаря из IndexedDB по id
  */
 export async function deleteEventFromIDB(eventId: string): Promise<void> {
+  if (isIDBAvailable === false) return;
   try {
     const db = await getOfflineDB();
     return new Promise((resolve, reject) => {
@@ -253,8 +276,8 @@ export async function deleteEventFromIDB(eventId: string): Promise<void> {
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
-  } catch (error) {
-    console.warn('[IndexedDB] Ошибка удаления события:', error);
+  } catch {
+    // Fallback
   }
 }
 
@@ -274,7 +297,7 @@ export interface OfflineDbStats {
  * Получить сводную статистику оффлайн-базы IndexedDB
  */
 export async function getOfflineDbStats(): Promise<OfflineDbStats> {
-  if (typeof window === 'undefined' || !window.indexedDB) {
+  if (typeof window === 'undefined' || !window.indexedDB || isIDBAvailable === false) {
     return {
       isSupported: false,
       taskCount: 0,

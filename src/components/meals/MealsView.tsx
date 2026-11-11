@@ -16,11 +16,15 @@ import {
   ChefHat,
   Filter,
 } from 'lucide-react';
+import { Btn, PageWrap, Segmented, Slide } from '../ui/mercury';
+import { PhotoBanner } from '../ui/PhotoBanner';
+import { PHOTOS } from '../../utils/photos';
 import { useHousehold } from '../../context/HouseholdContext';
 import { Recipe } from '../../types';
 import { RecipeDetailModal } from './RecipeDetailModal';
 import { RecipeModal } from './RecipeModal';
 import { RecipeImportModal } from './RecipeImportModal';
+import { formatLocalDate } from '../../utils/dateUtils';
 
 type MealTab = 'plan' | 'recipes';
 
@@ -65,10 +69,10 @@ export const MealsView: React.FC = () => {
   for (let i = 0; i < 7; i++) {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    weekDates.push(d.toISOString().split('T')[0]);
+    weekDates.push(formatLocalDate(d));
   }
 
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = formatLocalDate(today);
 
   // Фильтрация рецептов по категории и поисковому запросу
   const filteredRecipes = useMemo(() => {
@@ -113,113 +117,73 @@ export const MealsView: React.FC = () => {
   };
 
   return (
-    <div className="p-8 space-y-6 max-w-7xl mx-auto">
-      {/* Верхняя строка переключения табов и кнопка добавления */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center space-x-1 p-1 rounded-2xl bg-[#EFECE4] border border-[#E3DFD5] self-start">
-          <button
-            onClick={() => setActiveTab('plan')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeTab === 'plan'
-                ? 'bg-white text-[#1F1D1A] shadow-xs font-bold'
-                : 'text-[#6B6456] hover:text-[#1F1D1A]'
-            }`}
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>План питания на неделю</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('recipes')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              activeTab === 'recipes'
-                ? 'bg-white text-[#1F1D1A] shadow-xs font-bold'
-                : 'text-[#6B6456] hover:text-[#1F1D1A]'
-            }`}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>Семейная книга рецептов ({recipes.length})</span>
-          </button>
+    <PageWrap className="max-w-7xl">
+      {/* Обложка раздела */}
+      <PhotoBanner photo={PHOTOS.day} slot="kitchen" className="h-[180px] sm:h-[220px]">
+        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 text-white">
+          <h2 className="text-[28px] sm:text-[36px] font-semibold tracking-[-0.03em] leading-tight">Кухня и рецепты</h2>
+          <p className="text-[16px] text-white/80 mt-1">
+            План питания на неделю и семейная книга рецептов: {recipes.length}
+          </p>
         </div>
+      </PhotoBanner>
 
-        {/* Кнопки создания и AI-импорта рецепта */}
-        <div className="flex items-center space-x-2.5 flex-wrap">
-          <button
-            type="button"
+      {/* Вкладки и действия */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Segmented
+          value={activeTab}
+          onChange={setActiveTab}
+          options={[
+            { id: 'plan', label: 'План на неделю' },
+            { id: 'recipes', label: 'Рецепты', count: recipes.length },
+          ]}
+        />
+        <div className="ml-auto flex items-center gap-2 flex-wrap">
+          <Btn
+            icon={<Sparkles className="w-4 h-4 text-[var(--accent)]" />}
             onClick={() => setIsImportModalOpen(true)}
-            className="flex items-center space-x-2 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-[#1F1E1C] border border-amber-200 text-xs font-bold transition-all shadow-2xs active:scale-[0.98] cursor-pointer shrink-0"
-            title="Скачать или распознать рецепт с сайта, YouTube или Instagram"
+            title="Распознать рецепт с сайта, YouTube или Instagram"
           >
-            <Sparkles className="w-4 h-4 text-[#E15A42]" />
-            <span>AI-Импорт рецепта</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleOpenAddRecipe}
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-[#E15A42] hover:bg-[#D04E37] text-white text-xs font-bold transition-all shadow-xs active:scale-[0.98] cursor-pointer shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Добавить рецепт</span>
-          </button>
+            Импорт рецепта
+          </Btn>
+          <Btn variant="primary" icon={<Plus className="w-4 h-4" />} onClick={handleOpenAddRecipe}>
+            Рецепт
+          </Btn>
         </div>
       </div>
 
-      {/* Панель фильтров и поиска рецептов */}
+      {/* Поиск и фильтр рецептов */}
       {activeTab === 'recipes' && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-[#EDE7DB] shadow-2xs">
-          {/* Поиск */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-[#8C867D] absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[220px] max-w-md">
+            <Search className="w-4 h-4 text-[var(--muted)] absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
-              type="text"
+              type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Поиск по названию, тегам или ингредиентам..."
-              className="w-full pl-9 pr-3.5 py-2 bg-[#FAF7F2] border border-[#DDD7CB] rounded-xl text-xs focus:outline-none focus:border-[#E15A42] focus:bg-white transition-all"
+              placeholder="Название, тег или ингредиент"
+              className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[var(--surface)] border border-[var(--line)] text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)] transition-colors"
             />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 text-xs"
-              >
-                ✕
-              </button>
-            )}
           </div>
-
-          {/* Фильтр по приёмам пищи */}
-          <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
-            {['all', 'breakfast', 'lunch', 'dinner', 'snack'].map((cat) => {
-              const labelMap: Record<string, string> = {
-                all: 'Все блюда',
-                breakfast: '🍳 Завтраки',
-                lunch: '🍲 Обеды',
-                dinner: '🍝 Ужины',
-                snack: '🍎 Перекусы',
-              };
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer shrink-0 ${
-                    selectedCategory === cat
-                      ? 'bg-[#1F1E1C] text-white font-bold shadow-2xs'
-                      : 'bg-[#FAF7F2] border border-[#E5DFD3] text-[#5C564B] hover:bg-stone-100'
-                  }`}
-                >
-                  {labelMap[cat]}
-                </button>
-              );
-            })}
-          </div>
+          <Segmented
+            value={selectedCategory}
+            onChange={setSelectedCategory}
+            options={[
+              { id: 'all', label: 'Все' },
+              { id: 'breakfast', label: 'Завтраки' },
+              { id: 'lunch', label: 'Обеды' },
+              { id: 'dinner', label: 'Ужины' },
+              { id: 'snack', label: 'Перекусы' },
+            ]}
+          />
         </div>
       )}
 
+      <Slide k={activeTab} index={activeTab === 'plan' ? 0 : 1} className="!overflow-x-hidden !overflow-y-visible">
       {/* 1. ПЛАН ПИТАНИЯ НА НЕДЕЛЮ (Сетка по дням) */}
       {activeTab === 'plan' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
             {weekDates.map((dateStr, idx) => {
               const dayPlan = mealPlan.find((p) => p.date === dateStr);
               const isToday = dateStr === todayStr;
@@ -240,24 +204,20 @@ export const MealsView: React.FC = () => {
               return (
                 <div
                   key={dateStr}
-                  className={`p-3.5 rounded-3xl border flex flex-col space-y-2.5 transition-all ${
-                    isToday
-                      ? 'bg-amber-50/50 border-[#E15A42]/50 shadow-xs'
-                      : 'bg-white border-[#EBE7DF]'
-                  }`}
+                  className={`p-3.5 rounded-2xl border flex flex-col space-y-2.5 transition-all ${ isToday ? 'bg-amber-50/50 border-[var(--accent)]/50 shadow-[var(--shadow)]' : 'bg-[var(--surface)] border-[var(--line)]' }`}
                 >
                   {/* Заголовок дня */}
-                  <div className="flex items-center justify-between pb-2 border-b border-[#F0ECE1]">
+                  <div className="flex items-center justify-between pb-2 border-b border-[var(--line)]">
                     <div className="overflow-hidden">
-                      <div className="text-[11px] font-bold text-[#8A8477] truncate">
+                      <div className="text-[12px] font-semibold text-[var(--muted)] truncate">
                         {DAYS_NAMES[idx]}
                       </div>
-                      <div className="text-xs font-extrabold text-[#1F1D1A]">
+                      <div className="text-xs font-semibold text-[var(--text)]">
                         {dateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
                       </div>
                     </div>
                     {isToday && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E15A42] text-white">
+                      <span className="text-[12px] font-semibold px-1.5 py-0.5 rounded-full bg-[var(--accent)] text-white">
                         Сегодня
                       </span>
                     )}
@@ -288,17 +248,13 @@ export const MealsView: React.FC = () => {
                               setSlotCustomInput(title || '');
                             }
                           }}
-                          className={`p-2 rounded-2xl border text-left transition-all cursor-pointer ${
-                            title
-                              ? 'bg-[#FAF8F3] border-[#E8E2D4] hover:bg-white hover:border-[#E15A42]/40 shadow-2xs'
-                              : 'bg-stone-50/50 border-dashed border-stone-200 hover:bg-stone-100/60'
-                          }`}
+                          className={`p-2 rounded-2xl border text-left transition-all cursor-pointer ${ title ? 'bg-[var(--surface-2)] border-[var(--line)] hover:bg-[var(--surface)] hover:border-[var(--accent)]/40 shadow-none' : 'bg-stone-50/50 border-dashed border-stone-200 hover:bg-stone-100/60' }`}
                         >
-                          <div className="text-[10px] font-semibold text-[#8A8477] flex items-center space-x-1">
+                          <div className="text-[12px] font-semibold text-[var(--muted)] flex items-center space-x-1">
                             <span>{emoji}</span>
                             <span>{label}</span>
                           </div>
-                          <div className="text-xs font-bold text-[#1F1D1A] truncate mt-0.5">
+                          <div className="text-xs font-semibold text-[var(--text)] truncate mt-0.5">
                             {title || <span className="text-stone-400 font-normal">+ Запланировать</span>}
                           </div>
                         </div>
@@ -317,15 +273,15 @@ export const MealsView: React.FC = () => {
         <>
           {filteredRecipes.length === 0 ? (
             /* Пустое состояние */
-            <div className="bg-white rounded-3xl border border-[#EDE7DB] p-12 text-center space-y-4 max-w-lg mx-auto shadow-xs">
-              <div className="w-16 h-16 rounded-3xl bg-orange-100 text-[#E15A42] flex items-center justify-center mx-auto">
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--line)] p-12 text-center space-y-4 max-w-lg mx-auto shadow-[var(--shadow)]">
+              <div className="w-16 h-16 rounded-2xl bg-orange-100 text-[var(--accent)] flex items-center justify-center mx-auto">
                 <ChefHat className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-bold text-base text-[#1F1E1C]">
+                <h3 className="font-semibold text-base text-[var(--text)]">
                   {searchQuery ? 'Рецепты не найдены' : 'Книга рецептов пуста'}
                 </h3>
-                <p className="text-xs text-[#8C867D]">
+                <p className="text-xs text-[var(--muted)]">
                   {searchQuery
                     ? `По запросу «${searchQuery}» ничего не нашлось. Попробуйте изменить фильтр.`
                     : 'Сохраняйте любимые блюда семьи, чтобы быстро планировать меню и переносить ингредиенты в список покупок.'}
@@ -335,15 +291,15 @@ export const MealsView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsImportModalOpen(true)}
-                  className="inline-flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-[#1F1E1C] border border-amber-200 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                  className="inline-flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-[var(--text)] border border-amber-200 text-xs font-semibold transition-all cursor-pointer shadow-none"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-[#E15A42]" />
+                  <Sparkles className="w-3.5 h-3.5 text-[var(--accent)]" />
                   <span>Импорт по ссылке / видео</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleOpenAddRecipe}
-                  className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-[#E15A42] hover:bg-[#D04E37] text-white text-xs font-bold shadow-md transition-all cursor-pointer"
+                  className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-full bg-[var(--accent)] hover:brightness-110 text-white text-xs font-semibold transition-all cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Создать вручную</span>
@@ -356,7 +312,7 @@ export const MealsView: React.FC = () => {
                 <div
                   key={recipe.id}
                   onClick={() => setSelectedRecipe(recipe)}
-                  className="bg-white rounded-3xl border border-[#EBE7DF] shadow-xs overflow-hidden hover:border-[#E15A42]/50 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between relative"
+                  className="bg-[var(--surface)] rounded-2xl border border-[var(--line)] shadow-[var(--shadow)] overflow-hidden hover:border-[var(--accent)]/50 hover:shadow-[var(--shadow)] transition-all cursor-pointer group flex flex-col justify-between relative"
                 >
                   <div>
                     {/* Фото рецепта */}
@@ -367,7 +323,7 @@ export const MealsView: React.FC = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <div className="absolute top-3 right-3 flex items-center space-x-1.5">
-                        <div className="px-2 py-1 rounded-xl bg-black/60 backdrop-blur-xs text-white text-[10px] font-bold flex items-center space-x-1">
+                        <div className="px-2 py-1 rounded-xl bg-black/60 backdrop-blur-xs text-white text-[12px] font-semibold flex items-center space-x-1">
                           <Clock className="w-3 h-3 text-amber-400" />
                           <span>{recipe.prepTimeMinutes + recipe.cookTimeMinutes} мин</span>
                         </div>
@@ -405,26 +361,26 @@ export const MealsView: React.FC = () => {
                         {recipe.tags.slice(0, 3).map((tag, i) => (
                           <span
                             key={i}
-                            className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAF7F0] text-[#8C522C] border border-[#E8E2D4]"
+                            className="text-[12px] font-semibold px-2 py-0.5 rounded-full bg-[var(--surface-3)] text-[var(--accent-strong)] border border-[var(--line)]"
                           >
                             {tag}
                           </span>
                         ))}
                       </div>
 
-                      <h3 className="font-bold text-sm text-[#1F1D1A] group-hover:text-[#E15A42] transition-colors leading-snug">
+                      <h3 className="font-semibold text-sm text-[var(--text)] group-hover:text-[var(--accent)] transition-colors leading-snug">
                         {recipe.title}
                       </h3>
 
-                      <p className="text-xs text-[#8A8477] line-clamp-2">
+                      <p className="text-xs text-[var(--muted)] line-clamp-2">
                         {recipe.description}
                       </p>
                     </div>
                   </div>
 
                   {/* Нижняя плашка действий */}
-                  <div className="px-5 py-3 bg-[#FAF8F5] border-t border-[#F0ECE1] flex items-center justify-between text-xs">
-                    <span className="text-[#8A8477] font-medium">
+                  <div className="px-5 py-3 bg-[var(--surface-2)] border-t border-[var(--line)] flex items-center justify-between text-xs">
+                    <span className="text-[var(--muted)] font-medium">
                       {recipe.ingredients.length} ингредиентов
                     </span>
 
@@ -434,7 +390,7 @@ export const MealsView: React.FC = () => {
                         e.stopPropagation();
                         importRecipeIngredientsToShopping(recipe);
                       }}
-                      className="flex items-center space-x-1 text-[#E15A42] font-semibold hover:underline cursor-pointer"
+                      className="flex items-center space-x-1 text-[var(--accent)] font-semibold hover:underline cursor-pointer"
                     >
                       <ShoppingCart className="w-3.5 h-3.5" />
                       <span>В покупки</span>
@@ -446,6 +402,8 @@ export const MealsView: React.FC = () => {
           )}
         </>
       )}
+
+      </Slide>
 
       {/* Модалка детального рецепта (с кнопками редактирования и удаления) */}
       <RecipeDetailModal
@@ -493,20 +451,20 @@ export const MealsView: React.FC = () => {
       {/* Модалка планирования блюда на день (Завтрак, Обед, Ужин, Перекус) */}
       {editingSlot && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-[#FAF7F2] rounded-3xl max-w-md w-full border border-[#E5DFD3] shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D4]">
+          <div className="bg-[var(--surface-3)] rounded-2xl max-w-md w-full border border-[var(--line)] shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--line)]">
               <div>
-                <h3 className="font-bold text-base text-[#1F1E1C]">
+                <h3 className="font-semibold text-base text-[var(--text)]">
                   {editingSlot.label} • {editingSlot.dayName}
                 </h3>
-                <span className="text-xs text-[#8C867D]">
+                <span className="text-xs text-[var(--muted)]">
                   {new Date(editingSlot.dateStr).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingSlot(null)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-[#7A746B] hover:text-[#1F1E1C] hover:bg-[#EDE8DC] cursor-pointer"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--line)] cursor-pointer"
               >
                 ✕
               </button>
@@ -524,7 +482,7 @@ export const MealsView: React.FC = () => {
               className="space-y-4 text-xs"
             >
               <div className="space-y-1">
-                <label className="font-semibold text-[#1F1E1C]">
+                <label className="font-semibold text-[var(--text)]">
                   Название блюда или заметка
                 </label>
                 <input
@@ -533,14 +491,14 @@ export const MealsView: React.FC = () => {
                   value={slotCustomInput}
                   onChange={(e) => setSlotCustomInput(e.target.value)}
                   placeholder="Например: Сырники с малиновым вареньем, Борщ..."
-                  className="w-full px-3.5 py-2.5 bg-white border border-[#DDD7CB] rounded-xl text-xs focus:outline-none focus:border-[#E15A42]"
+                  className="w-full px-3.5 py-2.5 bg-[var(--surface)] border border-[var(--line-strong)] rounded-xl text-xs focus:outline-none focus:border-[var(--accent)]"
                 />
               </div>
 
               {/* Выбор из каталога домашних рецептов + кнопка создать рецепт */}
               <div className="space-y-1.5 pt-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-[#8C867D]">
+                  <span className="text-[12px] font-semibold text-[var(--muted)]">
                     Или выберите из книги рецептов:
                   </span>
                   <button
@@ -549,7 +507,7 @@ export const MealsView: React.FC = () => {
                       setEditingSlot(null);
                       handleOpenAddRecipe();
                     }}
-                    className="text-[11px] font-bold text-[#E15A42] hover:underline flex items-center space-x-1 cursor-pointer"
+                    className="text-[12px] font-semibold text-[var(--accent)] hover:underline flex items-center space-x-1 cursor-pointer"
                   >
                     <Plus className="w-3 h-3" />
                     <span>Создать рецепт</span>
@@ -557,7 +515,7 @@ export const MealsView: React.FC = () => {
                 </div>
 
                 {recipes.length > 0 && (
-                  <div className="max-h-40 overflow-y-auto space-y-1 border border-stone-200/60 rounded-xl p-1.5 bg-white">
+                  <div className="max-h-40 overflow-y-auto space-y-1 border border-stone-200/60 rounded-xl p-1.5 bg-[var(--surface)]">
                     {recipes.map((r) => (
                       <button
                         type="button"
@@ -569,10 +527,10 @@ export const MealsView: React.FC = () => {
                           });
                           setEditingSlot(null);
                         }}
-                        className="w-full text-left p-2 rounded-lg hover:bg-amber-50 text-xs font-medium text-[#1F1E1C] flex items-center justify-between cursor-pointer transition-colors"
+                        className="w-full text-left p-2 rounded-lg hover:bg-amber-50 text-xs font-medium text-[var(--text)] flex items-center justify-between cursor-pointer transition-colors"
                       >
                         <span className="truncate">{r.title}</span>
-                        <span className="text-[10px] text-stone-400 shrink-0 ml-2">
+                        <span className="text-[12px] text-stone-400 shrink-0 ml-2">
                           ⏱ {r.prepTimeMinutes + r.cookTimeMinutes} мин
                         </span>
                       </button>
@@ -581,7 +539,7 @@ export const MealsView: React.FC = () => {
                 )}
               </div>
 
-              <div className="pt-2 flex items-center justify-between border-t border-[#E8E2D4]">
+              <div className="pt-2 flex items-center justify-between border-t border-[var(--line)]">
                 {editingSlot.currentTitle && (
                   <button
                     type="button"
@@ -607,7 +565,7 @@ export const MealsView: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-xl bg-[#E15A42] hover:bg-[#D04931] text-white font-bold cursor-pointer shadow-xs active:scale-95 transition-all"
+                    className="px-4 py-2 rounded-full bg-[var(--accent)] hover:brightness-110 text-white font-semibold cursor-pointer shadow-[var(--shadow)] active:scale-95 transition-all"
                   >
                     Сохранить
                   </button>
@@ -617,6 +575,6 @@ export const MealsView: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </PageWrap>
   );
 };

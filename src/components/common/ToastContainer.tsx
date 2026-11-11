@@ -20,14 +20,14 @@ export const ToastContainer: React.FC = () => {
           icon = <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />;
           borderClass = 'border-amber-200 bg-amber-50/90 text-amber-950';
         } else if (toast.type === 'info') {
-          icon = <Info className="w-5 h-5 text-blue-500 shrink-0" />;
-          borderClass = 'border-blue-200 bg-blue-50/90 text-blue-950';
+          icon = <Info className="w-5 h-5 text-[var(--accent)] shrink-0" />;
+          borderClass = 'border-[var(--line)] bg-[var(--accent-soft)]/90 text-blue-950';
         }
 
         return (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-center justify-between p-3.5 rounded-2xl border shadow-lg backdrop-blur-md transition-all animate-in slide-in-from-bottom-3 duration-200 ${borderClass}`}
+            className={`pointer-events-auto flex items-center justify-between p-3.5 rounded-2xl border shadow-[var(--shadow)] backdrop-blur-md transition-all animate-in slide-in-from-bottom-3 duration-200 ${borderClass}`}
           >
             <div className="flex items-center space-x-3 text-xs font-medium">
               {icon}

@@ -28,11 +28,24 @@ export const OfflineStatusIndicator: React.FC = () => {
     window.addEventListener('offline', handleOffline);
 
     // Первичный опрос статистики IndexedDB
-    getOfflineDbStats().then(setDbStats).catch(() => {});
+    getOfflineDbStats()
+      .then((stats) => {
+        setDbStats(stats);
+      })
+      .catch(() => {});
 
-    // Периодический опрос раз в 15 секунд
+    // Периодический опрос раз в 15 секунд (только если IndexedDB поддерживается)
     const interval = setInterval(() => {
-      getOfflineDbStats().then(setDbStats).catch(() => {});
+      getOfflineDbStats()
+        .then((stats) => {
+          setDbStats(stats);
+          if (!stats.isSupported) {
+            clearInterval(interval);
+          }
+        })
+        .catch(() => {
+          clearInterval(interval);
+        });
     }, 15000);
 
     return () => {
@@ -45,18 +58,18 @@ export const OfflineStatusIndicator: React.FC = () => {
   // Если оффлайн — показываем постоянную аккуратную плашку
   if (!isOnline) {
     return (
-      <div className="bg-amber-500 text-stone-900 px-4 py-2 border-b border-amber-600/30 flex items-center justify-between text-xs font-semibold shadow-xs select-none animate-in fade-in slide-in-from-top-1 duration-200">
+      <div className="bg-amber-500 text-stone-900 px-4 py-2 border-b border-amber-600/30 flex items-center justify-between text-xs font-semibold shadow-[var(--shadow)] select-none animate-in fade-in slide-in-from-top-1 duration-200">
         <div className="flex items-center space-x-2.5">
           <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-stone-900 opacity-60"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-stone-900"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--text)] opacity-60"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--text)]"></span>
           </span>
           <WifiOff className="w-4 h-4 text-stone-900" />
           <span>
             Оффлайн-режим активен • Центр управления работает полностью автономно
           </span>
         </div>
-        <div className="hidden sm:flex items-center space-x-2 text-[11px] bg-amber-600/20 px-2.5 py-1 rounded-lg">
+        <div className="hidden sm:flex items-center space-x-2 text-[12px] bg-amber-600/20 px-2.5 py-1 rounded-lg">
           <Database className="w-3.5 h-3.5" />
           <span>
             IndexedDB: {dbStats ? `${dbStats.taskCount} задач, ${dbStats.eventCount} событий` : 'активна'}
@@ -69,7 +82,7 @@ export const OfflineStatusIndicator: React.FC = () => {
   // При восстановлении связи — уведомление о реконнекте
   if (showReconnectedBanner) {
     return (
-      <div className="bg-emerald-600 text-white px-4 py-2 border-b border-emerald-700 flex items-center justify-between text-xs font-semibold shadow-xs select-none animate-in fade-in slide-in-from-top-1 duration-200">
+      <div className="bg-emerald-600 text-white px-4 py-2 border-b border-emerald-700 flex items-center justify-between text-xs font-semibold shadow-[var(--shadow)] select-none animate-in fade-in slide-in-from-top-1 duration-200">
         <div className="flex items-center space-x-2">
           <Wifi className="w-4 h-4 text-emerald-100" />
           <span>Подключение к интернету восстановлено • Данные синхронизированы с локальным хранилищем</span>

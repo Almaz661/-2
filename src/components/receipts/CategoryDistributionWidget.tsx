@@ -29,9 +29,9 @@ export const CategoryDistributionWidget: React.FC<CategoryDistributionWidgetProp
 }) => {
   if (!breakdown || breakdown.length === 0) {
     return (
-      <div className="bg-white p-4 rounded-2xl border border-[#E8E4DA] shadow-xs text-center py-6">
-        <PieChart className="w-8 h-8 text-[#8C867D] mx-auto mb-2 opacity-50" />
-        <p className="text-xs text-[#7A746B]">
+      <div className="bg-[var(--surface)] p-4 rounded-2xl border border-[var(--line)] shadow-[var(--shadow)] text-center py-6">
+        <PieChart className="w-8 h-8 text-[var(--muted)] mx-auto mb-2 opacity-50" />
+        <p className="text-xs text-[var(--muted)]">
           Нет данных о товарах для построения распределения по категориям
         </p>
       </div>
@@ -45,35 +45,33 @@ export const CategoryDistributionWidget: React.FC<CategoryDistributionWidgetProp
 
   return (
     <div
-      className={`bg-white rounded-2xl border border-[#E8E4DA] shadow-xs transition-all ${
-        variant === 'modal' ? 'p-4' : 'p-5'
-      }`}
+      className={`bg-[var(--surface)] rounded-2xl border border-[var(--line)] shadow-[var(--shadow)] transition-all ${ variant === 'modal' ? 'p-4' : 'p-5' }`}
     >
       {/* Заголовок с общей статистикой */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3.5">
         <div>
           <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 rounded-lg bg-orange-100 text-[#E15A42] flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-orange-100 text-[var(--accent)] flex items-center justify-center shrink-0">
               <PieChart className="w-4 h-4" />
             </div>
-            <h3 className="font-extrabold text-sm md:text-base text-[#1F1E1C] flex items-center gap-1.5">
+            <h3 className="font-semibold text-sm md:text-base text-[var(--text)] flex items-center gap-1.5">
               <span>{title}</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[#FAF9F5] border border-[#DDD8CD] text-[#7A746B] font-medium">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--surface-2)] border border-[var(--line-strong)] text-[var(--muted)] font-medium">
                 {breakdown.length} {breakdown.length === 1 ? 'категория' : breakdown.length < 5 ? 'категории' : 'категорий'}
               </span>
             </h3>
           </div>
           {subtitle && (
-            <p className="text-xs text-[#8C867D] mt-0.5 ml-9">{subtitle}</p>
+            <p className="text-xs text-[var(--muted)] mt-0.5 ml-9">{subtitle}</p>
           )}
         </div>
 
         <div className="flex items-center space-x-2 self-end sm:self-auto">
           <div className="text-right">
-            <span className="text-[10px] text-[#8C867D] uppercase tracking-wider block font-medium">
+            <span className="text-[12px] text-[var(--muted)] block font-medium">
               Итого по чеку
             </span>
-            <span className="text-base font-extrabold text-[#1F1E1C]">
+            <span className="text-base font-semibold text-[var(--text)]">
               {computedTotal.toFixed(2)} {currency}
             </span>
           </div>
@@ -82,7 +80,7 @@ export const CategoryDistributionWidget: React.FC<CategoryDistributionWidgetProp
             <button
               type="button"
               onClick={() => onSelectCategory('all')}
-              className="text-[11px] font-semibold text-[#E15A42] hover:text-[#C84933] px-2 py-1 rounded-lg hover:bg-orange-50 border border-orange-200 transition-colors cursor-pointer"
+              className="text-[12px] font-semibold text-[var(--accent)] hover:text-[var(--accent-strong)] px-2 py-1 rounded-lg hover:bg-orange-50 border border-orange-200 transition-colors cursor-pointer"
             >
               Сбросить фильтр
             </button>
@@ -92,7 +90,7 @@ export const CategoryDistributionWidget: React.FC<CategoryDistributionWidgetProp
 
       {/* Горизонтальный сегментированный прогресс-бар распределения */}
       <div className="space-y-1.5 mb-4">
-        <div className="w-full h-3 rounded-full bg-[#EBE7DF] overflow-hidden flex shadow-inner">
+        <div className="w-full h-3 rounded-full bg-[var(--line)] overflow-hidden flex shadow-inner">
           {breakdown.map((item) => {
             const isSelected = selectedCategory === item.category;
             const isFaded = selectedCategory !== 'all' && !isSelected;
@@ -103,18 +101,16 @@ export const CategoryDistributionWidget: React.FC<CategoryDistributionWidgetProp
                   width: `${Math.max(item.percentage, 2)}%`,
                   backgroundColor: item.meta.color,
                 }}
-                className={`h-full transition-all duration-300 relative group cursor-pointer ${
-                  isFaded ? 'opacity-30' : 'opacity-100'
-                } ${isSelected ? 'ring-2 ring-black ring-offset-1 z-10' : ''}`}
+                className={`h-full transition-all duration-300 relative group cursor-pointer ${ isFaded ? 'opacity-30' : 'opacity-100' } ${isSelected ? 'ring-2 ring-black ring-offset-1 z-10' : ''}`}
                 onClick={() => onSelectCategory && onSelectCategory(item.category)}
                 title={`${item.meta.label}: ${item.totalAmount.toFixed(2)} ${currency} (${item.percentage}%)`}
               />
             );
           })}
         </div>
-        <div className="flex items-center justify-between text-[10px] text-[#8C867D] px-0.5">
+        <div className="flex items-center justify-between text-[12px] text-[var(--muted)] px-0.5">
           <span>0%</span>
-          <span className="font-medium text-[#5A554D]">
+          <span className="font-medium text-[var(--text-2)]">
             {breakdown[0] ? `Лидер расходов: ${breakdown[0].meta.icon} ${breakdown[0].meta.shortLabel} (${breakdown[0].percentage}%)` : ''}
           </span>
           <span>100%</span>
@@ -123,40 +119,25 @@ export const CategoryDistributionWidget: React.FC<CategoryDistributionWidgetProp
 
       {/* Сетка карточек по каждой категории */}
       <div
-        className={`grid gap-2 ${
-          variant === 'modal'
-            ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
-            : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'
-        }`}
+        className={`grid gap-2 ${ variant === 'modal' ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5' }`}
       >
         {onSelectCategory && (
           <button
             type="button"
             onClick={() => onSelectCategory('all')}
-            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-              selectedCategory === 'all'
-                ? 'bg-[#1E1C1A] text-white border-[#1E1C1A] shadow-sm'
-                : 'bg-[#FAF9F5] hover:bg-[#F2EFE9] border-[#E5E0D5] text-[#1F1E1C]'
-            }`}
+            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${ selectedCategory === 'all' ? 'bg-[var(--text)] text-white border-[var(--text)] shadow-[var(--shadow)]' : 'bg-[var(--surface-2)] hover:bg-[var(--surface-3)] border-[var(--line)] text-[var(--text)]' }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-base">📋</span>
               <span
-                className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                  selectedCategory === 'all'
-                    ? 'bg-white/20 text-white'
-                    : 'bg-white text-[#7A746B] border border-[#DDD8CD]'
-                }`}
+                className={`text-[12px] font-semibold px-1.5 py-0.5 rounded ${ selectedCategory === 'all' ? 'bg-[var(--surface)]/20 text-white' : 'bg-[var(--surface)] text-[var(--muted)] border border-[var(--line-strong)]' }`}
               >
                 100%
               </span>
             </div>
             <div>
-              <div className="font-bold text-xs truncate">Все категории</div>
+              <div className="font-semibold text-xs truncate">Все категории</div>
               <div
-                className={`text-[11px] font-extrabold mt-0.5 ${
-                  selectedCategory === 'all' ? 'text-orange-200' : 'text-[#1F1E1C]'
-                }`}
+                className={`text-[12px] font-semibold mt-0.5 ${ selectedCategory === 'all' ? 'text-orange-200' : 'text-[var(--text)]' }`}
               >
                 {computedTotal.toFixed(2)} {currency}
               </div>
@@ -173,20 +154,12 @@ export const CategoryDistributionWidget: React.FC<CategoryDistributionWidgetProp
             <CardTag
               key={item.category}
               {...(onSelectCategory ? { type: 'button' as const, onClick: () => onSelectCategory(item.category) } : {})}
-              className={`p-2.5 rounded-xl border text-left transition-all ${
-                onSelectCategory ? 'cursor-pointer hover:shadow-sm' : ''
-              } flex flex-col justify-between ${
-                isSelected
-                  ? 'border-[#E15A42] bg-orange-50/70 ring-2 ring-[#E15A42]/30 shadow-sm'
-                  : isFaded
-                  ? 'border-[#EBE7DF] bg-[#FAF9F5]/60 opacity-60'
-                  : 'border-[#EAE6DD] bg-[#FAF9F5] hover:bg-white hover:border-[#DDD8CD]'
-              }`}
+              className={`p-2.5 rounded-xl border text-left transition-all ${ onSelectCategory ? 'cursor-pointer hover:shadow-[var(--shadow)]' : '' } flex flex-col justify-between ${ isSelected ? 'border-[var(--accent)] bg-orange-50/70 ring-2 ring-[var(--accent)]/30 shadow-[var(--shadow)]' : isFaded ? 'border-[var(--line)] bg-[var(--surface-2)]/60 opacity-60' : 'border-[var(--line)] bg-[var(--surface-2)] hover:bg-[var(--surface)] hover:border-[var(--line-strong)]' }`}
             >
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-lg leading-none">{item.meta.icon}</span>
                 <span
-                  className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md text-white shadow-2xs"
+                  className="text-[12px] font-semibold px-1.5 py-0.5 rounded-md text-white shadow-none"
                   style={{ backgroundColor: item.meta.color }}
                 >
                   {item.percentage}%
@@ -194,14 +167,14 @@ export const CategoryDistributionWidget: React.FC<CategoryDistributionWidgetProp
               </div>
 
               <div>
-                <div className="font-semibold text-xs text-[#1F1E1C] truncate" title={item.meta.label}>
+                <div className="font-semibold text-xs text-[var(--text)] truncate" title={item.meta.label}>
                   {item.meta.shortLabel}
                 </div>
                 <div className="flex items-baseline justify-between mt-1">
-                  <span className="text-xs font-extrabold text-[#1F1E1C]">
+                  <span className="text-xs font-semibold text-[var(--text)]">
                     {item.totalAmount.toFixed(2)} {currency}
                   </span>
-                  <span className="text-[10px] text-[#8C867D]">
+                  <span className="text-[12px] text-[var(--muted)]">
                     {item.itemCount} поз.
                   </span>
                 </div>

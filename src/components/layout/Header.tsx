@@ -1,3 +1,5 @@
+import { ThemeSegmented } from '../common/ThemeSwitcher';
+import { HelpCircle, MoreHorizontal, Tv } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Building2,
@@ -13,10 +15,6 @@ import {
   X,
   Search,
   Mic,
-  Sun,
-  Moon,
-  Laptop,
-  AlertTriangle,
 } from 'lucide-react';
 import { useHousehold } from '../../context/HouseholdContext';
 import { MemberAvatar } from '../common/MemberAvatar';
@@ -51,9 +49,6 @@ export const Header: React.FC<HeaderProps> = ({
     activePropertyId,
     setActivePropertyId,
     setIsSOSOpen,
-    theme,
-    setTheme,
-    storageWarning,
   } = useHousehold();
 
   const [isPropDropdownOpen, setIsPropDropdownOpen] = useState(false);
@@ -93,34 +88,36 @@ export const Header: React.FC<HeaderProps> = ({
   const capitalizedDate = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
 
   return (
-    <header className="h-18 px-4 sm:px-8 bg-[#FCFBF8] border-b border-[#EBE7DF] flex items-center justify-between shrink-0 gap-3">
+    <header className="app-header relative z-20 min-h-18 py-3 px-4 sm:px-8 bg-[var(--surface-2)] border-b border-[var(--line)] flex items-center justify-between shrink-0 gap-3">
       {/* Левая часть: заголовок страницы и выбор объекта/пользователя */}
-      <div className="flex items-center space-x-3 min-w-0">
-        <div>
+      <div className="flex items-center space-x-3 min-w-0 flex-1">
+        <div className="min-w-0">
           <div className="flex items-center space-x-2.5 flex-wrap">
-            <h2 className="text-xl font-bold text-[#1F1D1A] tracking-tight">{title}</h2>
+            {title !== 'Главный обзор' && (
+              <h2 className="text-lg sm:text-xl font-semibold text-[var(--text)] tracking-tight whitespace-nowrap">{title}</h2>
+            )}
 
             {/* Селектор объекта (Квартира, Жильё Сергея, Дача, Все объекты) */}
-            <div className="relative" ref={propDropdownRef}>
+            <div className="relative md:hidden" ref={propDropdownRef}>
               <button
                 onClick={() => setIsPropDropdownOpen(!isPropDropdownOpen)}
-                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-white border border-[#E3DFD5] text-[#1F1D1A] hover:bg-[#F4F1EA] shadow-2xs transition-all cursor-pointer"
+                className="flex items-center whitespace-nowrap space-x-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-[var(--surface)] border border-[var(--line)] text-[var(--text)] hover:bg-[var(--surface-3)] shadow-none transition-all cursor-pointer"
                 title="Переключить объект дома"
               >
                 {activePropertyId === 'all' ? (
-                  <Building2 className="w-3.5 h-3.5 text-[#E15A42]" />
+                  <Building2 className="w-3.5 h-3.5 text-[var(--accent)]" />
                 ) : activePropertyId === 'dacha' ? (
                   <Trees className="w-3.5 h-3.5 text-emerald-600" />
                 ) : (
-                  <Home className="w-3.5 h-3.5 text-[#E15A42]" />
+                  <Home className="w-3.5 h-3.5 text-[var(--accent)]" />
                 )}
                 <span>{activeProp ? activeProp.shortName : 'Все объекты'}</span>
                 <ChevronDown className="w-3 h-3 text-stone-400" />
               </button>
 
               {isPropDropdownOpen && (
-                <div className="absolute left-0 mt-1.5 w-56 rounded-2xl bg-white border border-[#E3DFD5] shadow-lg py-1.5 z-40">
-                  <div className="px-3 py-1.5 text-[11px] font-bold text-stone-400 uppercase tracking-wider">
+                <div className="absolute left-0 mt-1.5 w-56 rounded-2xl bg-[var(--surface)] border border-[var(--line)] shadow-[var(--shadow)] py-1.5 z-40">
+                  <div className="px-3 py-1.5 text-[12px] font-semibold text-stone-400">
                     Объекты семьи
                   </div>
                   <button
@@ -128,15 +125,13 @@ export const Header: React.FC<HeaderProps> = ({
                       setActivePropertyId('all');
                       setIsPropDropdownOpen(false);
                     }}
-                    className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-[#F7F5EE] transition-colors cursor-pointer ${
-                      activePropertyId === 'all' ? 'font-bold text-[#E15A42] bg-[#FBF9F4]' : 'text-stone-700'
-                    }`}
+                    className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-[var(--surface-3)] transition-colors cursor-pointer ${ activePropertyId === 'all' ? 'font-semibold text-[var(--accent)] bg-[var(--surface-2)]' : 'text-stone-700' }`}
                   >
                     <div className="flex items-center space-x-2">
                       <Building2 className="w-4 h-4 text-stone-400" />
                       <span>Все объекты</span>
                     </div>
-                    <span className="text-[10px] text-stone-400">Сводка</span>
+                    <span className="text-[12px] text-stone-400">Сводка</span>
                   </button>
 
                   {properties.map((prop) => (
@@ -146,9 +141,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setActivePropertyId(prop.id);
                         setIsPropDropdownOpen(false);
                       }}
-                      className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-[#F7F5EE] transition-colors cursor-pointer ${
-                        activePropertyId === prop.id ? 'font-bold text-[#E15A42] bg-[#FBF9F4]' : 'text-stone-700'
-                      }`}
+                      className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-[var(--surface-3)] transition-colors cursor-pointer ${ activePropertyId === prop.id ? 'font-semibold text-[var(--accent)] bg-[var(--surface-2)]' : 'text-stone-700' }`}
                     >
                       <div className="flex items-center space-x-2">
                         {prop.id === 'dacha' ? (
@@ -158,19 +151,19 @@ export const Header: React.FC<HeaderProps> = ({
                         )}
                         <span>{prop.shortName}</span>
                       </div>
-                      <span className="text-[10px] text-stone-400 truncate max-w-[120px]">
+                      <span className="text-[12px] text-stone-400 truncate max-w-[120px]">
                         {prop.address || 'Адрес не указан'}
                       </span>
                     </button>
                   ))}
 
-                  <div className="pt-1.5 mt-1 border-t border-[#E3DFD5] px-1">
+                  <div className="pt-1.5 mt-1 border-t border-[var(--line)] px-1">
                     <button
                       onClick={() => {
                         setIsPropDropdownOpen(false);
                         setIsSOSOpen(true);
                       }}
-                      className="w-full px-2.5 py-1.5 rounded-lg text-xs font-bold text-[#E15A42] hover:bg-[#F7F5EE] flex items-center space-x-1.5 transition-colors cursor-pointer"
+                      className="w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[var(--accent)] hover:bg-[var(--surface-3)] flex items-center space-x-1.5 transition-colors cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>+ Настроить / Добавить объект</span>
@@ -181,10 +174,10 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* Фильтр по члену семьи (Ольга / Сергей) */}
-            <div className="relative" ref={memberDropdownRef}>
+            <div className="relative md:hidden" ref={memberDropdownRef}>
               <button
                 onClick={() => setIsMemberDropdownOpen(!isMemberDropdownOpen)}
-                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-xs font-medium border bg-white border-stone-200 shadow-2xs hover:bg-[#F4F1EA] transition-all cursor-pointer"
+                className="flex items-center whitespace-nowrap space-x-1.5 px-2.5 py-1 rounded-xl text-xs font-medium border bg-[var(--surface)] border-stone-200 shadow-none hover:bg-[var(--surface-3)] transition-all cursor-pointer"
                 title="Фильтр по члену семьи"
               >
                 {activeMember ? (
@@ -212,8 +205,8 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
 
               {isMemberDropdownOpen && (
-                <div className="absolute left-0 mt-1.5 w-48 rounded-2xl bg-white border border-[#E3DFD5] shadow-lg py-1.5 z-40">
-                  <div className="px-3 py-1.5 text-[11px] font-bold text-stone-400 uppercase tracking-wider">
+                <div className="absolute left-0 mt-1.5 w-48 rounded-2xl bg-[var(--surface)] border border-[var(--line)] shadow-[var(--shadow)] py-1.5 z-40">
+                  <div className="px-3 py-1.5 text-[12px] font-semibold text-stone-400">
                     Члены семьи
                   </div>
                   <button
@@ -221,9 +214,7 @@ export const Header: React.FC<HeaderProps> = ({
                       setActiveMemberId(null);
                       setIsMemberDropdownOpen(false);
                     }}
-                    className={`w-full px-3 py-1.5 text-left text-xs hover:bg-[#F7F5EE] cursor-pointer ${
-                      activeMemberId === null ? 'font-bold text-[#E15A42]' : 'text-stone-700'
-                    }`}
+                    className={`w-full px-3 py-1.5 text-left text-xs hover:bg-[var(--surface-3)] cursor-pointer ${ activeMemberId === null ? 'font-semibold text-[var(--accent)]' : 'text-stone-700' }`}
                   >
                     Вся семья (Общий вид)
                   </button>
@@ -234,139 +225,79 @@ export const Header: React.FC<HeaderProps> = ({
                         setActiveMemberId(m.id);
                         setIsMemberDropdownOpen(false);
                       }}
-                      className={`w-full px-3 py-1.5 text-left text-xs flex items-center space-x-2 hover:bg-[#F7F5EE] cursor-pointer ${
-                        activeMemberId === m.id ? 'font-bold text-[#E15A42]' : 'text-stone-700'
-                      }`}
+                      className={`w-full px-3 py-1.5 text-left text-xs flex items-center space-x-2 hover:bg-[var(--surface-3)] cursor-pointer ${ activeMemberId === m.id ? 'font-semibold text-[var(--accent)]' : 'text-stone-700' }`}
                     >
                       <MemberAvatar member={m} size="xs" />
                       <span>{m.name}</span>
-                      <span className="text-[10px] text-stone-400">({m.role.split('•')[0].trim()})</span>
+                      <span className="text-[12px] text-stone-400">({m.role.split('•')[0].trim()})</span>
                     </button>
                   ))}
                 </div>
               )}
             </div>
           </div>
-          <p className="text-xs text-[#8A8477] font-medium mt-0.5 truncate">
-            {subtitle || capitalizedDate}
-          </p>
+          {title !== 'Главный обзор' && (
+            <p className="hidden sm:block text-xs text-[var(--muted)] font-medium mt-0.5 truncate">{subtitle || capitalizedDate}</p>
+          )}
         </div>
       </div>
 
-      {/* Правая часть: Где лежит? (поиск), Микрофон (синяя), Очистить кэш, SOS, Умный ввод, Экшен */}
-      <div className="flex items-center space-x-1.5 sm:space-x-2.5 shrink-0">
-        {/* КНОПКА «ГДЕ ЛЕЖИТ?» (ПОИСК) */}
-        <button
-          onClick={onOpenSearch}
-          className="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-white border border-[#E3DFD5] text-[#1F1D1A] text-xs font-semibold hover:bg-[#F7F5EE] active:scale-[0.98] transition-all cursor-pointer shadow-2xs"
-          title="Где лежит? Поиск по вещам, аптечке, мастерам и документам"
-        >
-          <Search className="w-3.5 h-3.5 text-[#E15A42]" />
-          <span className="hidden sm:inline">Где лежит?</span>
-        </button>
-
-        {/* СИНЯЯ КНОПКА С МИКРОФОНОМ (ГОЛОСОВОЙ ВВОД) */}
-        <button
-          onClick={onOpenVoiceCapture}
-          className="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer border border-blue-500"
-          title="Голосовой ввод: надиктуйте задачу, покупку или событие"
-        >
-          <Mic className="w-3.5 h-3.5 animate-pulse" />
-          <span className="hidden md:inline">Голос</span>
-        </button>
-
-        {/* ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ (СВЕТЛАЯ / ТЕМНАЯ / СИСТЕМНАЯ) */}
-        <button
-          onClick={() => {
-            const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
-            setTheme(nextTheme);
-          }}
-          className="flex items-center space-x-1 px-2.5 py-1.5 sm:py-2 rounded-xl bg-white border border-[#E3DFD5] text-[#6B6456] hover:text-[#1F1D1A] text-xs font-semibold hover:bg-[#F7F5EE] active:scale-95 transition-all cursor-pointer shadow-2xs"
-          title={`Тема оформления: ${theme === 'dark' ? 'Тёмная' : theme === 'light' ? 'Светлая' : 'Системная'} (кликните для переключения)`}
-        >
-          {theme === 'dark' ? (
-            <Moon className="w-3.5 h-3.5 text-indigo-500" />
-          ) : theme === 'system' ? (
-            <Laptop className="w-3.5 h-3.5 text-stone-500" />
-          ) : (
-            <Sun className="w-3.5 h-3.5 text-amber-500" />
-          )}
-          <span className="hidden xl:inline text-[11px]">
-            {theme === 'dark' ? 'Тёмная' : theme === 'light' ? 'Светлая' : 'Авто'}
-          </span>
-        </button>
-
-        {/* ПРЕДУПРЕЖДЕНИЕ О ПАМЯТИ БРАУЗЕРА */}
-        {storageWarning && (
-          <div
-            className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-[11px] font-bold"
-            title={storageWarning}
+      {/* Правая часть по-японски: одно поле «найти или записать», меню «⋯» и SOS */}
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center h-10 rounded-full bg-[var(--surface)] border border-[var(--line)] shadow-[var(--shadow)]">
+          <button
+            type="button"
+            data-tour="search"
+            onClick={onOpenSearch}
+            aria-label="Где лежит? Поиск"
+            title="Где лежит? Поиск по вещам, документам, аптечке"
+            className="w-10 h-10 grid place-items-center rounded-full text-[var(--muted)] hover:text-[var(--text)] transition-colors"
           >
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-            <span className="hidden xl:inline">Память 80%+</span>
-          </div>
-        )}
-
-        {/* КНОПКА ОЧИСТКИ КЭША И СБРОСА БАГОВ */}
-        <button
-          onClick={() => setShowClearCacheModal(true)}
-          className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-white border border-[#E3DFD5] text-[#6B6456] hover:text-[#1F1D1A] text-xs font-semibold hover:bg-[#F7F5EE] active:scale-95 transition-all cursor-pointer shadow-2xs"
-          title="Очистить кэш браузера и перезагрузить свежую версию"
-        >
-          <RefreshCw className="w-3.5 h-3.5 text-stone-500" />
-          <span className="hidden lg:inline text-[11px]">Кэш</span>
-        </button>
-
-        {/* КРАСНАЯ ГЛОБАЛЬНАЯ КНОПКА SOS — ВСЕГДА ДОСТУПНА */}
-        <button
-          onClick={() => setIsSOSOpen(true)}
-          className="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-black shadow-md hover:shadow-red-500/30 active:scale-95 transition-all cursor-pointer border border-red-500 group"
-          title="Экстренная помощь SOS (без пароля)"
-        >
-          <ShieldAlert className="w-4 h-4 text-white animate-pulse" />
-          <span className="tracking-wide uppercase font-extrabold">SOS</span>
-        </button>
-
-        {/* Погода дома */}
-        <div className="hidden xl:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-[#F4F0E8] text-xs text-[#6B6456]">
-          <CloudSun className="w-4 h-4 text-amber-500" />
-          <span>+19°C • Дома порядок</span>
+            <Search className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            data-tour="capture"
+            onClick={onOpenQuickCapture}
+            className="hidden sm:block min-w-[12rem] lg:min-w-[15rem] h-10 pr-2 text-left text-sm text-[var(--muted)] hover:text-[var(--text)] transition-colors"
+          >
+            Найти или записать…
+          </button>
+          <button
+            type="button"
+            data-tour="voice"
+            onClick={onOpenVoiceCapture}
+            aria-label="Сказать голосом"
+            title="Сказать голосом"
+            className="w-10 h-10 grid place-items-center rounded-full text-[var(--accent)] hover:bg-[var(--accent-soft)] transition-colors"
+          >
+            <Mic className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Кнопка установки PWA */}
-        <PWAInstallButton variant="outline" className="hidden lg:flex" />
+        <MoreMenu onClearCache={() => setShowClearCacheModal(true)} />
 
-        {/* Быстрое действие текущей страницы */}
-        {onPrimaryAction && primaryActionLabel && (
-          <button
-            onClick={onPrimaryAction}
-            className="hidden sm:flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-[#1F1D1A] text-xs font-semibold hover:bg-[#F7F5EE] active:scale-[0.98] transition-all shadow-2xs cursor-pointer"
-          >
-            <Plus className="w-4 h-4 text-[#E15A42]" />
-            <span>{primaryActionLabel}</span>
-          </button>
-        )}
-
-        {/* Кнопка умного ввода в шапке */}
         <button
-          onClick={onOpenQuickCapture}
-          className="flex items-center space-x-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-[#E15A42] to-[#EA7038] text-white text-xs font-semibold shadow-xs hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer"
+          data-tour="sos"
+          onClick={() => setIsSOSOpen(true)}
+          className="hidden md:flex items-center gap-1.5 h-10 px-3.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-xs font-semibold active:scale-95 transition"
+          title="Экстренная помощь SOS (без пароля)"
         >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Умный ввод</span>
+          <ShieldAlert className="w-4 h-4" />
+          <span>SOS</span>
         </button>
       </div>
 
       {/* Модальное окно подтверждения очистки кэша */}
       {showClearCacheModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-stone-200 text-center space-y-4 animate-in zoom-in-95 duration-150">
+          <div className="bg-[var(--surface)] rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-stone-200 text-center space-y-4 animate-in zoom-in-95 duration-150">
             <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
               <RefreshCw className="w-6 h-6 animate-spin" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-[#1F1E1C]">Очистить кэш приложения?</h3>
-              <p className="text-xs text-[#7A746B] mt-1 leading-relaxed">
+              <h3 className="text-base font-semibold text-[var(--text)]">Очистить кэш приложения?</h3>
+              <p className="text-xs text-[var(--muted)] mt-1 leading-relaxed">
                 Кэш браузера и старые сервисные воркеры будут удалены, а приложение перезагрузит самую актуальную версию без багов. Все ваши данные сохранятся.
               </p>
             </div>
@@ -374,7 +305,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={() => setShowClearCacheModal(false)}
-                className="flex-1 py-2.5 px-3 rounded-xl border border-stone-200 text-xs font-semibold text-[#5A554D] hover:bg-stone-50 cursor-pointer transition-colors"
+                className="flex-1 py-2.5 px-3 rounded-xl border border-stone-200 text-xs font-semibold text-[var(--text-2)] hover:bg-stone-50 cursor-pointer transition-colors"
               >
                 Отмена
               </button>
@@ -384,7 +315,7 @@ export const Header: React.FC<HeaderProps> = ({
                   setShowClearCacheModal(false);
                   clearAllCacheAndReload();
                 }}
-                className="flex-1 py-2.5 px-3 rounded-xl bg-[#E15A42] hover:bg-[#D04931] text-white text-xs font-bold shadow-xs cursor-pointer active:scale-95 transition-all"
+                className="flex-1 py-2.5 px-3 rounded-full bg-[var(--accent)] hover:brightness-110 text-white text-xs font-semibold shadow-[var(--shadow)] cursor-pointer active:scale-95 transition-all"
               >
                 Да, очистить
               </button>
@@ -396,3 +327,61 @@ export const Header: React.FC<HeaderProps> = ({
   );
 };
 
+
+
+/** Меню «⋯»: всё вспомогательное в одном месте. */
+const MoreMenu: React.FC<{ onClearCache: () => void }> = ({ onClearCache }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    document.addEventListener('pointerdown', close);
+    document.addEventListener('keydown', esc);
+    return () => {
+      document.removeEventListener('pointerdown', close);
+      document.removeEventListener('keydown', esc);
+    };
+  }, [open]);
+  const item =
+    'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left text-[var(--text)] hover:bg-[var(--surface-3)] transition-colors';
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Ещё"
+        title="Ещё"
+        onClick={() => setOpen((v) => !v)}
+        className="w-10 h-10 grid place-items-center rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--text-2)] hover:bg-[var(--surface-3)] active:scale-95 transition"
+      >
+        <MoreHorizontal className="w-4 h-4" />
+      </button>
+      <div
+        role="menu"
+        className={`absolute right-0 top-[calc(100%+8px)] z-50 w-72 p-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow)] origin-top-right transition duration-150 ${
+          open ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible pointer-events-none'
+        }`}
+      >
+        <button type="button" role="menuitem" className={item} onClick={() => { setOpen(false); window.dispatchEvent(new Event('dbh:family-screen')); }}>
+          <Tv className="w-4 h-4 text-[var(--muted)]" /> Семейный экран
+        </button>
+        <button type="button" role="menuitem" className={item} onClick={() => { setOpen(false); window.dispatchEvent(new Event('dbh:tour')); }}>
+          <HelpCircle className="w-4 h-4 text-[var(--muted)]" /> Как пользоваться
+        </button>
+        <div className="px-3 pt-3 pb-2">
+          <div className="text-xs text-[var(--muted)] mb-2">Оформление</div>
+          <ThemeSegmented />
+        </div>
+        <div className="border-t border-[var(--line)] mt-1 pt-1">
+          <PWAInstallButton variant="menu" />
+          <button type="button" role="menuitem" className={item} onClick={() => { setOpen(false); onClearCache(); }}>
+            <RefreshCw className="w-4 h-4 text-[var(--muted)]" /> Очистить кэш и обновить
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

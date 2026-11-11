@@ -10,38 +10,69 @@ import {
   Trash2,
   Edit2,
   User,
+  Sparkles,
+  Volume2,
+  Bell,
+  Camera,
+  MoreHorizontal,
 } from 'lucide-react';
 import { useHousehold } from '../../context/HouseholdContext';
 import { CalendarEvent } from '../../types';
 import { EventModal } from './EventModal';
+import { HolidayImportModal } from './HolidayImportModal';
 import { MemberAvatar } from '../common/MemberAvatar';
-import { getLocalDateString } from '../../utils/dateUtils';
+import { CleaningCalendar } from './CleaningCalendar';
+import { dayItems } from '../../services/dayItems';
+import { occursOn, nextOccurrence } from '../../utils/dateUtils';
+import { Btn, Card, EmptyState, GroupLabel, IconBtn, PageWrap, Segmented, Slide, Tag } from '../ui/mercury';
+import { formatLocalDate } from '../../utils/dateUtils';
+import {
+  playNotificationSound,
+  checkUpcomingHolidayReminders,
+} from '../../services/notificationService';
 
-type CalendarViewMode = 'month' | 'week' | 'agenda';
+type CalendarViewMode = 'month' | 'week' | 'agenda' | 'cleaning';
+
+const getHolidayFlag = (countryCode?: string) => {
+  if (!countryCode) return '';
+  switch (countryCode.toUpperCase()) {
+    case 'RU':
+      return '🇷🇺';
+    case 'NL':
+      return '🇳🇱';
+    case 'GR':
+      return '🇬🇷';
+    case 'CY':
+      return '🇨🇾';
+    case 'EU':
+      return '🇪🇺';
+    default:
+      return '';
+  }
+};
 
 const DAYS_OF_WEEK = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
-export const isEventOnDate = (ev: CalendarEvent, targetDateStr: string): boolean => {
-  if (ev.date === targetDateStr) return true;
-  if (ev.recurrence === 'yearly' || ev.isBirthday || /день\s+рождени|д\.?р\./i.test(ev.title)) {
-    return ev.date.slice(5) === targetDateStr.slice(5);
-  }
-  if (ev.recurrence === 'monthly') {
-    return ev.date.slice(8) === targetDateStr.slice(8);
-  }
-  return false;
-};
-
 export const CalendarView: React.FC = () => {
-  const { events, deleteEvent, members, exportCalendarIcs, activeMemberId } = useHousehold();
+  const { events, deleteEvent, members, exportCalendarIcs, activeMemberId, showToast, tasks } =
+    useHousehold();
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
+  const [viewMode, setViewMode] = useState<CalendarViewMode>(() => {
+    try {
+      const v = localStorage.getItem('dbh_calendar_view');
+      localStorage.removeItem('dbh_calendar_view');
+      return v === 'cleaning' ? 'cleaning' : 'month';
+    } catch {
+      return 'month';
+    }
+  });
   const [visibleMemberIds, setVisibleMemberIds] = useState<string[]>(
     members.map((m) => m.id)
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHolidayModalOpen, setIsHolidayModalOpen] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
   const [selectedCellDate, setSelectedCellDate] = useState<string | undefined>(undefined);
 
@@ -116,7 +147,7 @@ export const CalendarView: React.FC = () => {
   for (let i = startingDayOfWeek - 1; i >= 0; i--) {
     const d = new Date(year, month - 1, prevMonthDays - i);
     calendarDays.push({
-      dateStr: getLocalDateString(d),
+      dateStr: formatLocalDate(d),
       dayNum: prevMonthDays - i,
       isCurrentMonth: false,
     });
@@ -126,7 +157,7 @@ export const CalendarView: React.FC = () => {
   for (let i = 1; i <= daysInMonth; i++) {
     const d = new Date(year, month, i);
     calendarDays.push({
-      dateStr: getLocalDateString(d),
+      dateStr: formatLocalDate(d),
       dayNum: i,
       isCurrentMonth: true,
     });
@@ -137,126 +168,88 @@ export const CalendarView: React.FC = () => {
   for (let i = 1; i <= remainingCells; i++) {
     const d = new Date(year, month + 1, i);
     calendarDays.push({
-      dateStr: getLocalDateString(d),
+      dateStr: formatLocalDate(d),
       dayNum: i,
       isCurrentMonth: false,
     });
   }
 
-  const todayStr = getLocalDateString(new Date());
+  const todayStr = formatLocalDate(new Date());
 
   return (
-    <div className="p-8 space-y-6 max-w-7xl mx-auto">
-      {/* Верхняя строка управления календарем */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Навигация и заголовок месяца */}
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-1">
-            <button
-              onClick={handlePrev}
-              className="p-2 rounded-xl bg-white border border-[#E3DFD5] text-[#1F1D1A] hover:bg-[#F7F5EE] transition-colors"
-            >
+    <PageWrap className="max-w-7xl">
+      {/* Навигация по месяцам, вид и действия */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <IconBtn aria-label="Назад" onClick={handlePrev} className="border border-[var(--line)] bg-[var(--surface)] !w-9 !h-9 !rounded-full">
               <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleNext}
-              className="p-2 rounded-xl bg-white border border-[#E3DFD5] text-[#1F1D1A] hover:bg-[#F7F5EE] transition-colors"
-            >
+            </IconBtn>
+            <IconBtn aria-label="Вперёд" onClick={handleNext} className="border border-[var(--line)] bg-[var(--surface)] !w-9 !h-9 !rounded-full">
               <ChevronRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleToday}
-              className="px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs font-semibold text-[#1F1D1A] hover:bg-[#F7F5EE]"
-            >
-              Сегодня
-            </button>
+            </IconBtn>
           </div>
-
-          <h2 className="text-xl font-extrabold text-[#1F1D1A]">
-            {capitalizedMonthTitle}
-          </h2>
+          <h2 className="text-2xl font-semibold tracking-[-0.02em] text-[var(--text)]">{capitalizedMonthTitle}</h2>
+          <Btn size="sm" onClick={handleToday}>
+            Сегодня
+          </Btn>
         </div>
 
-        {/* Переключатель вида и экспорт */}
-        <div className="flex items-center space-x-3">
-          {/* Режимы представления */}
-          <div className="flex items-center space-x-1 p-1 rounded-2xl bg-[#EFECE4] border border-[#E3DFD5]">
-            <button
-              onClick={() => setViewMode('month')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                viewMode === 'month'
-                  ? 'bg-white text-[#1F1D1A] shadow-xs'
-                  : 'text-[#6B6456] hover:text-[#1F1D1A]'
-              }`}
-            >
-              Месяц
-            </button>
-            <button
-              onClick={() => setViewMode('week')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                viewMode === 'week'
-                  ? 'bg-white text-[#1F1D1A] shadow-xs'
-                  : 'text-[#6B6456] hover:text-[#1F1D1A]'
-              }`}
-            >
-              Неделя
-            </button>
-            <button
-              onClick={() => setViewMode('agenda')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                viewMode === 'agenda'
-                  ? 'bg-white text-[#1F1D1A] shadow-xs'
-                  : 'text-[#6B6456] hover:text-[#1F1D1A]'
-              }`}
-            >
-              Повестка
-            </button>
-          </div>
-
-          {/* Экспорт в .ics */}
-          <button
-            onClick={exportCalendarIcs}
-            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs font-semibold text-[#5C564B] hover:bg-[#F7F5EE] shadow-xs transition-all cursor-pointer"
-            title="Экспорт в Apple / Google Calendar"
-          >
-            <Download className="w-3.5 h-3.5 text-blue-600" />
-            <span className="hidden sm:inline">Экспорт .ics</span>
-          </button>
-
-          {/* Добавить событие */}
-          <button
+        <div className="ml-auto flex items-center gap-2 flex-wrap">
+          <Segmented
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              { id: 'month', label: 'Месяц' },
+              { id: 'week', label: 'Неделя' },
+              { id: 'agenda', label: 'Список' },
+              { id: 'cleaning', label: 'План' },
+            ]}
+          />
+          <Btn icon={<Sparkles className="w-4 h-4" />} onClick={() => setIsHolidayModalOpen(true)} title="Импорт праздников с напоминаниями">
+            <span className="hidden sm:inline">Праздники</span>
+          </Btn>
+          <CalendarMore
+            onSound={() => {
+              playNotificationSound();
+              checkUpcomingHolidayReminders(events, (_ev, msg) => showToast(msg, 'info'), true);
+              showToast('Звук и напоминания работают', 'success');
+            }}
+            onExport={exportCalendarIcs}
+          />
+          <Btn
+            variant="primary"
+            icon={<Plus className="w-4 h-4" />}
             onClick={() => {
               setEventToEdit(null);
               setSelectedCellDate(undefined);
               setIsModalOpen(true);
             }}
-            className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#E15A42] hover:bg-[#D04931] text-white text-xs font-bold shadow-md shadow-orange-600/20 active:scale-[0.98] transition-all cursor-pointer"
           >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Событие</span>
-          </button>
+            Событие
+          </Btn>
         </div>
       </div>
 
-      {/* Полоса фильтрации по участникам (цветовые чипы) */}
-      <div className="flex items-center space-x-2 p-2.5 rounded-2xl bg-white border border-[#EBE7DF] overflow-x-auto shadow-2xs">
-        <span className="text-[11px] font-bold text-[#8A8477] uppercase tracking-wider shrink-0 mr-1">
-          Расписание участников:
-        </span>
+      {/* Чьё расписание показывать */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        <span className="text-[14px] text-[var(--muted)] shrink-0 mr-1">Показывать:</span>
         {members.map((member) => {
           const isVisible = visibleMemberIds.includes(member.id);
           return (
             <button
               key={member.id}
+              type="button"
+              aria-pressed={isVisible}
               onClick={() => toggleMemberFilter(member.id)}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`inline-flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full text-[14px] font-medium border transition whitespace-nowrap ${
                 isVisible
-                  ? 'bg-[#FAF8F3] border border-stone-300 shadow-2xs'
-                  : 'opacity-40 border border-transparent hover:opacity-70'
+                  ? 'bg-[var(--surface)] border-[var(--line-strong)] text-[var(--text)]'
+                  : 'border-transparent text-[var(--muted)] opacity-50 hover:opacity-80'
               }`}
             >
               <MemberAvatar member={member} size="xs" />
-              <span className="text-[#1F1D1A]">{member.name}</span>
+              {member.name}
             </button>
           );
         })}
@@ -264,14 +257,14 @@ export const CalendarView: React.FC = () => {
 
       {/* 1. Режим: Сетка месяца */}
       {viewMode === 'month' && (
-        <div className="bg-white rounded-3xl border border-[#EBE7DF] overflow-hidden shadow-xs">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--line)] overflow-hidden shadow-[var(--shadow)]">
           {/* Дни недели */}
-          <div className="grid grid-cols-7 border-b border-[#EBE7DF] bg-[#FAF8F3]">
+          <div className="grid grid-cols-7 border-b border-[var(--line)]">
             {DAYS_OF_WEEK.map((day, idx) => (
               <div
                 key={day}
-                className={`py-3 text-center text-xs font-bold ${
-                  idx >= 5 ? 'text-rose-600' : 'text-[#8A8477]'
+                className={`py-3 px-3 text-left text-xs font-medium ${
+                  idx >= 5 ? 'text-[var(--accent)]' : 'text-[var(--muted)]'
                 }`}
               >
                 {day}
@@ -280,9 +273,10 @@ export const CalendarView: React.FC = () => {
           </div>
 
           {/* Ячейки дней */}
-          <div className="grid grid-cols-7 divide-x divide-y divide-[#F0ECE1]">
+          <Slide k={capitalizedMonthTitle} index={currentDate.getFullYear() * 12 + currentDate.getMonth()}>
+          <div className="grid grid-cols-7 divide-x divide-y divide-[var(--line)]">
             {calendarDays.map((cell, idx) => {
-              const dayEvents = filteredEvents.filter((e) => isEventOnDate(e, cell.dateStr));
+              const dayEvents = filteredEvents.filter((e) => occursOn(e, cell.dateStr));
               const isToday = cell.dateStr === todayStr;
 
               return (
@@ -293,31 +287,51 @@ export const CalendarView: React.FC = () => {
                     setEventToEdit(null);
                     setIsModalOpen(true);
                   }}
-                  className={`min-h-[105px] p-2 transition-all cursor-pointer flex flex-col justify-between ${
-                    cell.isCurrentMonth ? 'bg-white hover:bg-[#FDFBF7]' : 'bg-[#FAF9F6] opacity-45'
+                  className={`group min-h-[112px] p-2 transition-colors cursor-pointer flex flex-col ${
+                    cell.isCurrentMonth ? 'hover:bg-[var(--surface-3)]' : 'bg-[var(--surface-2)] text-[var(--muted)] opacity-60'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span
-                      className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ${
-                        isToday
-                          ? 'bg-[#E15A42] text-white shadow-xs'
-                          : 'text-[#1F1D1A]'
+                      className={`text-[14px] font-medium w-7 h-7 rounded-full flex items-center justify-center tabular-nums ${
+                        isToday ? 'bg-[var(--accent)] text-white' : 'text-[var(--text)]'
                       }`}
                     >
                       {cell.dayNum}
                     </span>
-                    {dayEvents.length > 0 && (
-                      <span className="text-[10px] font-bold text-[#8A8477]">
-                        {dayEvents.length}
-                      </span>
-                    )}
+                    <Plus className="w-3.5 h-3.5 text-[var(--muted)] opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
 
+                  {/* Дела дня — уборка и задачи; нажатие открывает полный план дня */}
+                  {(() => {
+                    const di = dayItems(new Date(cell.dateStr + 'T12:00:00'), tasks, []);
+                    if (!di.count) return null;
+                    return (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          try {
+                            localStorage.setItem('dbh_plan_day', cell.dateStr);
+                          } catch {
+                            /* нет места */
+                          }
+                          setViewMode('cleaning');
+                        }}
+                        className="mb-1 w-full text-left px-2 py-0.5 rounded-md text-[12px] text-[var(--text-2)] bg-[var(--surface-2)] hover:bg-[var(--accent-soft)] tabular-nums"
+                        title="Открыть план дня"
+                      >
+                        {di.important > 0 && <span className="text-amber-700">★{di.important} </span>}
+                        дел: {di.count}
+                      </button>
+                    );
+                  })()}
                   {/* Плашки событий */}
                   <div className="space-y-1 flex-1 overflow-y-auto max-h-[85px] pr-0.5">
                     {dayEvents.map((ev) => {
                       const firstMember = members.find((m) => ev.memberIds.includes(m.id));
+                      const isHol = ev.isHoliday || ev.category === 'holiday';
+                      const flag = getHolidayFlag(ev.holidayCountry);
                       return (
                         <div
                           key={ev.id}
@@ -326,19 +340,25 @@ export const CalendarView: React.FC = () => {
                             setEventToEdit(ev);
                             setIsModalOpen(true);
                           }}
-                          className="px-2 py-1 rounded-lg text-[11px] font-semibold truncate flex items-center space-x-1.5 hover:brightness-95 transition-all shadow-2xs border border-stone-200/50"
-                          style={{
-                            backgroundColor: firstMember
-                              ? firstMember.color.hex + '18'
-                              : '#F3F4F6',
-                            color: firstMember ? firstMember.color.hex : '#1F2937',
-                          }}
+                          className={`px-2 py-1 rounded-md text-[13px] font-medium truncate flex items-center gap-1.5 transition hover:brightness-95 ${
+                            isHol ? 'bg-amber-50 text-amber-700' : 'text-[var(--text)]'
+                          }`}
+                          style={
+                            isHol
+                              ? undefined
+                              : { backgroundColor: firstMember ? firstMember.color.hex + '1f' : 'var(--surface-3)' }
+                          }
                         >
                           <span
                             className="w-1.5 h-1.5 rounded-full shrink-0"
-                            style={{ backgroundColor: firstMember?.color.hex || '#6B7280' }}
+                            style={{
+                              backgroundColor: isHol ? '#D97706' : firstMember?.color.hex || 'var(--muted)',
+                            }}
                           />
-                          <span className="truncate">{ev.title}</span>
+                          <span className="truncate">
+                            {flag ? `${flag} ` : ''}
+                            {ev.title}
+                          </span>
                         </div>
                       );
                     })}
@@ -347,33 +367,72 @@ export const CalendarView: React.FC = () => {
               );
             })}
           </div>
+          </Slide>
         </div>
       )}
 
+      {/* На телефоне клетки месяца маленькие — ниже список ближайших 7 дней */}
+      {viewMode === 'month' && (() => {
+        const days = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() + i);
+          const ymd = formatLocalDate(d);
+          return { ymd, d, evs: filteredEvents.filter((e) => occursOn(e, ymd)).sort((a, b) => (a.startTime || '').localeCompare(b.startTime || '')) };
+        }).filter((x) => x.evs.length);
+        return (
+          <Card className="md:hidden p-2">
+            <div className="px-3 pt-2 pb-1 text-[16px] font-medium text-[var(--text)]">Ближайшие 7 дней</div>
+            {days.length === 0 ? (
+              <p className="px-3 py-4 text-sm text-[var(--muted)]">Событий нет.</p>
+            ) : (
+              days.map((x) => (
+                <div key={x.ymd} className="border-t border-[var(--line)] first:border-t-0">
+                  <div className="px-3 pt-3 pb-1 text-[14px] text-[var(--muted)]">
+                    {x.ymd === todayStr ? 'Сегодня' : x.d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  </div>
+                  {x.evs.map((ev) => (
+                    <button
+                      key={ev.id}
+                      type="button"
+                      onClick={() => { setEventToEdit(ev); setIsModalOpen(true); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left hover:bg-[var(--surface-3)]"
+                    >
+                      <span className="w-14 shrink-0 text-sm tabular-nums text-[var(--text-2)]">{ev.allDay || !ev.startTime ? 'день' : ev.startTime}</span>
+                      <span className="flex-1 min-w-0 text-[16px] text-[var(--text)] truncate">{ev.title}</span>
+                    </button>
+                  ))}
+                </div>
+              ))
+            )}
+          </Card>
+        );
+      })()}
+
       {/* 2. Режим: Неделя */}
       {viewMode === 'week' && (
-        <div className="bg-white rounded-3xl border border-[#EBE7DF] overflow-hidden shadow-xs p-6">
-          <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--line)] overflow-hidden shadow-[var(--shadow)] p-3 sm:p-4">
+          <Slide k={currentDate.toDateString()} index={Math.floor(currentDate.getTime() / 86400000)}>
+          <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
             {DAYS_OF_WEEK.map((dayName, idx) => {
               const weekStartDate = new Date(currentDate);
               const currentDayOfWeek = (weekStartDate.getDay() + 6) % 7;
               weekStartDate.setDate(weekStartDate.getDate() - currentDayOfWeek + idx);
-              const dateStr = getLocalDateString(weekStartDate);
-              const dayEvents = filteredEvents.filter((e) => isEventOnDate(e, dateStr));
+              const dateStr = formatLocalDate(weekStartDate);
+              const dayEvents = filteredEvents.filter((e) => occursOn(e, dateStr));
               const isToday = dateStr === todayStr;
 
               return (
                 <div
                   key={idx}
                   className={`p-3 rounded-2xl border flex flex-col min-h-[300px] ${
-                    isToday ? 'bg-amber-50/40 border-[#E15A42]/40' : 'bg-[#FAF8F5] border-[#EBE7DF]'
+                    isToday ? 'bg-[var(--accent-soft)] border-transparent' : 'bg-[var(--surface-2)] border-[var(--line)]'
                   }`}
                 >
                   <div className="flex items-center justify-between pb-2 border-b border-stone-200 mb-2">
-                    <span className="text-xs font-bold text-[#8A8477]">{dayName}</span>
+                    <span className="text-xs font-semibold text-[var(--muted)]">{dayName}</span>
                     <span
-                      className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                        isToday ? 'bg-[#E15A42] text-white' : 'text-[#1F1D1A]'
+                      className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        isToday ? 'bg-[var(--accent)] text-white' : 'text-[var(--text)]'
                       }`}
                     >
                       {weekStartDate.getDate()}
@@ -381,22 +440,51 @@ export const CalendarView: React.FC = () => {
                   </div>
 
                   <div className="space-y-2 flex-1 overflow-y-auto">
-                    {dayEvents.length === 0 ? (
-                      <p className="text-[11px] text-stone-400 text-center py-4">Нет дел</p>
-                    ) : (
-                      dayEvents.map((ev) => (
+                    {(() => {
+                      const di = dayItems(new Date(dateStr + 'T12:00:00'), tasks, []);
+                      const list = [...di.cleaning.map((c) => c.title), ...di.themeItems.map((t) => t.title), ...di.tasks.filter((t) => !t.completed).map((t) => (t.priority === 'high' ? '★ ' : '') + t.title)];
+                      if (!list.length) return null;
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            try {
+                              localStorage.setItem('dbh_plan_day', dateStr);
+                            } catch {
+                              /* нет места */
+                            }
+                            setViewMode('cleaning');
+                          }}
+                          className="w-full text-left p-2 rounded-xl bg-[var(--surface-2)] border border-[var(--line)] hover:bg-[var(--accent-soft)]"
+                          title="Открыть план дня"
+                        >
+                          <div className="text-[12px] font-medium text-[var(--muted)] mb-1">Дела: {list.length}</div>
+                          {list.slice(0, 5).map((t, i) => (
+                            <div key={i} className="text-[13px] text-[var(--text)] truncate">
+                              {t}
+                            </div>
+                          ))}
+                          {list.length > 5 && <div className="text-[12px] text-[var(--muted)]">ещё {list.length - 5}</div>}
+                        </button>
+                      );
+                    })()}
+                    {dayEvents.length === 0 ? null : (
+                      dayEvents.map((ev) => {
+                      const flag = getHolidayFlag(ev.holidayCountry);
+                      return (
                         <div
                           key={ev.id}
                           onClick={() => {
                             setEventToEdit(ev);
                             setIsModalOpen(true);
                           }}
-                          className="p-2 rounded-xl bg-white border border-stone-200 shadow-2xs hover:shadow-xs transition-all cursor-pointer space-y-1"
+                          className="p-2 rounded-xl bg-[var(--surface)] border border-stone-200 shadow-none hover:shadow-[var(--shadow)] transition-all cursor-pointer space-y-1"
                         >
-                          <div className="text-xs font-bold text-[#1F1D1A] truncate">
+                          <div className="text-xs font-semibold text-[var(--text)] truncate">
+                            {flag ? `${flag} ` : ''}
                             {ev.title}
                           </div>
-                          <div className="flex items-center justify-between text-[10px] text-blue-600 font-semibold pt-0.5">
+                          <div className="flex items-center justify-between text-[12px] text-[var(--muted)] tabular-nums pt-0.5">
                             <span className="flex items-center space-x-1">
                               <Clock className="w-2.5 h-2.5" />
                               <span>{ev.startTime}</span>
@@ -410,15 +498,16 @@ export const CalendarView: React.FC = () => {
                                     key={mId}
                                     member={m}
                                     size="2xs"
-                                    className="ring-1 ring-white"
+                                    className="ring-1 ring-[var(--surface)]"
                                   />
                                 );
                               })}
                             </div>
                           </div>
                         </div>
-                      ))
-                    )}
+                      );
+                    })
+                  )}
                   </div>
 
                   <button
@@ -427,7 +516,7 @@ export const CalendarView: React.FC = () => {
                     setEventToEdit(null);
                     setIsModalOpen(true);
                   }}
-                  className="w-full mt-2 py-1.5 text-center text-[11px] font-semibold text-[#E15A42] hover:bg-white rounded-lg transition-colors"
+                  className="w-full mt-2 py-1.5 text-center text-[12px] font-semibold text-[var(--accent)] hover:bg-[var(--surface)] rounded-lg transition-colors"
                 >
                   + Добавить
                 </button>
@@ -435,97 +524,105 @@ export const CalendarView: React.FC = () => {
             );
           })}
         </div>
+          </Slide>
       </div>
     )}
 
     {/* 3. Режим: Повестка дня (Agenda) */}
-    {viewMode === 'agenda' && (
-      <div className="bg-white rounded-3xl border border-[#EBE7DF] shadow-xs p-6 space-y-4">
-        <h3 className="text-sm font-bold text-[#1F1D1A] pb-2 border-b border-[#F0ECE1]">
-          Предстоящие события дома
-        </h3>
-
-        <div className="space-y-3">
-          {filteredEvents.length === 0 ? (
-            <p className="text-xs text-[#8A8477] py-8 text-center">
-              Нет запланированных событий
-            </p>
-          ) : (
-            filteredEvents
-              .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime))
-              .map((ev) => {
+      {viewMode === 'agenda' && (() => {
+        const list = filteredEvents
+          .map((ev) => (ev.recurringYearly ? { ...ev, date: nextOccurrence(ev, todayStr) } : ev))
+          .filter((ev) => ev.date >= todayStr)
+          .sort((x, y) => x.date.localeCompare(y.date) || (x.startTime || '').localeCompare(y.startTime || ''));
+        const byDate: Record<string, typeof list> = {};
+        list.forEach((ev) => (byDate[ev.date] = [...(byDate[ev.date] || []), ev]));
+        return (
+          <Card className="p-2 sm:p-3">
+            {list.length === 0 ? (
+              <EmptyState
+                icon={<Clock className="w-5 h-5" />}
+                title="Событий нет"
+                text="Добавьте встречу, кружок или праздник — напомним заранее."
+                action={
+                  <Btn variant="primary" icon={<Plus className="w-4 h-4" />} onClick={() => { setEventToEdit(null); setIsModalOpen(true); }}>
+                    Событие
+                  </Btn>
+                }
+              />
+            ) : (
+              Object.entries(byDate).map(([date, evs]) => {
+                const d = new Date(date + 'T00:00:00');
+                const label =
+                  date === todayStr
+                    ? 'Сегодня'
+                    : d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
                 return (
-                  <div
-                    key={ev.id}
-                    className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#EBE7DF] hover:bg-white hover:shadow-xs transition-all flex items-center justify-between"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className="w-14 text-center">
-                        <div className="text-xs font-bold text-blue-600 bg-blue-50 py-1 rounded-xl">
-                          {ev.startTime}
-                        </div>
-                        <div className="text-[10px] text-stone-500 mt-1">
-                          {new Date(ev.date).toLocaleDateString('ru-RU', {
-                            day: 'numeric',
-                            month: 'short',
-                          })}
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="text-sm font-bold text-[#1F1D1A]">{ev.title}</h4>
-                        {ev.location && (
-                          <p className="text-xs text-[#8A8477] flex items-center space-x-1 mt-0.5">
-                            <MapPin className="w-3 h-3" />
-                            <span>{ev.location}</span>
-                          </p>
-                        )}
-                        <div className="flex items-center space-x-1.5 mt-1.5">
-                          {ev.memberIds.map((mId) => {
-                            const member = members.find((m) => m.id === mId);
-                            if (!member) return null;
-                            return (
-                              <span
-                                key={mId}
-                                className="text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center space-x-1"
-                                style={{
-                                  backgroundColor: member.color.hex + '20',
-                                  color: member.color.hex,
-                                }}
-                              >
-                                <MemberAvatar member={member} size="2xs" />
-                                <span>{member.name}</span>
+                  <div key={date}>
+                    <GroupLabel label={label.charAt(0).toUpperCase() + label.slice(1)} count={evs.length} />
+                    {evs.map((ev) => {
+                      const isHol = ev.isHoliday || ev.category === 'holiday';
+                      const flag = getHolidayFlag(ev.holidayCountry);
+                      return (
+                        <div
+                          key={ev.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => { setEventToEdit(ev); setIsModalOpen(true); }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { setEventToEdit(ev); setIsModalOpen(true); } }}
+                          className="group grid grid-cols-[72px_1fr_auto] items-center gap-3 px-3 py-3 rounded-xl border-t border-[var(--line)] first:border-t-0 hover:bg-[var(--surface-3)] transition-colors cursor-pointer outline-none focus-visible:bg-[var(--surface-3)]"
+                        >
+                          <span className="text-sm tabular-nums text-[var(--text-2)]">{ev.allDay || !ev.startTime ? 'Весь день' : ev.startTime}</span>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-[16px] font-medium text-[var(--text)] truncate">
+                                {flag ? `${flag} ` : ''}
+                                {ev.title}
                               </span>
-                            );
-                          })}
+                              {isHol && <Tag tone="warn">Праздник</Tag>}
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5 text-[14px] text-[var(--muted)] min-w-0">
+                              {ev.location && (
+                                <span className="inline-flex items-center gap-1 truncate">
+                                  <MapPin className="w-3.5 h-3.5 shrink-0" />
+                                  {ev.location}
+                                </span>
+                              )}
+                              {ev.reminderDaysBefore && ev.reminderDaysBefore.length > 0 && (
+                                <span className="truncate">
+                                  Напомнить {ev.reminderDaysBefore.map((x) => (x === 0 ? 'в день' : `за ${x} дн.`)).join(', ')}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex -space-x-1.5">
+                              {ev.memberIds.map((mId) => {
+                                const m = members.find((x) => x.id === mId);
+                                return m ? <MemberAvatar key={mId} member={m} size="xs" className="ring-2 ring-[var(--surface)]" /> : null;
+                              })}
+                            </div>
+                            <IconBtn
+                              danger
+                              aria-label="Удалить"
+                              title="Удалить"
+                              className="hover-actions opacity-0 group-hover:opacity-100 focus:opacity-100"
+                              onClick={(e) => { e.stopPropagation(); deleteEvent(ev.id); }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </IconBtn>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => {
-                            setEventToEdit(ev);
-                            setIsModalOpen(true);
-                          }}
-                          className="p-2 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-black/5"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => deleteEvent(ev.id)}
-                          className="p-2 rounded-xl text-stone-400 hover:text-rose-600 hover:bg-rose-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
+                      );
+                    })}
+                  </div>
+                );
+              })
             )}
-          </div>
-        </div>
-      )}
+          </Card>
+        );
+      })()}
+
+      {viewMode === 'cleaning' && <CleaningCalendar currentDate={currentDate} />}
 
       {/* Модальное окно создания/редактирования */}
       <EventModal
@@ -538,6 +635,43 @@ export const CalendarView: React.FC = () => {
         eventToEdit={eventToEdit}
         initialDate={selectedCellDate}
       />
+
+      {/* Модальное окно импорта государственных и семейных праздников */}
+      <HolidayImportModal
+        isOpen={isHolidayModalOpen}
+        onClose={() => setIsHolidayModalOpen(false)}
+      />
+    </PageWrap>
+  );
+};
+
+
+/** «⋯» в календаре: редкие действия. */
+const CalendarMore: React.FC<{ onSound: () => void; onExport: () => void }> = ({ onSound, onExport }) => {
+  const [open, setOpen] = useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (!open) return;
+    const close = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [open]);
+  const item = 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left text-[var(--text)] hover:bg-[var(--surface-3)]';
+  return (
+    <div ref={ref} className="relative">
+      <IconBtn aria-label="Ещё" title="Ещё" onClick={() => setOpen((v) => !v)} className="border border-[var(--line)] bg-[var(--surface)] !w-10 !h-10 !rounded-full">
+        <MoreHorizontal className="w-4 h-4" />
+      </IconBtn>
+      {open && (
+        <div role="menu" className="absolute right-0 top-[calc(100%+8px)] z-40 w-64 p-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow)]">
+          <button type="button" className={item} onClick={() => { setOpen(false); onExport(); }}>
+            <Download className="w-4 h-4 text-[var(--muted)]" /> Экспорт в Apple / Google Календарь
+          </button>
+          <button type="button" className={item} onClick={() => { setOpen(false); onSound(); }}>
+            <Volume2 className="w-4 h-4 text-[var(--muted)]" /> Проверить звук напоминаний
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -17,19 +17,21 @@ import {
   ShieldAlert,
   Info,
   ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { useHousehold } from '../../context/HouseholdContext';
 import { MedicineItem, MedicineCategory, MedicineForm } from '../../types';
+import { Btn, Card, CountUp, EmptyState, FilterMenu, IconBtn, PageWrap, Segmented, Slide, Tag } from '../ui/mercury';
 
 const CATEGORY_LABELS: Record<MedicineCategory, { label: string; color: string }> = {
   fever: { label: 'Жаропонижающие', color: 'bg-rose-50 text-rose-700 border-rose-200' },
   painkiller: { label: 'Обезболивающие', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  cold: { label: 'Простуда и грипп', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-  allergy: { label: 'От аллергии', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+  cold: { label: 'Простуда и грипп', color: 'bg-[var(--accent-soft)] text-[var(--accent)] border-[var(--line)]' },
+  allergy: { label: 'От аллергии', color: 'bg-[var(--accent-soft)] text-[var(--accent)] border-[var(--line)]' },
   digestive: { label: 'ЖКТ и пищеварение', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   antiseptic: { label: 'Антисептики', color: 'bg-teal-50 text-teal-700 border-teal-200' },
   vitamins: { label: 'Витамины и БАД', color: 'bg-orange-50 text-orange-700 border-orange-200' },
-  chronic: { label: 'Постоянный приём', color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+  chronic: { label: 'Постоянный приём', color: 'bg-[var(--accent-soft)] text-[var(--accent)] border-[var(--line)]' },
   other: { label: 'Другое', color: 'bg-stone-50 text-stone-700 border-stone-200' },
 };
 
@@ -69,14 +71,14 @@ export const FirstAidView: React.FC = () => {
         status: 'expired' as const,
         diffDays: Math.abs(diffDays),
         label: `Просрочено на ${Math.abs(diffDays)} дн.`,
-        badgeClass: 'bg-rose-100 text-rose-800 border-rose-300 font-bold',
+        badgeClass: 'bg-rose-100 text-rose-800 border-rose-300 font-semibold',
       };
     } else if (diffDays <= 30) {
       return {
         status: 'critical' as const,
         diffDays,
         label: `Истекает через ${diffDays} дн.!`,
-        badgeClass: 'bg-amber-100 text-amber-800 border-amber-300 font-bold animate-pulse',
+        badgeClass: 'bg-amber-100 text-amber-800 border-amber-300 font-semibold',
       };
     } else if (diffDays <= 60) {
       return {
@@ -168,334 +170,247 @@ export const FirstAidView: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const kpi = [
+    { id: 'all' as const, label: 'Всего', value: stats.total, sub: 'наименований', Icon: Pill },
+    { id: 'safe' as const, label: 'В норме', value: stats.safe, sub: 'со свежим сроком', Icon: CheckCircle2 },
+    { id: 'attention' as const, label: 'Скоро истекают', value: stats.critical, sub: 'в ближайшие 60 дней', Icon: Clock, tone: 'warn' },
+    { id: 'low' as const, label: 'Заканчиваются', value: stats.low, sub: 'пора докупить', Icon: ShoppingCart, tone: 'warn' },
+  ];
+
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
-      {/* Медицинский дисклеймер */}
-      <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-3 sm:p-4 flex items-start gap-3 text-amber-900 text-xs shadow-2xs">
-        <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-        <p className="leading-relaxed">
-          <strong className="font-semibold text-amber-950">Медицинская оговорка:</strong> Приложение предназначено исключительно для учёта сроков годности и домашнего инвентаря. Не используйте информацию из приложения для самолечения. Всегда консультируйтесь с лечащим врачом или фармацевтом перед приёмом лекарственных препаратов.
-        </p>
-      </div>
-
-      {/* 1. Верхний информационный дашборд аптечки */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-white rounded-3xl p-5 border border-[#E8E2D4] shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#8C867D]">Всего в аптечке</span>
-            <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#E15A42] flex items-center justify-center">
-              <Pill className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black text-[#1F1E1C] mt-2">{stats.total}</div>
-          <span className="text-[11px] text-[#8C867D]">наименований средств</span>
-        </div>
-
-        <div className="bg-white rounded-3xl p-5 border border-[#E8E2D4] shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-emerald-800">В норме</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black text-emerald-700 mt-2">{stats.safe}</div>
-          <span className="text-[11px] text-emerald-600 font-medium">актуальные сроки</span>
-        </div>
-
-        <div
-          onClick={() => setStatusFilter(statusFilter === 'attention' ? 'all' : 'attention')}
-          className={`bg-white rounded-3xl p-5 border transition-all cursor-pointer shadow-xs ${
-            statusFilter === 'attention'
-              ? 'border-amber-500 ring-2 ring-amber-500/20'
-              : 'border-[#E8E2D4] hover:border-amber-300'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-amber-800">Скоро истекают</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black text-amber-700 mt-2">{stats.critical}</div>
-          <span className="text-[11px] text-amber-600 font-medium">в ближайшие 60 дней</span>
-        </div>
-
-        <div
-          onClick={() => setStatusFilter(statusFilter === 'attention' ? 'all' : 'attention')}
-          className={`bg-white rounded-3xl p-5 border transition-all cursor-pointer shadow-xs ${
-            stats.expired > 0
-              ? 'border-rose-300 bg-rose-50/30 hover:border-rose-400'
-              : 'border-[#E8E2D4]'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-rose-800">Просрочено</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black text-rose-700 mt-2">{stats.expired}</div>
-          <span className="text-[11px] text-rose-600 font-medium">требуют утилизации</span>
-        </div>
-      </div>
-
-      {/* Предупреждение о просроченных лекарствах, если они есть */}
-      {stats.expired > 0 && (
-        <div className="bg-rose-50 border border-rose-200 rounded-3xl p-4 flex items-center justify-between text-xs text-rose-800 shadow-2xs">
-          <div className="flex items-center space-x-3">
-            <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0" />
-            <div>
-              <strong className="font-bold">Внимание: обнаружены просроченные препараты ({stats.expired} шт.)!</strong>
-              <p className="text-[11px] text-rose-700 mt-0.5">
-                Использование препаратов с истёкшим сроком годности может быть небезопасно. Проверьте карточки с красным бейджем.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setStatusFilter('attention')}
-            className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shrink-0 cursor-pointer shadow-2xs"
-          >
-            Показать
-          </button>
-        </div>
-      )}
-
-      {/* 2. Панель поиска, фильтров и кнопка добавления */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-3xl border border-[#E8E2D4] shadow-xs">
-        <div className="flex flex-1 items-center space-x-3">
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-[#8C867D] absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Поиск по названию, веществу, назначению или полке..."
-              className="w-full pl-9 pr-4 py-2 text-xs bg-[#FAF7F2] border border-[#DDD7CB] rounded-xl focus:outline-none focus:border-[#E15A42]"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-1.5 overflow-x-auto">
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer shrink-0 ${
-                statusFilter === 'all'
-                  ? 'bg-[#1F1E1C] text-white'
-                  : 'bg-[#FAF7F2] text-[#5C564B] hover:bg-[#EFECE4]'
-              }`}
-            >
-              Все
-            </button>
-            <button
-              onClick={() => setStatusFilter('attention')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer shrink-0 ${
-                statusFilter === 'attention'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-[#FAF7F2] text-[#5C564B] hover:bg-amber-50 hover:text-amber-700'
-              }`}
-            >
-              ⚠️ Сроки ({stats.critical + stats.expired})
-            </button>
-            <button
-              onClick={() => setStatusFilter('low')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer shrink-0 ${
-                statusFilter === 'low'
-                  ? 'bg-rose-600 text-white'
-                  : 'bg-[#FAF7F2] text-[#5C564B] hover:bg-rose-50 hover:text-rose-700'
-              }`}
-            >
-              🛒 Заканчиваются ({stats.low})
-            </button>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleOpenAddModal}
-          className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-[#E15A42] hover:bg-[#D04E37] text-white text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Добавить лекарство</span>
-        </button>
-      </div>
-
-      {/* 3. Горизонтальные бейджи категорий */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-thin">
-        <button
-          onClick={() => setSelectedCategory('all')}
-          className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all cursor-pointer ${
-            selectedCategory === 'all'
-              ? 'bg-[#E15A42] text-white shadow-2xs'
-              : 'bg-white border border-[#E8E2D4] text-[#5C564B] hover:bg-orange-50/50'
-          }`}
-        >
-          Все категории ({medicines.length})
-        </button>
-        {Object.entries(CATEGORY_LABELS).map(([catKey, val]) => {
-          const count = medicines.filter((m) => m.category === catKey).length;
-          if (count === 0 && selectedCategory !== catKey) return null;
-          const isSelected = selectedCategory === catKey;
-          return (
-            <button
-              key={catKey}
-              onClick={() => setSelectedCategory(isSelected ? 'all' : (catKey as MedicineCategory))}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium shrink-0 border transition-all cursor-pointer flex items-center space-x-1.5 ${
-                isSelected
-                  ? 'bg-[#1F1E1C] text-white border-[#1F1E1C] shadow-2xs'
-                  : 'bg-white border-[#E8E2D4] text-[#4A453C] hover:bg-[#F7F4EE]'
-              }`}
-            >
-              <span>{val.label}</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/20' : 'bg-stone-100'}`}>
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 4. Сетка карточек лекарств */}
-      {filteredMedicines.length === 0 ? (
-        <div className="bg-white rounded-3xl p-12 text-center border border-[#E8E2D4] space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-orange-50 text-[#E15A42] flex items-center justify-center mx-auto">
-            <Pill className="w-7 h-7" />
-          </div>
-          <h3 className="font-bold text-base text-[#1F1E1C]">Препараты не найдены</h3>
-          <p className="text-xs text-[#8C867D] max-w-sm mx-auto">
-            Попробуйте изменить поисковый запрос или сбросить фильтры категорий.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredMedicines.map((med) => {
-            const exp = getExpiryStatus(med.expiryDate);
-            const catInfo = CATEGORY_LABELS[med.category] || CATEGORY_LABELS.other;
-
+    <PageWrap>
+      {/* Сводка аптечки */}
+      <Card>
+        <div className="grid grid-cols-2 lg:grid-cols-4">
+          {kpi.map((k, i) => {
+            const clickable = k.id === 'attention' || k.id === 'low';
+            const active = clickable && statusFilter === k.id;
             return (
-              <div
-                key={med.id}
-                className={`bg-white rounded-3xl p-5 border shadow-xs transition-all flex flex-col justify-between space-y-4 hover:shadow-md relative overflow-hidden ${
-                  exp.status === 'expired'
-                    ? 'border-rose-300 ring-1 ring-rose-200'
-                    : exp.status === 'critical'
-                    ? 'border-amber-300 ring-1 ring-amber-200'
-                    : 'border-[#E8E2D4]'
-                }`}
+              <button
+                key={k.id}
+                type="button"
+                disabled={!clickable}
+                onClick={() => clickable && setStatusFilter(active ? 'all' : (k.id as 'attention' | 'low'))}
+                aria-pressed={clickable ? active : undefined}
+                className={`text-left p-5 sm:p-6 transition-colors border-[var(--line)] disabled:cursor-default disabled:opacity-100 ${ clickable ? 'hover:bg-[var(--surface-3)]' : '' } ${active ? 'bg-[var(--accent-soft)]' : ''} ${i % 2 === 1 ? 'border-l' : ''} ${ i >= 2 ? 'border-t lg:border-t-0' : '' } ${i === 2 ? 'lg:border-l' : ''} ${i === 0 ? 'rounded-tl-2xl lg:rounded-l-2xl' : ''} ${ i === 3 ? 'rounded-br-2xl lg:rounded-r-2xl' : '' }`}
               >
-                {/* Верхняя строка карточки: Категория и форма выпуска */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold border ${catInfo.color}`}>
-                      {catInfo.label}
-                    </span>
-                    <span className="text-[11px] text-[#8C867D] bg-[#FAF7F2] px-2 py-0.5 rounded-lg border border-[#EDE7DB]">
-                      {FORM_LABELS[med.form] || med.form}
-                    </span>
-                  </div>
-
-                  {/* Название и активное вещество */}
-                  <div>
-                    <h4 className="font-bold text-base text-[#1F1E1C] leading-snug">{med.name}</h4>
-                    {med.activeSubstance && (
-                      <p className="text-xs text-[#8C867D] mt-0.5">
-                        Действующее в-во: <span className="font-medium text-[#4A443B]">{med.activeSubstance}</span>
-                      </p>
-                    )}
-                    {med.dosage && (
-                      <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 text-[11px] font-semibold">
-                        Дозировка: {med.dosage}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Статус срока годности */}
-                  <div className="pt-1">
-                    <div className={`px-3 py-1.5 rounded-xl border text-xs flex items-center justify-between ${exp.badgeClass}`}>
-                      <div className="flex items-center space-x-1.5">
-                        <Calendar className="w-3.5 h-3.5 shrink-0" />
-                        <span>{exp.label}</span>
-                      </div>
-                      <span className="text-[10px] uppercase font-bold opacity-80">
-                        {exp.status === 'expired' ? 'Выбросить' : exp.status === 'critical' ? 'Срочно' : 'В норме'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Инструкция и применение */}
-                  {med.instructions && (
-                    <div className="p-2.5 rounded-xl bg-[#FAF7F2] border border-[#EFECE4] text-xs text-[#5C564B] space-y-1">
-                      <div className="flex items-center space-x-1 font-semibold text-[#1F1E1C] text-[11px]">
-                        <Info className="w-3 h-3 text-[#E15A42]" />
-                        <span>Как принимать:</span>
-                      </div>
-                      <p className="leading-relaxed line-clamp-2">{med.instructions}</p>
-                    </div>
-                  )}
-
-                  {/* Для кого и где лежит */}
-                  <div className="space-y-1 text-xs text-[#6B655B] pt-1">
-                    {med.forWhom && (
-                      <div className="flex items-center space-x-1.5">
-                        <span className="text-[11px] text-[#8C867D]">Для кого:</span>
-                        <span className="font-medium text-[#1F1E1C]">{med.forWhom}</span>
-                      </div>
-                    )}
-                    {med.location && (
-                      <div className="flex items-center space-x-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-[#E15A42] shrink-0" />
-                        <span className="font-medium text-[#1F1E1C] truncate">{med.location}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between pt-1 text-[11px]">
-                      <span className="text-[#8C867D]">Остаток:</span>
-                      <span className="font-semibold text-[#1F1E1C]">{med.quantity}</span>
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2 text-[14px] text-[var(--muted)]">
+                  <k.Icon className="w-4 h-4" />
+                  {k.label}
                 </div>
-
-                {/* Нижняя панель действий */}
-                <div className="pt-3 border-t border-[#F0ECE1] flex items-center justify-between gap-2">
-                  <button
-                    type="button"
-                    onClick={() => addMedicineToShoppingList(med)}
-                    className="flex-1 flex items-center justify-center space-x-1.5 py-1.5 px-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-[#E15A42] text-xs font-bold border border-orange-200 transition-colors cursor-pointer"
-                    title="Добавить этот препарат в список покупок «Аптека»"
-                  >
-                    <ShoppingCart className="w-3.5 h-3.5" />
-                    <span>В покупки</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleEdit(med)}
-                    className="p-2 rounded-xl text-[#8C867D] hover:text-[#1F1E1C] hover:bg-[#F2EFE9] transition-colors cursor-pointer"
-                    title="Редактировать"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => deleteMedicine(med.id)}
-                    className="p-2 rounded-xl text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
-                    title="Удалить из аптечки"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                <div
+                  className={`mt-2 text-[32px] leading-none font-semibold tabular-nums tracking-[-0.02em] ${ k.tone === 'warn' && k.value > 0 ? 'text-amber-600' : 'text-[var(--text)]' }`}
+                >
+                  <CountUp value={k.value} />
                 </div>
-              </div>
+                <div className="mt-1.5 text-[14px] text-[var(--muted)]">{k.sub}</div>
+              </button>
             );
           })}
         </div>
-      )}
+        {stats.expired > 0 && (
+          <button
+            type="button"
+            onClick={() => setStatusFilter('attention')}
+            className="group w-full flex items-center gap-3 px-5 sm:px-6 py-3.5 border-t border-[var(--line)] text-left text-sm text-[var(--text-2)] hover:bg-[var(--surface-3)] transition-colors rounded-b-2xl"
+          >
+            <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+            <span className="flex-1">Просрочено: {stats.expired}. Такие лекарства лучше утилизировать.</span>
+            <span className="flex items-center gap-0.5 text-[var(--accent)] font-medium">
+              Показать
+              <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </button>
+        )}
+      </Card>
+
+      {/* Поиск, фильтры, добавление */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[220px] max-w-sm">
+          <Search className="w-4 h-4 text-[var(--muted)] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Название, вещество, место"
+            className="w-full pl-10 pr-4 py-2.5 rounded-full bg-[var(--surface)] border border-[var(--line)] text-sm text-[var(--text)] focus:outline-none focus:border-[var(--accent)] transition-colors"
+          />
+        </div>
+        <Segmented
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { id: 'all', label: 'Все' },
+            { id: 'attention', label: 'Сроки', count: stats.critical + stats.expired },
+            { id: 'low', label: 'Заканчиваются', count: stats.low },
+          ]}
+        />
+        <FilterMenu
+          label="Категория"
+          value={selectedCategory}
+          allValue={'all' as MedicineCategory | 'all'}
+          onChange={setSelectedCategory}
+          options={[
+            { id: 'all' as MedicineCategory | 'all', label: 'Все категории' },
+            ...(Object.keys(CATEGORY_LABELS) as MedicineCategory[]).map((c) => ({ id: c, label: CATEGORY_LABELS[c].label })),
+          ]}
+        />
+        <Btn variant="primary" icon={<Plus className="w-4 h-4" />} onClick={handleOpenAddModal} className="ml-auto">
+          Добавить
+        </Btn>
+      </div>
+
+      {/* Таблица лекарств */}
+      <Card className="p-2 sm:p-3">
+        <Slide k={statusFilter + selectedCategory} index={['all', 'attention', 'low'].indexOf(statusFilter)}>
+        {filteredMedicines.length === 0 ? (
+          <EmptyState
+            icon={<Pill className="w-5 h-5" />}
+            title={medicines.length === 0 ? 'Аптечка пуста' : 'Ничего не найдено'}
+            text={
+              medicines.length === 0
+                ? 'Добавьте лекарства со сроком годности — напомним, когда пора заменить.'
+                : 'Измените поиск или фильтры.'
+            }
+            action={
+              <Btn variant="primary" icon={<Plus className="w-4 h-4" />} onClick={handleOpenAddModal}>
+                Добавить лекарство
+              </Btn>
+            }
+          />
+        ) : (
+          <>
+            <div className="hidden md:grid grid-cols-[44px_1fr_170px_120px_130px_112px] gap-x-3 px-3 pt-2 pb-2 text-xs text-[var(--muted)] border-b border-[var(--line)]">
+              <span />
+              <span>Лекарство</span>
+              <span>Где лежит</span>
+              <span>Остаток</span>
+              <span>Годен до</span>
+              <span />
+            </div>
+            {filteredMedicines.map((med) => {
+              const exp = getExpiryStatus(med.expiryDate);
+              const bad = exp.status === 'expired';
+              const soon = exp.status === 'critical' || exp.status === 'warning';
+              const open = expanded === med.id;
+              return (
+                <div key={med.id} className="border-t border-[var(--line)] first:border-t-0">
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={open}
+                    onClick={() => setExpanded(open ? null : med.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') setExpanded(open ? null : med.id);
+                    }}
+                    className="group grid grid-cols-[44px_1fr_auto] md:grid-cols-[44px_1fr_170px_120px_130px_112px] items-center gap-x-3 px-2 sm:px-3 py-3 rounded-xl hover:bg-[var(--surface-3)] focus-visible:bg-[var(--surface-3)] outline-none transition-colors cursor-pointer"
+                  >
+                    <span
+                      className={`w-10 h-10 rounded-full grid place-items-center border ${ bad ? 'border-red-300 text-red-600' : soon ? 'border-amber-300 text-amber-600' : 'border-[var(--line-strong)] text-[var(--muted)]' }`}
+                    >
+                      <Pill className="w-4 h-4" />
+                    </span>
+
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-[16px] font-medium text-[var(--text)] line-clamp-2 md:line-clamp-1 break-words">{med.name}</span>
+                        {med.isLow && <Tag tone="warn">Заканчивается</Tag>}
+                      </div>
+                      <div className="text-[14px] text-[var(--muted)] truncate mt-0.5">
+                        {[CATEGORY_LABELS[med.category]?.label, med.activeSubstance, med.dosage].filter(Boolean).join(', ')}
+                      </div>
+                    </div>
+
+                    <span className="hidden md:block text-sm text-[var(--text-2)] truncate">
+                      {med.location || '—'}
+                      {med.forWhom && <span className="block text-[14px] text-[var(--muted)] truncate">{med.forWhom}</span>}
+                    </span>
+
+                    <span className="hidden md:block text-sm text-[var(--text-2)] truncate">{med.quantity}</span>
+
+                    <span
+                      className={`text-[14px] md:text-sm tabular-nums text-right md:text-left max-w-[110px] md:max-w-none ${ bad ? 'text-red-600 font-medium' : soon ? 'text-amber-600 font-medium' : 'text-[var(--text-2)]' }`}
+                    >
+                      {bad ? 'Просрочено' : soon ? `${exp.diffDays} дн.` : new Date(med.expiryDate).toLocaleDateString('ru-RU', { month: 'short', year: 'numeric' })}
+                      {(bad || soon) && (
+                        <span className="block text-[14px] font-normal text-[var(--muted)]">
+                          {new Date(med.expiryDate).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                      )}
+                    </span>
+
+                    <div className="hidden md:flex items-center justify-end gap-0.5 hover-actions opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                      <IconBtn
+                        title="В список покупок"
+                        aria-label="В список покупок"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addMedicineToShoppingList(med);
+                        }}
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                      </IconBtn>
+                      <IconBtn
+                        title="Редактировать"
+                        aria-label="Редактировать"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(med);
+                        }}
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </IconBtn>
+                      <IconBtn
+                        danger
+                        title="Удалить"
+                        aria-label="Удалить"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteMedicine(med.id);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </IconBtn>
+                    </div>
+                  </div>
+
+                  {open && (
+                    <div className="mx-2 sm:mx-3 mb-3 ml-[56px] sm:ml-[68px] p-4 rounded-xl bg-[var(--surface-2)] border border-[var(--line)] text-sm space-y-2">
+                      {med.instructions && (
+                        <p className="text-[var(--text-2)] leading-relaxed">
+                          <span className="text-[var(--muted)]">Как принимать: </span>
+                          {med.instructions}
+                        </p>
+                      )}
+                      <div className="flex flex-wrap gap-x-6 gap-y-1 text-[14px] text-[var(--muted)]">
+                        <span>Форма: {FORM_LABELS[med.form]}</span>
+                        {med.forWhom && <span>Для кого: {med.forWhom}</span>}
+                        {med.location && <span>Где: {med.location}</span>}
+                        <span>Остаток: {med.quantity}</span>
+                        {med.openedDate && <span>Вскрыто: {new Date(med.openedDate).toLocaleDateString('ru-RU')}</span>}
+                      </div>
+                      {med.notes && <p className="text-[14px] text-[var(--muted)]">{med.notes}</p>}
+                      <div className="flex gap-2 pt-1 md:hidden">
+                        <Btn size="sm" icon={<ShoppingCart className="w-3.5 h-3.5" />} onClick={() => addMedicineToShoppingList(med)}>
+                          В покупки
+                        </Btn>
+                        <Btn size="sm" icon={<Edit2 className="w-3.5 h-3.5" />} onClick={() => handleEdit(med)}>
+                          Изменить
+                        </Btn>
+                        <Btn size="sm" variant="ghost" onClick={() => deleteMedicine(med.id)}>
+                          Удалить
+                        </Btn>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </>
+        )}
+        </Slide>
+      </Card>
 
       {/* Модальное окно добавления / редактирования лекарства */}
       {isModalOpen && (
@@ -513,7 +428,7 @@ export const FirstAidView: React.FC = () => {
           }}
         />
       )}
-    </div>
+    </PageWrap>
   );
 };
 
@@ -608,18 +523,18 @@ const MedicineModal: React.FC<MedicineModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-[#FAF7F2] rounded-3xl max-w-lg w-full border border-[#E5DFD3] shadow-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D4]">
+      <div className="bg-[var(--surface-3)] rounded-2xl max-w-lg w-full border border-[var(--line)] shadow-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+        <div className="flex items-center justify-between pb-2 border-b border-[var(--line)]">
           <div className="flex items-center space-x-2">
-            <Pill className="w-5 h-5 text-[#E15A42]" />
-            <h3 className="font-bold text-base text-[#1F1E1C]">
+            <Pill className="w-5 h-5 text-[var(--accent)]" />
+            <h3 className="font-semibold text-base text-[var(--text)]">
               {medicine ? 'Редактировать препарат' : 'Новый препарат в аптечку'}
             </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#7A746B] hover:text-[#1F1E1C] hover:bg-[#EDE8DC] cursor-pointer"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--line)] cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -628,8 +543,8 @@ const MedicineModal: React.FC<MedicineModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {/* Название */}
           <div className="space-y-1">
-            <label className="font-semibold text-[#1F1E1C]">
-              Название препарата <span className="text-[#E15A42]">*</span>
+            <label className="font-semibold text-[var(--text)]">
+              Название препарата <span className="text-[var(--accent)]">*</span>
             </label>
             <input
               type="text"
@@ -637,30 +552,30 @@ const MedicineModal: React.FC<MedicineModalProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Например: Нурофен детский, Парацетамол, Супрастин"
-              className="w-full px-3 py-2 bg-white border border-[#DDD7CB] rounded-xl focus:outline-none focus:border-[#E15A42]"
+              className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--line-strong)] rounded-xl focus:outline-none focus:border-[var(--accent)]"
             />
           </div>
 
           {/* Действующее вещество и дозировка */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="font-semibold text-[#1F1E1C]">Действующее в-во</label>
+              <label className="font-semibold text-[var(--text)]">Действующее в-во</label>
               <input
                 type="text"
                 value={activeSubstance}
                 onChange={(e) => setActiveSubstance(e.target.value)}
                 placeholder="Ибупрофен, Лоратадин..."
-                className="w-full px-3 py-2 bg-white border border-[#DDD7CB] rounded-xl focus:outline-none focus:border-[#E15A42]"
+                className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--line-strong)] rounded-xl focus:outline-none focus:border-[var(--accent)]"
               />
             </div>
             <div className="space-y-1">
-              <label className="font-semibold text-[#1F1E1C]">Дозировка</label>
+              <label className="font-semibold text-[var(--text)]">Дозировка</label>
               <input
                 type="text"
                 value={dosage}
                 onChange={(e) => setDosage(e.target.value)}
                 placeholder="500 мг, 100 мг/5 мл..."
-                className="w-full px-3 py-2 bg-white border border-[#DDD7CB] rounded-xl focus:outline-none focus:border-[#E15A42]"
+                className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--line-strong)] rounded-xl focus:outline-none focus:border-[var(--accent)]"
               />
             </div>
           </div>
@@ -668,11 +583,11 @@ const MedicineModal: React.FC<MedicineModalProps> = ({
           {/* Категория и форма выпуска */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="font-semibold text-[#1F1E1C]">Категория назначения</label>
+              <label className="font-semibold text-[var(--text)]">Категория назначения</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as MedicineCategory)}
-                className="w-full px-3 py-2 bg-white border border-[#DDD7CB] rounded-xl focus:outline-none focus:border-[#E15A42]"
+                className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--line-strong)] rounded-xl focus:outline-none focus:border-[var(--accent)]"
               >
                 {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>
@@ -682,11 +597,11 @@ const MedicineModal: React.FC<MedicineModalProps> = ({
               </select>
             </div>
             <div className="space-y-1">
-              <label className="font-semibold text-[#1F1E1C]">Форма выпуска</label>
+              <label className="font-semibold text-[var(--text)]">Форма выпуска</label>
               <select
                 value={form}
                 onChange={(e) => setForm(e.target.value as MedicineForm)}
-                className="w-full px-3 py-2 bg-white border border-[#DDD7CB] rounded-xl focus:outline-none focus:border-[#E15A42]"
+                className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--line-strong)] rounded-xl focus:outline-none focus:border-[var(--accent)]"
               >
                 {Object.entries(FORM_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>
@@ -700,24 +615,24 @@ const MedicineModal: React.FC<MedicineModalProps> = ({
           {/* Срок годности и дата вскрытия */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="font-semibold text-[#1F1E1C]">
-                Срок годности (годен до) <span className="text-[#E15A42]">*</span>
+              <label className="font-semibold text-[var(--text)]">
+                Срок годности (годен до) <span className="text-[var(--accent)]">*</span>
               </label>
               <input
                 type="date"
                 required
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-[#DDD7CB] rounded-xl focus:outline-none focus:border-[#E15A42]"
+                className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--line-strong)] rounded-xl focus:outline-none focus:border-[var(--accent)]"
               />
             </div>
             <div className="space-y-1">
-              <label className="font-semibold text-[#1F1E1C]">Дата вскрытия (для сиропов/капель)</label>
+              <label className="font-semibold text-[var(--text)]">Дата вскрытия (для сиропов/капель)</label>
               <input
                 type="date"
                 value={openedDate}
                 onChange={(e) => setOpenedDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-[#DDD7CB] rounded-xl focus:outline-none focus:border-[#E15A42]"
+                className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--line-strong)] rounded-xl focus:outline-none focus:border-[var(--accent)]"
               />
             </div>
           </div>
@@ -725,48 +640,48 @@ const MedicineModal: React.FC<MedicineModalProps> = ({
           {/* Для кого и остаток */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="font-semibold text-[#1F1E1C]">Для кого</label>
+              <label className="font-semibold text-[var(--text)]">Для кого</label>
               <input
                 type="text"
                 value={forWhom}
                 onChange={(e) => setForWhom(e.target.value)}
                 placeholder="Вся семья, Дети, Папа..."
-                className="w-full px-3 py-2 bg-white border border-[#DDD7CB] rounded-xl focus:outline-none focus:border-[#E15A42]"
+                className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--line-strong)] rounded-xl focus:outline-none focus:border-[var(--accent)]"
               />
             </div>
             <div className="space-y-1">
-              <label className="font-semibold text-[#1F1E1C]">Остаток / количество</label>
+              <label className="font-semibold text-[var(--text)]">Остаток / количество</label>
               <input
                 type="text"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="1 фл. (70%), 8 таб..."
-                className="w-full px-3 py-2 bg-white border border-[#DDD7CB] rounded-xl focus:outline-none focus:border-[#E15A42]"
+                className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--line-strong)] rounded-xl focus:outline-none focus:border-[var(--accent)]"
               />
             </div>
           </div>
 
           {/* Место хранения */}
           <div className="space-y-1">
-            <label className="font-semibold text-[#1F1E1C]">Место хранения в доме</label>
+            <label className="font-semibold text-[var(--text)]">Место хранения в доме</label>
             <input
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="Аптечка в коридоре (верхняя полка), Холодильник..."
-              className="w-full px-3 py-2 bg-white border border-[#DDD7CB] rounded-xl focus:outline-none focus:border-[#E15A42]"
+              className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--line-strong)] rounded-xl focus:outline-none focus:border-[var(--accent)]"
             />
           </div>
 
           {/* Инструкции по применению */}
           <div className="space-y-1">
-            <label className="font-semibold text-[#1F1E1C]">Схема приёма и дозировка</label>
+            <label className="font-semibold text-[var(--text)]">Схема приёма и дозировка</label>
             <textarea
               rows={2}
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
               placeholder="Например: по 1 таб 2 раза в день после еды; при t > 38.5..."
-              className="w-full px-3 py-2 bg-white border border-[#DDD7CB] rounded-xl focus:outline-none focus:border-[#E15A42] resize-none"
+              className="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--line-strong)] rounded-xl focus:outline-none focus:border-[var(--accent)] resize-none"
             />
           </div>
 
@@ -776,25 +691,25 @@ const MedicineModal: React.FC<MedicineModalProps> = ({
               type="checkbox"
               checked={isLow}
               onChange={(e) => setIsLow(e.target.checked)}
-              className="w-4 h-4 rounded text-[#E15A42] focus:ring-[#E15A42]"
+              className="w-4 h-4 rounded text-[var(--accent)] focus:ring-[var(--accent)]"
             />
-            <span className="font-medium text-[#1F1E1C]">
+            <span className="font-medium text-[var(--text)]">
               Препарат заканчивается (требуется пополнить запас)
             </span>
           </label>
 
           {/* Кнопки сохранения */}
-          <div className="flex items-center space-x-2 pt-3 border-t border-[#E8E2D4]">
+          <div className="flex items-center space-x-2 pt-3 border-t border-[var(--line)]">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-[#DDD7CB] hover:bg-[#F2ECE1] text-[#5C564B] font-semibold transition-colors cursor-pointer"
+              className="flex-1 py-2.5 rounded-xl border border-[var(--line-strong)] hover:bg-[var(--surface-3)] text-[var(--text-2)] font-semibold transition-colors cursor-pointer"
             >
               Отмена
             </button>
             <button
               type="submit"
-              className="flex-1 py-2.5 rounded-xl bg-[#E15A42] hover:bg-[#D04E37] text-white font-bold transition-all shadow-xs cursor-pointer"
+              className="flex-1 py-2.5 rounded-full bg-[var(--accent)] hover:brightness-110 text-white font-semibold transition-all shadow-[var(--shadow)] cursor-pointer"
             >
               Сохранить
             </button>

@@ -77,9 +77,9 @@ export const ContactModal: React.FC<ContactModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-lg bg-[#FCFBF8] rounded-3xl border border-[#EBE7DF] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="px-6 py-4 border-b border-[#EBE7DF] flex items-center justify-between bg-white">
-          <h3 className="text-base font-bold text-[#1F1D1A]">
+      <div className="w-full max-w-lg bg-[var(--surface-2)] rounded-2xl border border-[var(--line)] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="px-6 py-4 border-b border-[var(--line)] flex items-center justify-between bg-[var(--surface)]">
+          <h3 className="text-base font-semibold text-[var(--text)]">
             {contactToEdit ? 'Редактировать контакт' : 'Новый контакт дома'}
           </h3>
           <button
@@ -92,7 +92,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
 
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
           <div>
-            <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+            <label className="block text-xs font-semibold text-[var(--text)] mb-1">
               Имя мастера / Название службы *
             </label>
             <input
@@ -101,19 +101,19 @@ export const ContactModal: React.FC<ContactModalProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Например: Андрей Николаевич, Диспетчерская ЖКХ..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E3DFD5] text-sm text-[#1F1D1A] focus:outline-none focus:ring-2 focus:ring-[#E15A42]/30 focus:border-[#E15A42]"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Категория
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as ContactCategory)}
-                className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#1F1D1A]"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-xs text-[var(--text)]"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat.id} value={cat.id}>
@@ -124,7 +124,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Специализация
               </label>
               <input
@@ -132,13 +132,13 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                 value={specialty}
                 onChange={(e) => setSpecialty(e.target.value)}
                 placeholder="Сантехника, тёплые полы..."
-                className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#1F1D1A]"
+                className="w-full px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-xs text-[var(--text)]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+            <label className="block text-xs font-semibold text-[var(--text)] mb-1">
               Номер телефона *
             </label>
             <input
@@ -147,12 +147,12 @@ export const ContactModal: React.FC<ContactModalProps> = ({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+7 (999) 000-00-00"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#1F1D1A]"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-xs text-[var(--text)]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+            <label className="block text-xs font-semibold text-[var(--text)] mb-1">
               Адрес или зона выезда
             </label>
             <input
@@ -160,12 +160,12 @@ export const ContactModal: React.FC<ContactModalProps> = ({
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Наш район, ЖК или адрес офиса..."
-              className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#1F1D1A]"
+              className="w-full px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-xs text-[var(--text)]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#1F1D1A] mb-1">
+            <label className="block text-xs font-semibold text-[var(--text)] mb-1">
               Заметки (цены, качество, график)
             </label>
             <textarea
@@ -173,11 +173,11 @@ export const ContactModal: React.FC<ContactModalProps> = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Проверен временем, звонить до 21:00..."
-              className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3DFD5] text-xs text-[#1F1D1A] resize-none"
+              className="w-full px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--line)] text-xs text-[var(--text)] resize-none"
             />
           </div>
 
-          <div className="pt-4 flex items-center justify-end space-x-3 border-t border-[#EBE7DF]">
+          <div className="pt-4 flex items-center justify-end space-x-3 border-t border-[var(--line)]">
             <button
               type="button"
               onClick={onClose}
@@ -187,7 +187,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-[#E15A42] hover:bg-[#D04931] text-white text-xs font-bold shadow-md shadow-orange-600/20 active:scale-[0.98] transition-all cursor-pointer"
+              className="px-5 py-2.5 rounded-full bg-[var(--accent)] hover:brightness-110 text-white text-xs font-semibold active:scale-[0.98] transition-all cursor-pointer"
             >
               {contactToEdit ? 'Сохранить' : 'Сохранить контакт'}
             </button>

@@ -82,7 +82,7 @@ const CATEGORY_KEYWORDS: Record<ShoppingCategory, string[]> = {
     'vitamin', 'medicine', 'pill', 'plaster', 'drops',
   ],
   sweets: [
-    'шоколад', 'конфет', 'печень', 'торт', 'пирожн', 'мармелад', 'зефир', 'пастил',
+    'шоколад', 'конфет', 'торт', 'пирожн', 'мармелад', 'зефир', 'пастил',
     'чипс', 'снек', 'вафл', 'халв', 'морожен', 'сухар', 'леденц', 'батончик',
     // греческий / английский
     'σοκολάτα', 'μπισκότα', 'γλυκό', 'παγωτό',
@@ -155,20 +155,57 @@ const GENITIVE_NORMALIZER: Record<string, string> = {
 /**
  * Определяет категорию товара по его названию
  */
-export function detectShoppingCategory(
-  name: string,
-  fallback: ShoppingCategory = 'produce'
-): ShoppingCategory {
-  const lower = name.toLowerCase().trim();
+// Сначала — однозначные словосочетания (они важнее отдельных слов):
+// «зубная паста» — не макароны, «сливочное масло» — не бакалея, «печенье» — не печень, «шоколад» — не кола.
+const PHRASE_RULES: [RegExp, ShoppingCategory][] = [
+  [/туалетн\S* бумаг|бумаг\S* туалетн|бумажн\S* (полотенц|салфет)|влажн\S* салфет/, 'household'],
+  [/стиральн\S* порош|порош\S* (для|стиральн)|гел\S* для (стирк|душа|посуд|унитаз)|средств\S* для|для мыть\S* посуд|кондиционер для бель|ополаскивател/, 'household'],
+  [/зубн\S* (паст|щетк|нит)|туалетн\S* вод|гел\S* для душа|жидк\S* мыл/, 'household'],
+  [/(пакет|мешк)\S* для мусор|мусорн\S* (пакет|мешк)|спрей для|таблетк\S* для посудомо|капсул\S* для стирк|освежител/, 'household'],
+  [/корм\S* для|наполнител/, 'other'],
+  [/томатн\S* паст|(черн|душист|красн)\S* перец (молот|горош)|перец (черн|молот|горош)|молот\S* перец/, 'pantry'],
+  [/(растительн|оливков|подсолнечн|кокосов\S* масл)\S* масл|масл\S* (оливк|растит|подсолн)/, 'pantry'],
+  [/сливочн\S* масл|масл\S* сливочн|топлен\S* масл/, 'dairy'],
+  [/(овсян|миндальн|кокосов|соев|рисов)\S* молок|молок\S* (овсян|миндальн|кокосов|соев|рисов)/, 'drinks'],
+  [/(апельсин|яблоч|томатн|виноград|вишнев|мультифрукт)\S* сок|сок\S* (апельсин|яблоч|томатн|виноград|вишн)/, 'drinks'],
+  [/печенье|печенек|печенюш/, 'sweets'],
+  [/шоколад|какао-?паст/, 'sweets'],
+  [/консерв\S* (кукуруз|горош|фасол|тунец|тунц)|(кукуруз|горош|фасол)\S* консерв/, 'pantry'],
+];
 
-  for (const [cat, keywords] of Object.entries(CATEGORY_KEYWORDS) as [ShoppingCategory, string[]][]) {
-    for (const kw of keywords) {
-      if (lower.includes(kw)) {
-        return cat;
-      }
-    }
+// Дополнительные основы слов, которых не хватало в списках
+const EXTRA_STEMS: Partial<Record<ShoppingCategory, string[]>> = {
+  produce: ['кукуруз', 'горошек', 'фрукт', 'овощ', 'зелен', 'батат', 'цукини', 'перец болгар', 'сладк перец'],
+  dairy: ['масло', 'сырок', 'сырки', 'сливки', 'молочн'],
+  meat: ['пельмен', 'вареник с мяс', 'сельд', 'скумбри', 'крабов', 'семга', 'сёмга', 'утк', 'сало', 'хамон'],
+  bakery: ['хлебц', 'бублик', 'сушки'],
+  pantry: ['круп', 'мюсли', 'гранол', 'кускус', 'булгур', 'киноа', 'лапш', 'вермишел', 'крахмал', 'ванил', 'разрыхлител', 'желатин', 'кукурузн хлопь'],
+  drinks: ['минеральн', 'газиров', 'тоник'],
+  household: ['бумаг', 'перчатк', 'щетк', 'швабр', 'подгузник', 'прокладк', 'ватн', 'бритв', 'дезодорант', 'крем для', 'гель', 'пакет'],
+  sweets: ['мармелад', 'пастил', 'попкорн', 'сгущ'],
+};
+
+const norm = (s: string) => s.toLowerCase().replace(/ё/g, 'е').trim();
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Порядок важен: сначала узкие категории, где слова «пересекаются» с едой
+const CATEGORY_ORDER: ShoppingCategory[] = ['household', 'pharmacy', 'sweets', 'drinks', 'meat', 'dairy', 'bakery', 'pantry', 'produce'];
+
+/** Слово должно начинаться с основы: «рис» найдётся в «рисовая», но не в «барбарис». */
+const STEM_RES: [ShoppingCategory, RegExp][] = CATEGORY_ORDER.map((cat) => {
+  const stems = [...(CATEGORY_KEYWORDS[cat] || []), ...(EXTRA_STEMS[cat] || [])].map(norm).filter(Boolean);
+  return [cat, new RegExp(`(^|[^a-zа-я\\u0370-\\u03ff])(${stems.map(escapeRe).join('|')})`, 'i')];
+});
+
+export function detectShoppingCategory(name: string, fallback: ShoppingCategory = 'other'): ShoppingCategory {
+  const lower = norm(name);
+  for (const [re, cat] of PHRASE_RULES) if (re.test(lower)) return cat;
+  // Совпадение по первым словам названия важнее, чем по уточнениям: «Сок апельсиновый» — это сок
+  const words = lower.split(/\s+/);
+  for (let n = 1; n <= words.length; n++) {
+    const head = words.slice(0, n).join(' ');
+    for (const [cat, re] of STEM_RES) if (re.test(head)) return cat;
   }
-
   return fallback;
 }
 
@@ -292,42 +329,21 @@ function isUndividablePhrase(str: string): boolean {
  *   { title: "Помидоры черри", quantity: "250 г", category: "produce" }
  * ]
  */
-/**
- * Разбивает строку по разделителю, игнорируя символы внутри круглых скобок (...)
- */
-export function splitOutsideBrackets(str: string, delimiter: RegExp = /[,;\n]+/): string[] {
-  const result: string[] = [];
-  let current = '';
-  let bracketDepth = 0;
-
-  for (let i = 0; i < str.length; i++) {
-    const char = str[i];
-    if (char === '(') bracketDepth++;
-    else if (char === ')' && bracketDepth > 0) bracketDepth--;
-
-    if (bracketDepth === 0) {
-      const rest = str.slice(i);
-      const match = rest.match(delimiter);
-      if (match && rest.startsWith(match[0])) {
-        if (current.trim()) result.push(current.trim());
-        current = '';
-        i += match[0].length - 1;
-        continue;
-      }
-    }
-    current += char;
-  }
-  if (current.trim()) result.push(current.trim());
-  return result;
-}
-
 export function parseShoppingInput(
   rawInput: string,
   options?: {
     defaultCategory?: ShoppingCategory;
     defaultQuantity?: string;
+    /** true — человек сам выбрал отдел: не угадываем */
+    forceCategory?: boolean;
   }
 ): ParsedShoppingItem[] {
+  // Отдел: если выбран вручную — он; иначе угадываем по названию; не угадали — подсказка вызывающего или «Разное»
+  const pickCategory = (title: string): ShoppingCategory => {
+    if (options?.forceCategory && options.defaultCategory) return options.defaultCategory;
+    const detected = detectShoppingCategory(title, 'other');
+    return detected !== 'other' ? detected : options?.defaultCategory || 'other';
+  };
   if (!rawInput || typeof rawInput !== 'string') return [];
 
   const trimmed = rawInput.trim();
@@ -342,27 +358,41 @@ export function parseShoppingInput(
   const parsedItems: ParsedShoppingItem[] = [];
 
   for (const line of rawLines) {
-    // 2. Сплит по запятым вне скобок (чтобы "Нурофен (Ибупрофен, 100 мг)" не разрывался)
-    const commaParts = splitOutsideBrackets(line, /,/);
+    // 2. Сплит по запятым
+    // Запятые внутри скобок не делят позицию: «Нурофен (Ибупрофен, 100 мг)» — одна позиция
+    const commaParts = line
+      .split(/,(?![^()]*\))/)
+      .map((p) => p.trim())
+      .filter(Boolean);
 
     for (const part of commaParts) {
+      // Позиция с уточнением в скобках (лекарства, модели) — берём целиком, не выдёргивая «100 мг»
+      if (/\(.*\)/.test(part)) {
+        parsedItems.push({
+          title: part.charAt(0).toUpperCase() + part.slice(1),
+          quantity: options?.defaultQuantity,
+          category: pickCategory(part),
+        });
+        continue;
+      }
       if (isUndividablePhrase(part)) {
         const { title, quantity } = extractQuantityAndTitle(part);
         if (title) {
           parsedItems.push({
             title,
             quantity: quantity || options?.defaultQuantity,
-            category: options?.defaultCategory || detectShoppingCategory(title),
+            category: pickCategory(title),
           });
         }
         continue;
       }
 
-      // 3. Сплит по союзам вне скобок: « и », « да », « плюс », « + », « & », « and », « και », « κι »
-      const subParts = splitOutsideBrackets(
-        part,
-        /(?<=[^\d\s])\s+(?:и|да|плюс|\+|&|and|και|κι)\s+(?=[^\d\s])/iu
-      );
+      // 3. Сплит по союзам: « и », « да », « плюс », « + », « & », « and », « και », « κι »
+      // Защита: не разделяем, если союз окружен цифрами (например, 1 и 1/2)
+      const subParts = part
+        .split(/(?<=[^\d\s])\s+(?:и|да|плюс|\+|&|and|και|κι)\s+(?=[^\d\s])/iu)
+        .map((sp) => sp.trim())
+        .filter(Boolean);
 
       for (const subPart of subParts) {
         if (!subPart) continue;
@@ -382,15 +412,12 @@ export function parseShoppingInput(
         }
 
         // Автоопределение категории
-        const detectedCat = detectShoppingCategory(title, options?.defaultCategory || 'produce');
+        const detectedCat = pickCategory(title);
 
         parsedItems.push({
           title,
           quantity: finalQty,
-          category:
-            options?.defaultCategory && options.defaultCategory !== 'produce'
-              ? options.defaultCategory
-              : detectedCat,
+          category: detectedCat,
         });
       }
     }

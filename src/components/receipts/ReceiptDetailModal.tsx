@@ -157,17 +157,17 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
   return (
     <>
       <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 md:p-6 overflow-y-auto">
-        <div className="bg-[#FAF9F5] w-full max-w-4xl rounded-2xl shadow-2xl border border-[#E5E0D5] flex flex-col max-h-[92vh] overflow-hidden relative animate-in fade-in duration-200">
+        <div className="bg-[var(--surface-2)] w-full max-w-4xl rounded-2xl shadow-2xl border border-[var(--line)] flex flex-col max-h-[92vh] overflow-hidden relative animate-in fade-in duration-200">
           {/* Модальное окно подтверждения удаления чека */}
           {isConfirmingDelete && (
             <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-rose-100 text-center space-y-4 animate-in fade-in zoom-in-95 duration-150">
+              <div className="bg-[var(--surface)] rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-rose-100 text-center space-y-4 animate-in fade-in zoom-in-95 duration-150">
                 <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
                   <Trash2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#1F1E1C]">Удалить чек?</h3>
-                  <p className="text-xs text-[#7A746B] mt-1">
+                  <h3 className="text-base font-semibold text-[var(--text)]">Удалить чек?</h3>
+                  <p className="text-xs text-[var(--muted)] mt-1">
                     Чек «{receipt.storeName || 'Покупки'}» на сумму {receipt.totalAmount.toFixed(2)} {receipt.currency} будет безвозвратно удален из истории вместе с фотографиями.
                   </p>
                 </div>
@@ -175,14 +175,14 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsConfirmingDelete(false)}
-                    className="flex-1 py-2 px-3 rounded-xl border border-[#DDD8CD] text-xs font-semibold text-[#5A554D] hover:bg-[#F2EFE9] transition-colors cursor-pointer"
+                    className="flex-1 py-2 px-3 rounded-xl border border-[var(--line-strong)] text-xs font-semibold text-[var(--text-2)] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
                   >
                     Отмена
                   </button>
                   <button
                     type="button"
                     onClick={handleConfirmDelete}
-                    className="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-colors flex items-center justify-center space-x-1 cursor-pointer"
+                    className="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-[var(--shadow)] transition-colors flex items-center justify-center space-x-1 cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Да, удалить</span>
@@ -192,16 +192,16 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
             </div>
           )}
           {/* Заголовок */}
-          <div className="px-6 py-4 bg-white border-b border-[#EBE7DF] flex items-center justify-between">
+          <div className="px-6 py-4 bg-[var(--surface)] border-b border-[var(--line)] flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-100 text-[#E15A42] flex items-center justify-center shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-orange-100 text-[var(--accent)] flex items-center justify-center shadow-[var(--shadow)]">
                 <Store className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-[#1F1E1C]">
+                <h2 className="text-lg font-semibold text-[var(--text)]">
                   {receipt.storeName || 'Кассовый чек'}
                 </h2>
-                <div className="flex items-center space-x-2 text-xs text-[#7A746B]">
+                <div className="flex items-center space-x-2 text-xs text-[var(--muted)]">
                   <span className="flex items-center space-x-1">
                     <Calendar className="w-3.5 h-3.5" />
                     <span>{receipt.date || 'Дата не указана'}</span>
@@ -222,7 +222,7 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                 type="button"
                 onClick={handleReparseWithGemini}
                 disabled={isReparsingAi}
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#E15A42] to-[#F28C38] hover:from-[#D14B33] hover:to-[#E07925] text-white text-xs font-bold flex items-center space-x-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+                className="px-3 py-1.5 rounded-full bg-[var(--accent)] hover:from-[var(--accent)] hover:to-[var(--accent-2)] text-white text-xs font-semibold flex items-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50"
                 title="Перераспознать чек через Gemini API без шаблонов"
               >
                 <Sparkles className={`w-3.5 h-3.5 ${isReparsingAi ? 'animate-spin' : ''}`} />
@@ -231,14 +231,14 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
               <button
                 type="button"
                 onClick={handleDeleteClick}
-                className="p-2 text-[#7A746B] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                className="p-2 text-[var(--muted)] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                 title="Удалить чек"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
               <button
                 onClick={onClose}
-                className="p-2 text-[#7A746B] hover:text-[#1F1E1C] hover:bg-[#F2EFE9] rounded-lg transition-colors"
+                className="p-2 text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--surface-3)] rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -249,15 +249,15 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {/* Верхние показатели */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="bg-white p-3.5 rounded-xl border border-[#E8E4DA] shadow-xs flex flex-col justify-between">
+              <div className="bg-[var(--surface)] p-3.5 rounded-xl border border-[var(--line)] shadow-[var(--shadow)] flex flex-col justify-between">
                 <div>
-                  <span className="text-[11px] text-[#7A746B] block">Итоговая сумма</span>
-                  <span className="text-xl font-bold text-[#1F1E1C]">
+                  <span className="text-[12px] text-[var(--muted)] block">Итоговая сумма</span>
+                  <span className="text-xl font-semibold text-[var(--text)]">
                     {receipt.totalAmount.toFixed(2)} {receipt.currency}
                   </span>
                 </div>
-                <div className="mt-2 flex items-center space-x-1.5 pt-1.5 border-t border-[#F0ECE4]">
-                  <span className="text-[10px] text-[#8C867D] font-medium">Валюта:</span>
+                <div className="mt-2 flex items-center space-x-1.5 pt-1.5 border-t border-[var(--line)]">
+                  <span className="text-[12px] text-[var(--muted)] font-medium">Валюта:</span>
                   <select
                     value={
                       SUPPORTED_CURRENCIES.some(
@@ -276,7 +276,7 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                         showToast(`Валюта чека изменена на ${newCurr}`, 'info');
                       }
                     }}
-                    className="text-xs font-semibold text-[#E15A42] bg-orange-50 border border-orange-200 rounded-md px-1.5 py-0.5 focus:outline-none cursor-pointer"
+                    className="text-xs font-semibold text-[var(--accent)] bg-orange-50 border border-orange-200 rounded-md px-1.5 py-0.5 focus:outline-none cursor-pointer"
                     title="Сменить валюту чека"
                   >
                     {SUPPORTED_CURRENCIES.map((c) => (
@@ -290,21 +290,21 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                   </select>
                 </div>
               </div>
-              <div className="bg-white p-3.5 rounded-xl border border-[#E8E4DA] shadow-xs">
-                <span className="text-[11px] text-[#7A746B] block">Всего позиций</span>
-                <span className="text-xl font-bold text-[#1F1E1C]">
+              <div className="bg-[var(--surface)] p-3.5 rounded-xl border border-[var(--line)] shadow-[var(--shadow)]">
+                <span className="text-[12px] text-[var(--muted)] block">Всего позиций</span>
+                <span className="text-xl font-semibold text-[var(--text)]">
                   {receipt.items.length}
                 </span>
               </div>
-              <div className="bg-white p-3.5 rounded-xl border border-[#E8E4DA] shadow-xs">
-                <span className="text-[11px] text-[#7A746B] block">Скидка по чеку</span>
-                <span className="text-xl font-bold text-emerald-600">
+              <div className="bg-[var(--surface)] p-3.5 rounded-xl border border-[var(--line)] shadow-[var(--shadow)]">
+                <span className="text-[12px] text-[var(--muted)] block">Скидка по чеку</span>
+                <span className="text-xl font-semibold text-emerald-600">
                   {receipt.discountTotal ? `-${receipt.discountTotal.toFixed(2)}` : '0.00'} {receipt.currency}
                 </span>
               </div>
-              <div className="bg-white p-3.5 rounded-xl border border-[#E8E4DA] shadow-xs">
-                <span className="text-[11px] text-[#7A746B] block">Налог / НДС</span>
-                <span className="text-xl font-bold text-[#1F1E1C]">
+              <div className="bg-[var(--surface)] p-3.5 rounded-xl border border-[var(--line)] shadow-[var(--shadow)]">
+                <span className="text-[12px] text-[var(--muted)] block">Налог / НДС</span>
+                <span className="text-xl font-semibold text-[var(--text)]">
                   {receipt.taxAmount ? `${receipt.taxAmount.toFixed(2)}` : '—'} {receipt.currency}
                 </span>
               </div>
@@ -324,19 +324,19 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
 
             <div className="flex flex-col md:flex-row gap-6">
               {/* Фотографии чека */}
-              <div className="w-full md:w-80 shrink-0 bg-white p-3.5 rounded-xl border border-[#E8E4DA] shadow-xs space-y-3">
+              <div className="w-full md:w-80 shrink-0 bg-[var(--surface)] p-3.5 rounded-xl border border-[var(--line)] shadow-[var(--shadow)] space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5A554D] flex items-center space-x-1.5">
-                    <ImageIcon className="w-3.5 h-3.5 text-[#E15A42]" />
+                  <span className="text-xs font-semibold text-[var(--text-2)] flex items-center space-x-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-[var(--accent)]" />
                     <span>Фотография чека</span>
-                    {photos.length > 0 && <span className="text-[#8C867D]">({photos.length})</span>}
+                    {photos.length > 0 && <span className="text-[var(--muted)]">({photos.length})</span>}
                   </span>
                   {currentPhoto && (
                     <div className="flex items-center space-x-1">
                       <button
                         type="button"
                         onClick={() => setIsZoomOpen(true)}
-                        className="p-1 rounded-md text-[#7A746B] hover:text-[#1F1E1C] hover:bg-[#FAF9F5] transition-colors"
+                        className="p-1 rounded-md text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--surface-2)] transition-colors"
                         title="Увеличить на весь экран"
                       >
                         <ZoomIn className="w-3.5 h-3.5" />
@@ -344,7 +344,7 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                       <button
                         type="button"
                         onClick={handleDownloadPhoto}
-                        className="p-1 rounded-md text-[#7A746B] hover:text-[#1F1E1C] hover:bg-[#FAF9F5] transition-colors"
+                        className="p-1 rounded-md text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--surface-2)] transition-colors"
                         title="Скачать фото на устройство"
                       >
                         <Download className="w-3.5 h-3.5" />
@@ -354,15 +354,15 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                 </div>
 
                 {isLoadingPhotos ? (
-                  <div className="h-64 rounded-lg bg-[#FAF9F5] border border-dashed border-[#DDD8CD] flex flex-col items-center justify-center p-4 text-center">
-                    <div className="w-6 h-6 border-2 border-[#E15A42] border-t-transparent rounded-full animate-spin mb-2" />
-                    <span className="text-xs text-[#7A746B]">Загрузка фото чека...</span>
+                  <div className="h-64 rounded-lg bg-[var(--surface-2)] border border-dashed border-[var(--line-strong)] flex flex-col items-center justify-center p-4 text-center">
+                    <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mb-2" />
+                    <span className="text-xs text-[var(--muted)]">Загрузка фото чека...</span>
                   </div>
                 ) : currentPhoto ? (
                   <div className="space-y-2">
                     <div
                       onClick={() => setIsZoomOpen(true)}
-                      className="relative group cursor-pointer max-h-[380px] overflow-y-auto rounded-lg bg-[#181716] p-1 flex flex-col items-center border border-[#302D2A]"
+                      className="relative group cursor-pointer max-h-[380px] overflow-y-auto rounded-lg bg-[var(--inverse)] p-1 flex flex-col items-center border border-[var(--text)]"
                     >
                       <img
                         src={currentPhoto}
@@ -370,7 +370,7 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                         className="w-full h-auto object-contain rounded"
                       />
                       <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded">
-                        <span className="bg-black/70 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center space-x-1 shadow-md">
+                        <span className="bg-black/70 text-white text-xs px-2.5 py-1.5 rounded-lg flex items-center space-x-1 shadow-[var(--shadow)]">
                           <Maximize2 className="w-3.5 h-3.5" />
                           <span>Увеличить</span>
                         </span>
@@ -384,11 +384,7 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                             key={i}
                             type="button"
                             onClick={() => setActivePhotoIdx(i)}
-                            className={`w-12 h-14 rounded-md border-2 overflow-hidden shrink-0 ${
-                              activePhotoIdx === i
-                                ? 'border-[#E15A42]'
-                                : 'border-[#E5E0D5]'
-                            }`}
+                            className={`w-12 h-14 rounded-md border-2 overflow-hidden shrink-0 ${ activePhotoIdx === i ? 'border-[var(--accent)]' : 'border-[var(--line)]' }`}
                           >
                             <img
                               src={imgSrc}
@@ -400,18 +396,18 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                       </div>
                     )}
 
-                    <div className="pt-1 flex items-center space-x-1 text-[11px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200">
+                    <div className="pt-1 flex items-center space-x-1 text-[12px] text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200">
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                       <span>Фото надёжно сохранено в памяти устройства</span>
                     </div>
                   </div>
                 ) : (
-                  <div className="h-64 rounded-lg bg-[#FAF9F5] border border-dashed border-[#DDD8CD] flex flex-col items-center justify-center p-4 text-center space-y-2">
-                    <div className="w-10 h-10 rounded-xl bg-stone-100 text-[#8C867D] flex items-center justify-center">
+                  <div className="h-64 rounded-lg bg-[var(--surface-2)] border border-dashed border-[var(--line-strong)] flex flex-col items-center justify-center p-4 text-center space-y-2">
+                    <div className="w-10 h-10 rounded-xl bg-stone-100 text-[var(--muted)] flex items-center justify-center">
                       <ImageIcon className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-medium text-[#5A554D]">Фото не прикреплено</span>
-                    <span className="text-[11px] text-[#8C867D]">
+                    <span className="text-xs font-medium text-[var(--text-2)]">Фото не прикреплено</span>
+                    <span className="text-[12px] text-[var(--muted)]">
                       Текст чека и распознанные товары сохранены в базе
                     </span>
                   </div>
@@ -419,23 +415,23 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
               </div>
 
               {/* Таблица товаров */}
-              <div className="flex-1 bg-white p-4 rounded-xl border border-[#E8E4DA] shadow-xs space-y-3">
+              <div className="flex-1 bg-[var(--surface)] p-4 rounded-xl border border-[var(--line)] shadow-[var(--shadow)] space-y-3">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs font-bold text-[#5A554D] block">
+                    <span className="text-xs font-semibold text-[var(--text-2)] block">
                       Список товаров ({selectedCategory === 'all' ? receipt.items.length : `${receipt.items.filter(it => (it.category || 'other') === selectedCategory).length} из ${receipt.items.length}`})
                     </span>
                     {selectedCategory !== 'all' && (
                       <button
                         type="button"
                         onClick={() => setSelectedCategory('all')}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-orange-100 hover:bg-orange-200 text-[#E15A42] font-semibold flex items-center space-x-1 transition-colors cursor-pointer"
+                        className="text-[12px] px-2 py-0.5 rounded-full bg-orange-100 hover:bg-orange-200 text-[var(--accent)] font-semibold flex items-center space-x-1 transition-colors cursor-pointer"
                       >
                         <span>Фильтр: {CATEGORY_METADATA[selectedCategory]?.shortLabel} ×</span>
                       </button>
                     )}
                   </div>
-                  <span className="text-[11px] text-[#8C867D] font-medium">
+                  <span className="text-[12px] text-[var(--muted)] font-medium">
                     Сумма:{' '}
                     {receipt.items
                       .filter((it) => selectedCategory === 'all' || (it.category || 'other') === selectedCategory)
@@ -454,31 +450,29 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                       return (
                         <div
                           key={it.id || idx}
-                          className="p-2.5 rounded-lg border border-[#EBE7DF] bg-[#FAF9F5] flex items-start justify-between text-xs hover:border-[#DDD8CD] transition-colors"
+                          className="p-2.5 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] flex items-start justify-between text-xs hover:border-[var(--line-strong)] transition-colors"
                         >
                           <div className="min-w-0 pr-3 space-y-1">
-                            <div className="font-semibold text-[#1F1E1C]">
+                            <div className="font-semibold text-[var(--text)]">
                               {it.normalizedTitle || it.originalText}
                             </div>
                             <div className="flex items-center flex-wrap gap-1.5">
                               <span
-                                className={`text-[10px] px-2 py-0.5 rounded-full border font-medium flex items-center space-x-1 ${
-                                  meta.badgeClass
-                                }`}
+                                className={`text-[12px] px-2 py-0.5 rounded-full border font-medium flex items-center space-x-1 ${ meta.badgeClass }`}
                               >
                                 <span>{meta.icon}</span>
                                 <span>{meta.shortLabel}</span>
                               </span>
-                              <span className="text-[10px] text-[#7A746B] font-mono truncate max-w-[220px]">
+                              <span className="text-[12px] text-[var(--muted)] font-mono truncate max-w-[220px]">
                                 {it.originalText.replace(/\n/g, ' ')}
                               </span>
                             </div>
                           </div>
                           <div className="text-right shrink-0">
-                            <div className="font-bold text-[#1F1E1C]">
+                            <div className="font-semibold text-[var(--text)]">
                               {it.totalPrice.toFixed(2)} {receipt.currency}
                             </div>
-                            <div className="text-[10px] text-[#8C867D]">
+                            <div className="text-[12px] text-[var(--muted)]">
                               {it.quantity > 1 ? `${it.quantity} ${it.unit || 'шт'}` : '1 шт'}
                               {it.unitPrice && it.quantity > 1 ? ` × ${it.unitPrice.toFixed(2)}` : ''}
                             </div>
@@ -492,13 +486,13 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
           </div>
 
           {/* Подвал */}
-          <div className="px-6 py-4 bg-white border-t border-[#EBE7DF] flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center space-x-2 text-xs text-[#7A746B]">
+          <div className="px-6 py-4 bg-[var(--surface)] border-t border-[var(--line)] flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center space-x-2 text-xs text-[var(--muted)]">
               <span>Добавить в список:</span>
               <select
                 value={selectedListId}
                 onChange={(e) => setSelectedListId(e.target.value)}
-                className="text-xs font-semibold bg-[#FAF9F5] border border-[#DDD8CD] rounded-lg px-2.5 py-1.5 focus:outline-none"
+                className="text-xs font-semibold bg-[var(--surface-2)] border border-[var(--line-strong)] rounded-lg px-2.5 py-1.5 focus:outline-none"
               >
                 {shoppingLists.map((l) => (
                   <option key={l.id} value={l.id}>
@@ -512,7 +506,7 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
               <button
                 type="button"
                 onClick={handleDeleteClick}
-                className="px-3.5 py-2 rounded-xl border border-rose-200 text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center space-x-1.5 transition-colors cursor-pointer mr-auto sm:mr-0"
+                className="px-3.5 py-2 rounded-xl border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center space-x-1.5 transition-colors cursor-pointer mr-auto sm:mr-0"
                 title="Удалить данный чек"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -522,7 +516,7 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                 <button
                   type="button"
                   onClick={handleExportToShopping}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#E15A42] hover:bg-[#D04A33] flex items-center space-x-1.5 shadow-sm transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-full text-xs font-semibold text-white bg-[var(--accent)] hover:brightness-110 flex items-center space-x-1.5 transition-colors cursor-pointer"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   <span className="hidden sm:inline">Добавить в список покупок</span>
@@ -531,7 +525,7 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-xl border border-[#DDD8CD] text-xs font-semibold text-[#5A554D] hover:bg-[#F2EFE9] transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-[var(--line-strong)] text-xs font-semibold text-[var(--text-2)] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
                 >
                   Закрыть
                 </button>
@@ -559,7 +553,7 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
                   e.stopPropagation();
                   handleDownloadPhoto();
                 }}
-                className="px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs font-medium flex items-center space-x-1.5 transition-colors"
+                className="px-3 py-1.5 rounded-lg bg-[var(--surface)]/20 hover:bg-[var(--surface)]/30 text-white text-xs font-medium flex items-center space-x-1.5 transition-colors"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Скачать оригинал</span>
@@ -567,7 +561,7 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
               <button
                 type="button"
                 onClick={() => setIsZoomOpen(false)}
-                className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors"
+                className="p-1.5 rounded-lg bg-[var(--surface)]/20 hover:bg-[var(--surface)]/30 text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -575,7 +569,7 @@ export const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
           </div>
 
           <div
-            className="max-w-4xl max-h-[85vh] overflow-auto rounded-xl bg-[#141312] p-2 border border-white/10"
+            className="max-w-4xl max-h-[85vh] overflow-auto rounded-xl bg-[var(--text)] p-2 border border-[var(--surface)]/10"
             onClick={(e) => e.stopPropagation()}
           >
             <img

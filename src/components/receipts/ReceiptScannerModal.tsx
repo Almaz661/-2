@@ -342,23 +342,23 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 md:p-6 overflow-y-auto">
-      <div className="bg-[#FAF9F5] w-full max-w-4xl rounded-2xl shadow-2xl border border-[#E5E0D5] flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-[var(--surface-2)] w-full max-w-4xl rounded-2xl shadow-2xl border border-[var(--line)] flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Заголовок модального окна */}
-        <div className="px-6 py-4 bg-white border-b border-[#EBE7DF] flex items-center justify-between">
+        <div className="px-6 py-4 bg-[var(--surface)] border-b border-[var(--line)] flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#E15A42] to-[#F28C38] flex items-center justify-center text-white shadow-md shadow-orange-500/20">
+            <div className="w-10 h-10 rounded-full bg-[var(--accent)] flex items-center justify-center text-white">
               <Camera className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-[#1F1E1C]">Сканер кассовых чеков</h2>
-              <p className="text-xs text-[#7A746B]">
+              <h2 className="text-lg font-semibold text-[var(--text)]">Сканер кассовых чеков</h2>
+              <p className="text-xs text-[var(--muted)]">
                 Локальное распознавание OCR • Без серверов • Мультиязычный анализ
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#7A746B] hover:text-[#1F1E1C] hover:bg-[#F2EFE9] transition-colors"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--surface-3)] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -386,12 +386,12 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
           />
 
           {/* 1. Блок выбора языка и подсказки по магазинам */}
-          <div className="bg-white p-4 rounded-xl border border-[#E8E4DA] shadow-xs">
+          <div className="bg-[var(--surface)] p-4 rounded-xl border border-[var(--line)] shadow-[var(--shadow)]">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-bold text-[#5A554D] uppercase tracking-wider">
+              <label className="text-xs font-semibold text-[var(--text-2)]">
                 Язык чека и страны (OCR)
               </label>
-              <span className="text-xs text-[#8A847A]">
+              <span className="text-xs text-[var(--muted)]">
                 Влияет на языковую модель и словарь нормализации
               </span>
             </div>
@@ -404,23 +404,17 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                     key={lang.code}
                     type="button"
                     onClick={() => setSelectedLanguage(lang.code)}
-                    className={`p-2.5 rounded-xl border text-left transition-all ${
-                      isSelected
-                        ? 'border-[#E15A42] bg-[#FFF5F2] ring-2 ring-[#E15A42]/20 shadow-xs'
-                        : 'border-[#EAE6DD] bg-white hover:border-[#D0C9BD]'
-                    }`}
+                    className={`p-2.5 rounded-xl border text-left transition-all ${ isSelected ? 'border-[var(--accent)] bg-[var(--accent-soft)] ring-2 ring-[var(--accent)]/20 shadow-[var(--shadow)]' : 'border-[var(--line)] bg-[var(--surface)] hover:border-[var(--line-strong)]' }`}
                   >
                     <div className="flex items-center space-x-1.5 mb-1">
                       <span className="text-base">{lang.flag}</span>
                       <span
-                        className={`text-xs font-semibold ${
-                          isSelected ? 'text-[#E15A42]' : 'text-[#3D3A36]'
-                        }`}
+                        className={`text-xs font-semibold ${ isSelected ? 'text-[var(--accent)]' : 'text-[var(--text)]' }`}
                       >
                         {lang.name}
                       </span>
                     </div>
-                    <div className="text-[10px] text-[#8C867D] truncate">
+                    <div className="text-[12px] text-[var(--muted)] truncate">
                       {lang.code.toUpperCase()}
                     </div>
                   </button>
@@ -430,16 +424,16 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
           </div>
 
           {/* Информационный баннер умного разбора живых чеков */}
-          <div className="bg-gradient-to-r from-[#FFF5F2] via-[#FFF9F5] to-[#F5F8FF] p-3.5 rounded-xl border border-orange-200/80 flex items-center justify-between gap-3">
+          <div className="bg-[var(--accent-soft)] p-3.5 rounded-xl border border-orange-200/80 flex items-center justify-between gap-3">
             <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#E15A42] text-white flex items-center justify-center shrink-0 shadow-xs">
+              <div className="w-8 h-8 rounded-full bg-[var(--accent)] text-white flex items-center justify-center shrink-0 shadow-[var(--shadow)]">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-xs font-bold text-[#1F1E1C]">
+                <div className="text-xs font-semibold text-[var(--text)]">
                   Распознавание живых чеков с Gemini AI • Без шаблонов
                 </div>
-                <div className="text-[11px] text-[#7A746B]">
+                <div className="text-[12px] text-[var(--muted)]">
                   Сфотографируйте чек камерой или выберите фото из галереи. AI автоматически выделит товары и распределит по категориям (продукты, бытовая химия, прочее).
                 </div>
               </div>
@@ -447,7 +441,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1.5 rounded-lg bg-white border border-[#DDD8CD] hover:border-[#E15A42] hover:text-[#E15A42] text-xs font-semibold text-[#3D3A36] shrink-0 transition-colors shadow-2xs"
+              className="px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--line-strong)] hover:border-[var(--accent)] hover:text-[var(--accent)] text-xs font-semibold text-[var(--text)] shrink-0 transition-colors shadow-none"
             >
               Выбрать фото
             </button>
@@ -456,7 +450,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
           {/* 3. Основная область съемки / просмотра */}
           {isCameraActive ? (
             /* Live Camera View */
-            <div className="relative rounded-2xl overflow-hidden bg-black aspect-[3/4] max-h-[480px] flex items-center justify-center border-2 border-[#E15A42]">
+            <div className="relative rounded-2xl overflow-hidden bg-black aspect-[3/4] max-h-[480px] flex items-center justify-center border-2 border-[var(--accent)]">
               <video
                 ref={videoRef}
                 playsInline
@@ -466,11 +460,11 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               />
 
               {/* Рамка видоискателя для кассового чека */}
-              <div className="absolute inset-8 border-2 border-dashed border-white/70 rounded-xl pointer-events-none flex flex-col justify-between p-4">
+              <div className="absolute inset-8 border-2 border-dashed border-[var(--surface)]/70 rounded-xl pointer-events-none flex flex-col justify-between p-4">
                 <div className="text-center text-xs font-medium text-white/90 bg-black/40 py-1 px-3 rounded-full self-center backdrop-blur-xs">
                   Поместите чек целиком внутрь рамки
                 </div>
-                <div className="flex justify-between items-end text-[11px] text-white/75">
+                <div className="flex justify-between items-end text-[12px] text-white/75">
                   <span>Следите за чёткостью цифр цен</span>
                   <span>Держите ровно</span>
                 </div>
@@ -481,7 +475,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                 <button
                   type="button"
                   onClick={toggleCameraFacing}
-                  className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/30 transition-all"
+                  className="w-11 h-11 rounded-full bg-[var(--surface)]/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-[var(--surface)]/30 transition-all"
                   title="Переключить камеру"
                 >
                   <RefreshCw className="w-5 h-5" />
@@ -490,7 +484,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                 <button
                   type="button"
                   onClick={captureFromVideo}
-                  className="w-16 h-16 rounded-full bg-white border-4 border-[#E15A42] flex items-center justify-center text-[#E15A42] hover:scale-105 active:scale-95 transition-all shadow-lg"
+                  className="w-16 h-16 rounded-full bg-[var(--surface)] border-4 border-[var(--accent)] flex items-center justify-center text-[var(--accent)] hover:scale-105 active:scale-95 transition-all shadow-[var(--shadow)]"
                   title="Сделать снимок"
                 >
                   <Camera className="w-8 h-8" />
@@ -499,7 +493,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                 <button
                   type="button"
                   onClick={stopCamera}
-                  className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/30 transition-all"
+                  className="w-11 h-11 rounded-full bg-[var(--surface)]/20 backdrop-blur-md text-white flex items-center justify-center hover:bg-[var(--surface)]/30 transition-all"
                   title="Закрыть камеру"
                 >
                   <X className="w-5 h-5" />
@@ -511,8 +505,8 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
             <div className="space-y-4">
               <div className="flex flex-col md:flex-row gap-5">
                 {/* Превью текущего выбранного сегмента */}
-                <div className="flex-1 bg-white p-3 rounded-2xl border border-[#E8E4DA] shadow-xs flex flex-col items-center">
-                  <div className="relative w-full max-h-[380px] bg-[#181716] rounded-xl overflow-hidden flex items-center justify-center">
+                <div className="flex-1 bg-[var(--surface)] p-3 rounded-2xl border border-[var(--line)] shadow-[var(--shadow)] flex flex-col items-center">
+                  <div className="relative w-full max-h-[380px] bg-[var(--inverse)] rounded-xl overflow-hidden flex items-center justify-center">
                     <img
                       src={currentSegment}
                       alt="Чек"
@@ -524,7 +518,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRotate(90)}
-                        className="p-1.5 text-white/90 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+                        className="p-1.5 text-white/90 hover:text-white hover:bg-[var(--surface)]/20 rounded-lg transition-colors"
                         title="Повернуть на 90°"
                       >
                         <RotateCw className="w-4 h-4" />
@@ -532,7 +526,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setIsEnhanceOpen(!isEnhanceOpen)}
-                        className="p-1.5 text-white/90 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+                        className="p-1.5 text-white/90 hover:text-white hover:bg-[var(--surface)]/20 rounded-lg transition-colors"
                         title="Настройки контраста для термобумаги"
                       >
                         <Sliders className="w-4 h-4" />
@@ -542,8 +536,8 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
 
                   {/* Панель настройки контраста термобумаги */}
                   {isEnhanceOpen && (
-                    <div className="w-full mt-3 p-3.5 bg-[#F9F7F2] rounded-xl border border-[#E8E4DA] space-y-3">
-                      <div className="flex items-center justify-between text-xs font-semibold text-[#3D3A36]">
+                    <div className="w-full mt-3 p-3.5 bg-[var(--surface-3)] rounded-xl border border-[var(--line)] space-y-3">
+                      <div className="flex items-center justify-between text-xs font-semibold text-[var(--text)]">
                         <span>Усиление контраста термопечати</span>
                         <span>{contrastVal}%</span>
                       </div>
@@ -553,22 +547,22 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                         max="200"
                         value={contrastVal}
                         onChange={(e) => setContrastVal(Number(e.target.value))}
-                        className="w-full accent-[#E15A42]"
+                        className="w-full accent-[var(--accent)]"
                       />
                       <div className="flex items-center justify-between pt-1">
-                        <label className="flex items-center space-x-2 text-xs text-[#524D45] cursor-pointer">
+                        <label className="flex items-center space-x-2 text-xs text-[var(--text-2)] cursor-pointer">
                           <input
                             type="checkbox"
                             checked={binarize}
                             onChange={(e) => setBinarize(e.target.checked)}
-                            className="rounded text-[#E15A42] focus:ring-[#E15A42]"
+                            className="rounded text-[var(--accent)] focus:ring-[var(--accent)]"
                           />
                           <span>Чёрно-белая бинаризация (для выцветших чеков)</span>
                         </label>
                         <button
                           type="button"
                           onClick={handleApplyEnhancement}
-                          className="px-3 py-1 bg-[#E15A42] text-white text-xs font-medium rounded-lg hover:bg-[#C94732]"
+                          className="px-3 py-1 bg-[var(--accent)] text-white text-xs font-medium rounded-full hover:bg-[var(--accent-strong)]"
                         >
                           Применить
                         </button>
@@ -580,20 +574,14 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                 {/* Боковая панель: Диагностика качества и лента сегментов */}
                 <div className="w-full md:w-80 flex flex-col space-y-4">
                   {/* Диагностика качества изображения */}
-                  <div className="bg-white p-4 rounded-xl border border-[#E8E4DA] shadow-xs">
+                  <div className="bg-[var(--surface)] p-4 rounded-xl border border-[var(--line)] shadow-[var(--shadow)]">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold text-[#5A554D] uppercase tracking-wider">
+                      <span className="text-xs font-semibold text-[var(--text-2)]">
                         Качество снимка
                       </span>
                       {qualityReport && (
                         <span
-                          className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                            qualityReport.score >= 80
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : qualityReport.score >= 60
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-rose-100 text-rose-800'
-                          }`}
+                          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${ qualityReport.score >= 80 ? 'bg-emerald-100 text-emerald-800' : qualityReport.score >= 60 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800' }`}
                         >
                           {qualityReport.score >= 80
                             ? 'Отличное'
@@ -605,20 +593,16 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                     </div>
 
                     {isAnalyzingQuality ? (
-                      <div className="text-xs text-[#7A746B] py-2 flex items-center space-x-2">
+                      <div className="text-xs text-[var(--muted)] py-2 flex items-center space-x-2">
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                         <span>Анализ резкости и освещения...</span>
                       </div>
                     ) : qualityReport ? (
                       <div className="space-y-2.5 text-xs">
-                        <div className="flex items-center justify-between py-1 border-b border-[#F2EFE9]">
-                          <span className="text-[#6D675E]">Резкость (Лапласиан):</span>
+                        <div className="flex items-center justify-between py-1 border-b border-[var(--surface-3)]">
+                          <span className="text-[var(--text-2)]">Резкость (Лапласиан):</span>
                           <span
-                            className={`font-medium flex items-center space-x-1 ${
-                              qualityReport.isBlurry
-                                ? 'text-rose-600'
-                                : 'text-emerald-700'
-                            }`}
+                            className={`font-medium flex items-center space-x-1 ${ qualityReport.isBlurry ? 'text-rose-600' : 'text-emerald-700' }`}
                           >
                             {qualityReport.isBlurry ? (
                               <>
@@ -634,16 +618,10 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between py-1 border-b border-[#F2EFE9]">
-                          <span className="text-[#6D675E]">Освещенность:</span>
+                        <div className="flex items-center justify-between py-1 border-b border-[var(--surface-3)]">
+                          <span className="text-[var(--text-2)]">Освещенность:</span>
                           <span
-                            className={`font-medium flex items-center space-x-1 ${
-                              qualityReport.isDark
-                                ? 'text-amber-600'
-                                : qualityReport.isOverexposed
-                                ? 'text-amber-600'
-                                : 'text-emerald-700'
-                            }`}
+                            className={`font-medium flex items-center space-x-1 ${ qualityReport.isDark ? 'text-amber-600' : qualityReport.isOverexposed ? 'text-amber-600' : 'text-emerald-700' }`}
                           >
                             {qualityReport.isDark ? (
                               <>
@@ -664,16 +642,16 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between py-1 border-b border-[#F2EFE9]">
-                          <span className="text-[#6D675E]">Разрешение:</span>
-                          <span className="font-medium text-[#2E2C29]">
+                        <div className="flex items-center justify-between py-1 border-b border-[var(--surface-3)]">
+                          <span className="text-[var(--text-2)]">Разрешение:</span>
+                          <span className="font-medium text-[var(--text)]">
                             {qualityReport.width} × {qualityReport.height} px
                           </span>
                         </div>
 
                         {/* Замечания и рекомендации */}
                         {qualityReport.issues.length > 0 && (
-                          <div className="mt-2 p-2.5 bg-amber-50 rounded-lg border border-amber-200/60 text-[11px] text-amber-900 space-y-1">
+                          <div className="mt-2 p-2.5 bg-amber-50 rounded-lg border border-amber-200/60 text-[12px] text-amber-900 space-y-1">
                             <div className="font-semibold flex items-center space-x-1">
                               <AlertTriangle className="w-3 h-3 text-amber-600" />
                               <span>Рекомендация:</span>
@@ -688,14 +666,14 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                   </div>
 
                   {/* Мульти-фото сегменты длинного чека */}
-                  <div className="bg-white p-4 rounded-xl border border-[#E8E4DA] shadow-xs flex-1 flex flex-col justify-between">
+                  <div className="bg-[var(--surface)] p-4 rounded-xl border border-[var(--line)] shadow-[var(--shadow)] flex-1 flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-[#5A554D] uppercase tracking-wider flex items-center space-x-1.5">
-                          <Layers className="w-3.5 h-3.5 text-[#E15A42]" />
+                        <span className="text-xs font-semibold text-[var(--text-2)] flex items-center space-x-1.5">
+                          <Layers className="w-3.5 h-3.5 text-[var(--accent)]" />
                           <span>Длинный чек ({segments.length})</span>
                         </span>
-                        <span className="text-[11px] text-[#7A746B]">
+                        <span className="text-[12px] text-[var(--muted)]">
                           Части объединятся
                         </span>
                       </div>
@@ -709,18 +687,14 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                               setActiveSegmentIndex(idx);
                               runQualityCheck(seg);
                             }}
-                            className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
-                              activeSegmentIndex === idx
-                                ? 'border-[#E15A42] ring-2 ring-[#E15A42]/30 scale-102'
-                                : 'border-[#E5E0D5] hover:border-[#B5AEA1]'
-                            }`}
+                            className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${ activeSegmentIndex === idx ? 'border-[var(--accent)] ring-2 ring-[var(--accent)]/30 scale-102' : 'border-[var(--line)] hover:border-[var(--muted)]' }`}
                           >
                             <img
                               src={seg}
                               alt={`Часть ${idx + 1}`}
                               className="w-full h-full object-cover"
                             />
-                            <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1 rounded">
+                            <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[12px] px-1 rounded">
                               #{idx + 1}
                             </span>
                             <button
@@ -740,11 +714,11 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                     </div>
 
                     {/* Добавить следующую часть чека */}
-                    <div className="flex items-center space-x-2 pt-2 border-t border-[#F2EFE9]">
+                    <div className="flex items-center space-x-2 pt-2 border-t border-[var(--surface-3)]">
                       <button
                         type="button"
                         onClick={() => cameraInputRef.current?.click()}
-                        className="flex-1 py-2 px-2.5 bg-[#FFF5F2] border border-orange-200 hover:border-[#E15A42] text-[#E15A42] rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors"
+                        className="flex-1 py-2 px-2.5 bg-[var(--accent-soft)] border border-orange-200 hover:border-[var(--accent)] text-[var(--accent)] rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors"
                       >
                         <Camera className="w-3.5 h-3.5" />
                         <span>Снять след. часть (Камера)</span>
@@ -752,7 +726,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                       <button
                         type="button"
                         onClick={startCamera}
-                        className="p-2 bg-[#FAF9F5] border border-[#DDD8CD] hover:border-[#BDB5A6] rounded-xl text-[#3D3A36] transition-colors"
+                        className="p-2 bg-[var(--surface-2)] border border-[var(--line-strong)] hover:border-[var(--muted)] rounded-xl text-[var(--text)] transition-colors"
                         title="Включить видеокамеру"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
@@ -760,7 +734,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-2 bg-[#FAF9F5] border border-[#DDD8CD] hover:border-[#BDB5A6] rounded-xl text-[#3D3A36] transition-colors"
+                        className="p-2 bg-[var(--surface-2)] border border-[var(--line-strong)] hover:border-[var(--muted)] rounded-xl text-[var(--text)] transition-colors"
                         title="Добавить фото из файлов"
                       >
                         <Plus className="w-4 h-4" />
@@ -776,16 +750,16 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               <button
                 type="button"
                 onClick={() => cameraInputRef.current?.click()}
-                className="p-6 rounded-2xl border-2 border-dashed border-orange-300 bg-[#FFFDFB] hover:border-[#E15A42] hover:bg-[#FFF5F2] flex flex-col items-center justify-center text-center space-y-2.5 transition-all group shadow-xs"
+                className="p-6 rounded-2xl border-2 border-dashed border-orange-300 bg-[var(--surface-2)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] flex flex-col items-center justify-center text-center space-y-2.5 transition-all group shadow-[var(--shadow)]"
               >
-                <div className="w-14 h-14 rounded-2xl bg-[#FFF1ED] text-[#E15A42] flex items-center justify-center group-hover:scale-110 transition-transform shadow-xs">
+                <div className="w-14 h-14 rounded-2xl bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center group-hover:scale-110 transition-transform shadow-[var(--shadow)]">
                   <Camera className="w-7 h-7" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#1F1E1C] text-sm group-hover:text-[#E15A42] transition-colors">
+                  <h3 className="font-semibold text-[var(--text)] text-sm group-hover:text-[var(--accent)] transition-colors">
                     Камера устройства
                   </h3>
-                  <p className="text-[11px] text-[#7A746B] mt-0.5">
+                  <p className="text-[12px] text-[var(--muted)] mt-0.5">
                     Быстрый снимок на iPad, iPhone и Android
                   </p>
                 </div>
@@ -794,16 +768,16 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               <button
                 type="button"
                 onClick={startCamera}
-                className="p-6 rounded-2xl border-2 border-dashed border-[#D6D0C3] bg-white hover:border-[#E15A42] hover:bg-[#FFF9F7] flex flex-col items-center justify-center text-center space-y-2.5 transition-all group shadow-xs"
+                className="p-6 rounded-2xl border-2 border-dashed border-[var(--line-strong)] bg-[var(--surface)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] flex flex-col items-center justify-center text-center space-y-2.5 transition-all group shadow-[var(--shadow)]"
               >
-                <div className="w-14 h-14 rounded-2xl bg-[#F0EFEB] text-[#555047] flex items-center justify-center group-hover:scale-110 group-hover:bg-[#FFF1ED] group-hover:text-[#E15A42] transition-all shadow-xs">
+                <div className="w-14 h-14 rounded-2xl bg-[var(--surface-3)] text-[var(--text-2)] flex items-center justify-center group-hover:scale-110 group-hover:bg-[var(--accent-soft)] group-hover:text-[var(--accent)] transition-all shadow-[var(--shadow)]">
                   <Eye className="w-7 h-7" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#1F1E1C] text-sm group-hover:text-[#E15A42] transition-colors">
+                  <h3 className="font-semibold text-[var(--text)] text-sm group-hover:text-[var(--accent)] transition-colors">
                     Видеосканер в окне
                   </h3>
-                  <p className="text-[11px] text-[#7A746B] mt-0.5">
+                  <p className="text-[12px] text-[var(--muted)] mt-0.5">
                     Живой видоискатель через веб-камеру
                   </p>
                 </div>
@@ -812,16 +786,16 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="p-6 rounded-2xl border-2 border-dashed border-[#D6D0C3] bg-white hover:border-[#E15A42] hover:bg-[#FFF9F7] flex flex-col items-center justify-center text-center space-y-2.5 transition-all group shadow-xs"
+                className="p-6 rounded-2xl border-2 border-dashed border-[var(--line-strong)] bg-[var(--surface)] hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] flex flex-col items-center justify-center text-center space-y-2.5 transition-all group shadow-[var(--shadow)]"
               >
-                <div className="w-14 h-14 rounded-2xl bg-[#F0EFEB] text-[#555047] flex items-center justify-center group-hover:scale-110 group-hover:bg-[#FFF1ED] group-hover:text-[#E15A42] transition-all shadow-xs">
+                <div className="w-14 h-14 rounded-2xl bg-[var(--surface-3)] text-[var(--text-2)] flex items-center justify-center group-hover:scale-110 group-hover:bg-[var(--accent-soft)] group-hover:text-[var(--accent)] transition-all shadow-[var(--shadow)]">
                   <Upload className="w-7 h-7" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#1F1E1C] text-sm group-hover:text-[#E15A42] transition-colors">
+                  <h3 className="font-semibold text-[var(--text)] text-sm group-hover:text-[var(--accent)] transition-colors">
                     Галерея и файлы
                   </h3>
-                  <p className="text-[11px] text-[#7A746B] mt-0.5">
+                  <p className="text-[12px] text-[var(--muted)] mt-0.5">
                     JPG, PNG, HEIC или несколько сегментов
                   </p>
                 </div>
@@ -831,23 +805,23 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
 
           {/* Индикатор прогресса OCR сканирования */}
           {isScanning && (
-            <div className="p-4 bg-white rounded-xl border border-[#E15A42]/30 shadow-md space-y-3 animate-in fade-in">
+            <div className="p-4 bg-[var(--surface)] rounded-xl border border-[var(--accent)]/30 shadow-[var(--shadow)] space-y-3 animate-in fade-in">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-[#1F1E1C] flex items-center space-x-2">
-                  <RefreshCw className="w-4 h-4 text-[#E15A42] animate-spin" />
+                <span className="font-semibold text-[var(--text)] flex items-center space-x-2">
+                  <RefreshCw className="w-4 h-4 text-[var(--accent)] animate-spin" />
                   <span>{ocrProgress?.status || 'Выполняется распознавание...'}</span>
                 </span>
-                <span className="font-semibold text-[#E15A42]">
+                <span className="font-semibold text-[var(--accent)]">
                   {ocrProgress?.progress || 10}%
                 </span>
               </div>
-              <div className="w-full bg-[#EFECE6] h-2.5 rounded-full overflow-hidden">
+              <div className="w-full bg-[var(--line)] h-2.5 rounded-full overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-[#E15A42] to-[#F28C38] h-full transition-all duration-300 rounded-full"
+                  className="bg-[var(--accent)] h-full transition-all duration-300 rounded-full"
                   style={{ width: `${ocrProgress?.progress || 10}%` }}
                 />
               </div>
-              <p className="text-[11px] text-[#787268]">
+              <p className="text-[12px] text-[var(--muted)]">
                 Вся обработка происходит 100% локально в вашем браузере с помощью WebAssembly (без передачи чека в интернет).
               </p>
             </div>
@@ -863,8 +837,8 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
         </div>
 
         {/* Подвал с главными кнопками */}
-        <div className="px-6 py-4 bg-white border-t border-[#EBE7DF] flex items-center justify-between">
-          <div className="flex items-center space-x-2 text-xs text-[#7A746B]">
+        <div className="px-6 py-4 bg-[var(--surface)] border-t border-[var(--line)] flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-xs text-[var(--muted)]">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
             <span>Open-Source OCR (Apache 2.0) • Конфиденциально</span>
           </div>
@@ -874,7 +848,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={isScanning}
-              className="px-4 py-2 rounded-xl border border-[#D5D0C5] text-xs font-semibold text-[#5A554D] hover:bg-[#F2EFE9] transition-colors"
+              className="px-4 py-2 rounded-xl border border-[var(--line-strong)] text-xs font-semibold text-[var(--text-2)] hover:bg-[var(--surface-3)] transition-colors"
             >
               Отмена
             </button>
@@ -883,11 +857,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
               type="button"
               onClick={handleStartOCR}
               disabled={segments.length === 0 || isScanning}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold text-white flex items-center space-x-2 shadow-md transition-all ${
-                segments.length === 0 || isScanning
-                  ? 'bg-[#B0AAA0] cursor-not-allowed opacity-60'
-                  : 'bg-gradient-to-r from-[#E15A42] to-[#F28C38] hover:from-[#D14B33] hover:to-[#E07925] shadow-orange-500/20 active:scale-98'
-              }`}
+              className={`px-5 py-2.5 rounded-full text-xs font-semibold text-white flex items-center space-x-2 transition-all ${ segments.length === 0 || isScanning ? 'bg-[var(--muted)] cursor-not-allowed opacity-60' : 'bg-[var(--accent)] hover:from-[var(--accent)] hover:to-[var(--accent-2)] active:scale-98' }`}
             >
               {isScanning ? (
                 <>

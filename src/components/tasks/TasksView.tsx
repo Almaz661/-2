@@ -18,6 +18,16 @@ import { HouseholdZone, TaskItem } from '../../types';
 import { TaskModal } from './TaskModal';
 import { TaskPacksModal } from './TaskPacksModal';
 import { MemberAvatar } from '../common/MemberAvatar';
+import { ZonesBoard } from '../zones/ZonesBoard';
+import { ChecklistsBoard } from './ChecklistsBoard';
+import { RoutineBoard } from './RoutineBoard';
+import { CleaningMapBoard } from './CleaningMapBoard';
+import { groupByRoom } from '../../utils/cleaningOrder';
+import { LibraryBoard } from './LibraryBoard';
+import { useStarterZones } from '../zones/useStarterZones';
+import { computeZones, ZoneTask } from '../../services/zones';
+import { Btn, Card, EmptyState, FilterMenu, GroupLabel, IconBtn, PageWrap, Segmented, Slide, Tag } from '../ui/mercury';
+import { formatLocalDate } from '../../utils/dateUtils';
 
 type TaskTab = 'all' | 'today' | 'upcoming' | 'rotation' | 'completed';
 
@@ -33,6 +43,19 @@ const ZONES: Array<HouseholdZone | 'Все'> = [
   'Авто',
   'Участок/Дача',
 ];
+
+export const ZONE_EMOJIS: Record<string, string> = {
+  'Все': '✨',
+  'Весь дом': '🏡',
+  'Кухня': '🍳',
+  'Гостиная': '🛋️',
+  'Ванная': '🛁',
+  'Спальня': '🛏️',
+  'Детская': '🧸',
+  'Прихожая': '🚪',
+  'Авто': '🚗',
+  'Участок/Дача': '🌳',
+};
 
 export const TasksView: React.FC = () => {
   const {
@@ -55,7 +78,7 @@ export const TasksView: React.FC = () => {
   const [taskToEdit, setTaskToEdit] = useState<TaskItem | null>(null);
   const [isPacksModalOpen, setIsPacksModalOpen] = useState(false);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatLocalDate(new Date());
 
   const toggleExpand = (id: string) => {
     setExpandedTaskIds((prev) =>
@@ -95,7 +118,7 @@ export const TasksView: React.FC = () => {
   const getPriorityBadge = (priority: TaskItem['priority']) => {
     if (priority === 'high') {
       return (
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 flex items-center space-x-1">
+        <span className="text-[12px] font-semibold px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 flex items-center space-x-1">
           <Flame className="w-3 h-3 text-rose-600" />
           <span>Срочно</span>
         </span>
@@ -103,13 +126,13 @@ export const TasksView: React.FC = () => {
     }
     if (priority === 'medium') {
       return (
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">
+        <span className="text-[12px] font-semibold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">
           Обычный
         </span>
       );
     }
     return (
-      <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-stone-100 text-stone-600">
+      <span className="text-[12px] font-medium px-2 py-0.5 rounded-md bg-stone-100 text-stone-600">
         Низкий
       </span>
     );
@@ -130,353 +153,354 @@ export const TasksView: React.FC = () => {
     }
   };
 
-  return (
-    <div className="p-8 space-y-6 max-w-7xl mx-auto">
-      {/* Верхняя панель управления: Табы и кнопки действий */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Вкладки состояния */}
-        <div className="flex items-center space-x-1 p-1 rounded-2xl bg-[#EFECE4] border border-[#E3DFD5]">
-          <button
-            onClick={() => setActiveTab('all')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'all'
-                ? 'bg-white text-[#1F1D1A] shadow-xs'
-                : 'text-[#6B6456] hover:text-[#1F1D1A]'
-            }`}
-          >
-            Все активные ({tasks.filter((t) => !t.completed).length})
-          </button>
-          <button
-            onClick={() => setActiveTab('today')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'today'
-                ? 'bg-white text-[#1F1D1A] shadow-xs'
-                : 'text-[#6B6456] hover:text-[#1F1D1A]'
-            }`}
-          >
-            Сегодня ({tasks.filter((t) => !t.completed && t.dueDate === todayStr).length})
-          </button>
-          <button
-            onClick={() => setActiveTab('rotation')}
-            className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'rotation'
-                ? 'bg-white text-blue-700 shadow-xs'
-                : 'text-[#6B6456] hover:text-[#1F1D1A]'
-            }`}
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Ротация</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('upcoming')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'upcoming'
-                ? 'bg-white text-[#1F1D1A] shadow-xs'
-                : 'text-[#6B6456] hover:text-[#1F1D1A]'
-            }`}
-          >
-            Предстоящие
-          </button>
-          <button
-            onClick={() => setActiveTab('completed')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'completed'
-                ? 'bg-white text-emerald-700 shadow-xs'
-                : 'text-[#6B6456] hover:text-[#1F1D1A]'
-            }`}
-          >
-            Выполненные ({tasks.filter((t) => t.completed).length})
-          </button>
-        </div>
+  const tomorrowStr = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return formatLocalDate(d);
+  })();
+  // По дате; в один день — дела со временем по времени, остальные по комнатам и приборам (без беготни по дому)
+  const roomRank = new Map(groupByRoom(filteredTasks).flatMap((g) => g.items).map((t, i) => [t.id, i]));
+  const sorted = filteredTasks
+    .slice()
+    .sort(
+      (a, b) =>
+        a.dueDate.localeCompare(b.dueDate) ||
+        (a.dueTime || '99').localeCompare(b.dueTime || '99') ||
+        (roomRank.get(a.id) ?? 0) - (roomRank.get(b.id) ?? 0)
+    );
+  const groups: { id: string; label: string; tone?: 'danger'; items: TaskItem[] }[] =
+    activeTab === 'all'
+      ? [
+          { id: 'overdue', label: 'Пора сделать', tone: 'danger' as const, items: sorted.filter((t) => t.dueDate < todayStr) },
+          { id: 'today', label: 'Сегодня', items: sorted.filter((t) => t.dueDate === todayStr) },
+          { id: 'tomorrow', label: 'Завтра', items: sorted.filter((t) => t.dueDate === tomorrowStr) },
+          { id: 'later', label: 'Позже', items: sorted.filter((t) => t.dueDate > tomorrowStr) },
+        ].filter((g) => g.items.length > 0)
+      : [{ id: 'flat', label: '', items: sorted }];
 
-        {/* Кнопки вызова модалок */}
-        <div className="flex items-center space-x-3">
+  const formatDue = (t: TaskItem) => {
+    if (t.dueDate === todayStr) return 'Сегодня';
+    if (t.dueDate === tomorrowStr) return 'Завтра';
+    return new Date(t.dueDate + 'T00:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  };
+
+  const openNew = () => {
+    setTaskToEdit(null);
+    setIsTaskModalOpen(true);
+  };
+
+  // Вид «Список» или «По зонам» (как у Tody: состояние каждой зоны дома)
+  const [viewMode, setViewMode] = useState<'list' | 'zones' | 'checklists' | 'map' | 'library'>(() => {
+    try {
+      const v = localStorage.getItem('dbh_tasks_view');
+      return v === 'zones' || v === 'map' ? 'map' : v === 'checklists' || v === 'library' ? v : 'list';
+    } catch {
+      return 'list';
+    }
+  });
+  const [focusZone] = useState<HouseholdZone | null>(() => {
+    try {
+      const z = localStorage.getItem('dbh_tasks_zone') as HouseholdZone | null;
+      localStorage.removeItem('dbh_tasks_zone');
+      return z;
+    } catch {
+      return null;
+    }
+  });
+  const changeView = (v: 'list' | 'zones' | 'checklists' | 'map' | 'library') => {
+    setViewMode(v);
+    try {
+      localStorage.setItem('dbh_tasks_view', v);
+    } catch {
+      /* нет хранилища */
+    }
+  };
+  const visibleTasks = activeMemberId ? tasks.filter((t) => t.assigneeId === activeMemberId) : tasks;
+  const zones = computeZones(visibleTasks);
+  const addStarterZones = useStarterZones();
+  const markDone = (zt: ZoneTask) => {
+    if (!zt.task.completed) toggleTaskCompletion(zt.task.id);
+    else updateTask(zt.task.id, { completedAt: new Date().toISOString() }, { silent: true });
+  };
+
+  const tabOptions = [
+    { id: 'all' as TaskTab, label: 'Активные', count: tasks.filter((t) => !t.completed).length },
+    { id: 'today' as TaskTab, label: 'Сегодня', count: tasks.filter((t) => !t.completed && t.dueDate === todayStr).length },
+    { id: 'upcoming' as TaskTab, label: 'Предстоящие' },
+    { id: 'rotation' as TaskTab, label: 'Ротация' },
+    { id: 'completed' as TaskTab, label: 'Выполненные', count: tasks.filter((t) => t.completed).length },
+  ];
+
+  const renderRow = (task: TaskItem) => {
+    const assignee = members.find((m) => m.id === task.assigneeId);
+    const isExpanded = expandedTaskIds.includes(task.id);
+    const isOverdue = !task.completed && task.dueDate < todayStr;
+    const rec = getRecurrenceText(task.recurrence);
+    const sub = task.subtasks || [];
+    return (
+      <div key={task.id} className="border-t border-[var(--line)] first:border-t-0">
+        <div className="group grid grid-cols-[40px_1fr_auto_auto] md:grid-cols-[40px_1fr_130px_150px_96px_88px] items-center gap-x-3 px-2 sm:px-3 py-3 rounded-xl hover:bg-[var(--surface-3)] transition-colors">
           <button
-            onClick={() => setIsPacksModalOpen(true)}
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-white border border-[#E3DFD5] text-[#1F1D1A] text-xs font-semibold hover:bg-[#F7F5EE] active:scale-[0.98] transition-all shadow-xs cursor-pointer"
+            type="button"
+            onClick={() => toggleTaskCompletion(task.id)}
+            aria-label={task.completed ? 'Вернуть в работу' : 'Отметить выполненной'}
+            aria-pressed={task.completed}
+            className={`w-8 h-8 ml-1 rounded-full grid place-items-center border transition-colors ${
+              task.completed
+                ? 'bg-emerald-500 border-emerald-500 text-white'
+                : 'border-[var(--line-strong)] text-transparent hover:border-[var(--accent)] hover:text-[var(--accent)]'
+            }`}
           >
-            <Sparkles className="w-4 h-4 text-[#E15A42]" />
-            <span>Пакеты задач</span>
+            <CheckCircle2 className="w-4 h-4" />
           </button>
 
-          <button
+          <div
+            className="min-w-0 cursor-pointer"
+            role="button"
+            tabIndex={0}
+            title="Открыть и изменить"
             onClick={() => {
-              setTaskToEdit(null);
+              setTaskToEdit(task);
               setIsTaskModalOpen(true);
             }}
-            className="flex items-center space-x-2 px-5 py-2.5 rounded-2xl bg-[#E15A42] hover:bg-[#D04931] text-white text-xs font-bold shadow-md shadow-orange-600/20 active:scale-[0.98] transition-all cursor-pointer"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setTaskToEdit(task);
+                setIsTaskModalOpen(true);
+              }
+            }}
           >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Новая задача</span>
-          </button>
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                className={`text-[16px] font-medium line-clamp-2 md:line-clamp-1 break-words ${
+                  task.completed ? 'line-through text-[var(--muted)]' : 'text-[var(--text)]'
+                }`}
+              >
+                {task.title}
+              </span>
+              {task.priority === 'high' && !task.completed && (
+                <Tag tone="danger" icon={<Flame className="w-3 h-3" />}>
+                  Срочно
+                </Tag>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-1 text-[14px] text-[var(--muted)] flex-wrap">
+              {task.description && <span className="truncate max-w-[28rem]">{task.description}</span>}
+              {task.isRotation && (
+                <Tag tone="accent" icon={<RefreshCw className="w-3 h-3" />}>
+                  Ротация
+                </Tag>
+              )}
+              {rec && <Tag>{rec}</Tag>}
+              {task.packName && <Tag>{task.packName}</Tag>}
+              {/* На телефоне зона и исполнитель — под названием */}
+              <span className="md:hidden">
+                {task.zone}
+                {assignee ? `, ${assignee.name}` : ''}
+              </span>
+            </div>
+          </div>
+
+          <span className="hidden md:block text-sm text-[var(--text-2)] truncate">{task.zone}</span>
+
+          <span className="hidden md:flex items-center gap-2 min-w-0">
+            {assignee ? (
+              <>
+                <MemberAvatar member={assignee} size="xs" />
+                <span className="text-sm text-[var(--text-2)] truncate">{assignee.name}</span>
+              </>
+            ) : (
+              <span className="text-sm text-[var(--muted)]">Без исполнителя</span>
+            )}
+          </span>
+
+          <span
+            className={`text-sm tabular-nums text-right md:text-left ${
+              isOverdue ? 'text-amber-700 font-medium' : 'text-[var(--text-2)]'
+            }`}
+          >
+            {formatDue(task)}
+            {task.dueTime && <span className="block text-[14px] text-[var(--muted)]">{task.dueTime}</span>}
+          </span>
+
+          <div className="flex items-center justify-end gap-0.5 hover-actions opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <IconBtn
+              title="Редактировать"
+              aria-label="Редактировать"
+              onClick={() => {
+                setTaskToEdit(task);
+                setIsTaskModalOpen(true);
+              }}
+            >
+              <Edit2 className="w-4 h-4" />
+            </IconBtn>
+            <IconBtn danger title="Удалить" aria-label="Удалить" onClick={() => deleteTask(task.id)}>
+              <Trash2 className="w-4 h-4" />
+            </IconBtn>
+          </div>
+        </div>
+
+        {sub.length > 0 && (
+          <div className="pl-[52px] sm:pl-[60px] pr-3 pb-2 -mt-1">
+            <button
+              type="button"
+              onClick={() => toggleExpand(task.id)}
+              aria-expanded={isExpanded}
+              className="inline-flex items-center gap-1 text-[14px] text-[var(--muted)] hover:text-[var(--text)] transition-colors"
+            >
+              Шаги {sub.filter((s) => s.completed).length} из {sub.length}
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+            </button>
+            {isExpanded && (
+              <div className="mt-2 space-y-1">
+                {sub.map((st) => (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() =>
+                      updateTask(task.id, {
+                        subtasks: sub.map((x) => (x.id === st.id ? { ...x, completed: !x.completed } : x)),
+                      })
+                    }
+                    className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-left text-sm hover:bg-[var(--surface-3)] transition-colors"
+                  >
+                    <span
+                      className={`w-4 h-4 rounded-md border grid place-items-center ${
+                        st.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-[var(--line-strong)]'
+                      }`}
+                    >
+                      {st.completed && <CheckCircle2 className="w-3 h-3" />}
+                    </span>
+                    <span className={st.completed ? 'line-through text-[var(--muted)]' : 'text-[var(--text)]'}>
+                      {st.title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <PageWrap>
+      {/* Панель: вкладки, фильтры, действия */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Segmented
+          value={viewMode}
+          onChange={changeView}
+          options={[
+            { id: 'list', label: 'Дела' },
+            { id: 'map', label: 'Уборка' },
+            { id: 'checklists', label: 'Чек-листы' },
+            { id: 'library', label: 'Библиотека' },
+          ]}
+        />
+        {viewMode === 'list' && <Segmented value={activeTab} onChange={setActiveTab} options={tabOptions} />}
+        <div className="ml-auto flex items-center gap-2 flex-wrap">
+          {(viewMode === 'list' || viewMode === 'zones') && (
+          <>
+          <FilterMenu
+            label="Зона"
+            value={selectedZone}
+            allValue={'Все' as HouseholdZone | 'Все'}
+            onChange={setSelectedZone}
+            options={ZONES.map((z) => ({ id: z, label: z === 'Все' ? 'Все зоны' : z }))}
+          />
+          {!activeMemberId && (
+            <FilterMenu
+              label="Исполнитель"
+              value={selectedAssignee}
+              allValue="all"
+              onChange={setSelectedAssignee}
+              options={[{ id: 'all', label: 'Все участники' }, ...members.map((m) => ({ id: m.id, label: m.name }))]}
+            />
+          )}
+          </>
+          )}
+          {viewMode === 'list' && (
+            <Btn className="max-md:!hidden" icon={<Sparkles className="w-4 h-4" />} onClick={() => setIsPacksModalOpen(true)}>
+              Пакеты задач
+            </Btn>
+          )}
+          <Btn variant="primary" icon={<Plus className="w-4 h-4" />} onClick={openNew}>
+            Новая задача
+          </Btn>
         </div>
       </div>
 
-      {/* Горизонтальные фильтры по зонам дома */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none">
-        <span className="text-[11px] font-bold text-[#8A8477] uppercase tracking-wider shrink-0 mr-1">
-          Зона:
-        </span>
-        {ZONES.map((zone) => (
-          <button
-            key={zone}
-            onClick={() => setSelectedZone(zone)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
-              selectedZone === zone
-                ? 'bg-[#1F1D1A] text-white font-semibold shadow-xs'
-                : 'bg-white border border-[#E5DFD1] text-[#5C564B] hover:bg-[#F3EFE6]'
-            }`}
-          >
-            {zone}
-          </button>
-        ))}
-      </div>
+      {viewMode === 'map' && <CleaningMapBoard />}
+      {viewMode === 'library' && <LibraryBoard />}
 
-      {/* Список задач */}
-      <div className="space-y-3">
-        {filteredTasks.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center border border-[#EBE7DF] shadow-xs">
-            <CheckCircle2 className="w-12 h-12 mx-auto text-emerald-400 stroke-[1.5] mb-3" />
-            <h3 className="text-base font-bold text-[#1F1D1A]">Задачи не найдены</h3>
-            <p className="text-xs text-[#8A8477] mt-1 max-w-sm mx-auto">
-              В выбранной категории или зоне нет активных поручений. Можно создать новую задачу или применить готовый пакет!
-            </p>
-            <div className="mt-4 flex items-center justify-center space-x-3">
-              <button
-                onClick={() => setIsPacksModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-[#F7F4EC] text-[#8C522C] text-xs font-semibold hover:bg-[#EFEADF]"
-              >
-                Выбрать пакет задач
-              </button>
-              <button
-                onClick={() => {
-                  setTaskToEdit(null);
-                  setIsTaskModalOpen(true);
-                }}
-                className="px-4 py-2 rounded-xl bg-[#E15A42] text-white text-xs font-semibold"
-              >
-                + Создать задачу
-              </button>
-            </div>
+      {viewMode === 'checklists' && (
+        <div className="space-y-10">
+          <RoutineBoard />
+          <div>
+            <h2 className="text-lg font-semibold text-[var(--text)] mb-1 px-1">🍂 Чек-листы по событию и по сезону</h2>
+            <p className="text-[14px] text-[var(--muted)] mb-4 px-1">Гости, поездка, болезнь, праздник, непогода, отключение света, ремонт — и сезонные дела дома, дачи и техники.</p>
+            <ChecklistsBoard />
           </div>
-        ) : (
-          filteredTasks.map((task) => {
-            const assignee = members.find((m) => m.id === task.assigneeId);
-            const isExpanded = expandedTaskIds.includes(task.id);
-            const isOverdue = !task.completed && task.dueDate < todayStr;
+        </div>
+      )}
 
-            return (
-              <div
-                key={task.id}
-                className={`bg-white rounded-2xl border transition-all ${
-                  task.completed
-                    ? 'border-[#EAE6DE] bg-[#FAF8F5] opacity-65'
-                    : isOverdue
-                    ? 'border-rose-300 shadow-xs'
-                    : 'border-[#E5DFD1] hover:border-[#E15A42]/50 hover:shadow-xs'
-                }`}
-              >
-                <div className="p-4 flex items-start justify-between gap-3">
-                  {/* Чекбокс и текст задачи */}
-                  <div className="flex items-start space-x-3 flex-1 overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => toggleTaskCompletion(task.id)}
-                      className={`mt-0.5 w-6 h-6 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
-                        task.completed
-                          ? 'bg-emerald-500 border-emerald-500 text-white'
-                          : 'border-stone-300 hover:border-[#E15A42] bg-white'
-                      }`}
-                    >
-                      {task.completed && <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />}
-                    </button>
+      {viewMode === 'zones' && <ZonesBoard zones={zones} focusZone={focusZone} onDone={markDone} onAdd={openNew} onStarter={addStarterZones} />}
 
-                    <div className="flex-1 overflow-hidden">
-                      <div className="flex items-center space-x-2.5 flex-wrap gap-y-1">
-                        <span
-                          className={`text-sm font-bold truncate ${
-                            task.completed
-                              ? 'line-through text-stone-400'
-                              : 'text-[#1F1D1A]'
-                          }`}
-                        >
-                          {task.title}
-                        </span>
-
-                        {getPriorityBadge(task.priority)}
-
-                        {task.isRotation && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 flex items-center space-x-1">
-                            <RefreshCw className="w-3 h-3 text-blue-600" />
-                            <span>Ротация</span>
-                          </span>
-                        )}
-
-                        {getRecurrenceText(task.recurrence) && (
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#F2EFE8] text-[#5C564B]">
-                            {getRecurrenceText(task.recurrence)}
-                          </span>
-                        )}
-
-                        {task.packName && (
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-orange-50 text-orange-700">
-                            {task.packName}
-                          </span>
-                        )}
-                      </div>
-
-                      {task.description && (
-                        <p className="text-xs text-[#8A8477] mt-1 line-clamp-2">
-                          {task.description}
-                        </p>
-                      )}
-
-                      {/* Мета-информация: Зона, Срок, Исполнитель */}
-                      <div className="flex items-center space-x-3 mt-2 text-xs text-[#8A8477] flex-wrap gap-y-1">
-                        <span className="font-semibold text-[#5C564B] bg-[#F7F4EC] px-2 py-0.5 rounded-md">
-                          🏠 {task.zone}
-                        </span>
-
-                        <span
-                          className={`flex items-center space-x-1 font-medium ${
-                            isOverdue ? 'text-rose-600 font-bold' : ''
-                          }`}
-                        >
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>
-                            {task.dueDate === todayStr
-                              ? 'Сегодня'
-                              : new Date(task.dueDate).toLocaleDateString('ru-RU')}
-                          </span>
-                        </span>
-
-                        {task.dueTime && (
-                          <span className="flex items-center space-x-1">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>{task.dueTime}</span>
-                          </span>
-                        )}
-
-                        {assignee ? (
-                          <div className="flex items-center space-x-1.5 pl-2 border-l border-stone-200">
-                            <MemberAvatar member={assignee} size="xs" />
-                            <span className="font-medium text-[#1F1D1A]">
-                              {assignee.name}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-stone-400 italic">Без исполнителя</span>
-                        )}
-
-                        {task.isRotation && task.rotationOrder && task.rotationOrder.length > 0 && (
-                          <div
-                            className="flex items-center space-x-1 pl-2 border-l border-stone-200"
-                            title="Очередь исполнителей"
-                          >
-                            <span className="text-[10px] text-stone-400">Очередь:</span>
-                            <div className="flex items-center -space-x-1">
-                              {task.rotationOrder.map((mId) => {
-                                const m = members.find((x) => x.id === mId);
-                                if (!m) return null;
-                                return (
-                                  <MemberAvatar
-                                    key={mId}
-                                    member={m}
-                                    size="2xs"
-                                    className="ring-1 ring-white"
-                                  />
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Кнопки действий над задачей */}
-                  <div className="flex items-center space-x-1 shrink-0">
-                    {task.subtasks && task.subtasks.length > 0 && (
-                      <button
-                        onClick={() => toggleExpand(task.id)}
-                        className="p-1.5 rounded-xl hover:bg-[#F3EFE6] text-stone-500 hover:text-stone-800 transition-colors"
-                        title="Показать шаги"
-                      >
-                        {isExpanded ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <div className="flex items-center space-x-1 text-xs">
-                            <span className="font-semibold text-stone-600">
-                              {task.subtasks.filter((s) => s.completed).length}/
-                              {task.subtasks.length}
-                            </span>
-                            <ChevronDown className="w-4 h-4" />
-                          </div>
-                        )}
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => {
-                        setTaskToEdit(task);
-                        setIsTaskModalOpen(true);
-                      }}
-                      className="p-1.5 rounded-xl hover:bg-[#F3EFE6] text-stone-400 hover:text-stone-700 transition-colors"
-                      title="Редактировать"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-
-                    <button
-                      onClick={() => deleteTask(task.id)}
-                      className="p-1.5 rounded-xl hover:bg-rose-50 text-stone-400 hover:text-rose-600 transition-colors"
-                      title="Удалить"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Раскрывающийся чек-лист подзадач */}
-                {isExpanded && task.subtasks && task.subtasks.length > 0 && (
-                  <div className="px-5 pb-4 pt-1 border-t border-stone-100 bg-[#FAF9F6] rounded-b-2xl space-y-2">
-                    <div className="text-[11px] font-bold text-[#8A8477] uppercase tracking-wider">
-                      Шаги выполнения
-                    </div>
-                    {task.subtasks.map((st) => (
-                      <div
-                        key={st.id}
-                        onClick={() => {
-                          const updated = task.subtasks?.map((item) =>
-                            item.id === st.id ? { ...item, completed: !item.completed } : item
-                          );
-                          updateTask(task.id, { subtasks: updated });
-                        }}
-                        className="flex items-center space-x-2 text-xs cursor-pointer group"
-                      >
-                        <span
-                          className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${
-                            st.completed
-                              ? 'bg-emerald-500 border-emerald-500 text-white'
-                              : 'border-stone-300 bg-white group-hover:border-[#E15A42]'
-                          }`}
-                        >
-                          {st.completed && <CheckCircle2 className="w-3 h-3" />}
-                        </span>
-                        <span
-                          className={st.completed ? 'line-through text-stone-400' : 'text-[#1F1D1A]'}
-                        >
-                          {st.title}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })
+      {viewMode === 'list' && (
+      <Card className="p-2 sm:p-3">
+        {sorted.length > 0 && (
+          <div className="hidden md:grid grid-cols-[40px_1fr_130px_150px_96px_88px] gap-x-3 px-3 pt-2 pb-2 text-xs text-[var(--muted)] border-b border-[var(--line)]">
+            <span />
+            <span>Задача</span>
+            <span>Зона</span>
+            <span>Исполнитель</span>
+            <span>Срок</span>
+            <span />
+          </div>
         )}
-      </div>
+
+        {sorted.length === 0 ? (
+          <EmptyState
+            icon={<CheckSquare className="w-5 h-5" />}
+            title={activeTab === 'completed' ? 'Пока ничего не выполнено' : 'Задач нет'}
+            text="В этой вкладке и с этими фильтрами задач нет. Создайте задачу или добавьте готовый пакет."
+            action={
+              <>
+                <Btn onClick={() => setIsPacksModalOpen(true)}>Выбрать пакет</Btn>
+                <Btn variant="primary" icon={<Plus className="w-4 h-4" />} onClick={openNew}>
+                  Новая задача
+                </Btn>
+              </>
+            }
+          />
+        ) : (
+          <Slide k={activeTab} index={tabOptions.findIndex((t) => t.id === activeTab)}>
+          {groups.map((g) => (
+            <div key={g.id}>
+              {g.label && <GroupLabel label={g.label} count={g.items.length} tone={g.tone === 'danger' ? 'danger' : 'default'} />}
+              {g.items.map(renderRow)}
+            </div>
+          ))}
+          </Slide>
+        )}
+
+        {sorted.length > 0 && (
+          <div className="border-t border-[var(--line)] mt-1 pt-1">
+            <button
+              type="button"
+              onClick={openNew}
+              className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm text-[var(--text-2)] hover:bg-[var(--surface-3)] hover:text-[var(--text)] transition-colors"
+            >
+              <span className="w-8 h-8 ml-1 rounded-full border border-dashed border-[var(--line-strong)] grid place-items-center">
+                <Plus className="w-4 h-4" />
+              </span>
+              Добавить задачу
+            </button>
+          </div>
+        )}
+      </Card>
+      )}
 
       {/* Модальные окна */}
       <TaskModal
@@ -488,10 +512,7 @@ export const TasksView: React.FC = () => {
         taskToEdit={taskToEdit}
       />
 
-      <TaskPacksModal
-        isOpen={isPacksModalOpen}
-        onClose={() => setIsPacksModalOpen(false)}
-      />
-    </div>
+      <TaskPacksModal isOpen={isPacksModalOpen} onClose={() => setIsPacksModalOpen(false)} />
+    </PageWrap>
   );
 };

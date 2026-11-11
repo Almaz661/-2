@@ -16,12 +16,12 @@ interface MemberAvatarProps {
 
 const SIZE_CLASSES: Record<AvatarSize, { container: string; text: string }> = {
   '2xs': { container: 'w-3.5 h-3.5', text: 'text-[8px]' },
-  'xs': { container: 'w-4 h-4', text: 'text-[9px]' },
-  'sm': { container: 'w-5 h-5', text: 'text-[10px]' },
+  'xs': { container: 'w-4 h-4', text: 'text-[12px]' },
+  'sm': { container: 'w-5 h-5', text: 'text-[12px]' },
   'md': { container: 'w-7 h-7', text: 'text-xs' },
-  'lg': { container: 'w-10 h-10', text: 'text-sm font-bold' },
-  'xl': { container: 'w-12 h-12', text: 'text-base font-bold' },
-  '2xl': { container: 'w-16 h-16', text: 'text-xl font-bold' },
+  'lg': { container: 'w-10 h-10', text: 'text-sm font-semibold' },
+  'xl': { container: 'w-12 h-12', text: 'text-base font-semibold' },
+  '2xl': { container: 'w-16 h-16', text: 'text-xl font-semibold' },
 };
 
 export const MemberAvatar: React.FC<MemberAvatarProps> = ({
@@ -70,7 +70,7 @@ export const MemberAvatar: React.FC<MemberAvatarProps> = ({
         alt={name}
         title={title || name}
         onError={() => setImageError(true)}
-        className={`${sizeConfig.container} rounded-full object-cover shrink-0 select-none shadow-2xs ${className}`}
+        className={`${sizeConfig.container} rounded-full object-cover shrink-0 select-none shadow-none ${className}`}
       />
     );
   }
@@ -84,7 +84,7 @@ export const MemberAvatar: React.FC<MemberAvatarProps> = ({
         color: hexColor,
         borderColor: `${hexColor}35`,
       }}
-      className={`${sizeConfig.container} rounded-full flex items-center justify-center font-bold tracking-tight border shrink-0 select-none ${sizeConfig.text} ${className}`}
+      className={`${sizeConfig.container} rounded-full flex items-center justify-center font-semibold tracking-tight border shrink-0 select-none ${sizeConfig.text} ${className}`}
     >
       <span>{initials}</span>
     </div>

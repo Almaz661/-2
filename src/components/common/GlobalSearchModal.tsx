@@ -127,17 +127,17 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
         className="fixed inset-0"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-2xl bg-[#FCFBF8] rounded-3xl border border-[#E0DBD1] shadow-2xl overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-2xl bg-[var(--surface-2)] rounded-2xl border border-[var(--line-strong)] shadow-2xl overflow-hidden flex flex-col">
         {/* Поле поиска «Где лежит?» */}
-        <div className="p-4 sm:p-5 border-b border-[#EBE7DF] bg-white flex items-center space-x-3">
-          <Search className="w-5 h-5 text-[#E15A42] shrink-0" />
+        <div className="p-4 sm:p-5 border-b border-[var(--line)] bg-[var(--surface)] flex items-center space-x-3">
+          <Search className="w-5 h-5 text-[var(--accent)] shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Где лежит? Поиск по вещам, лекарствам, мастерам, документам..."
-            className="w-full bg-transparent text-sm sm:text-base font-medium text-[#1F1D1A] outline-none placeholder:text-stone-400"
+            className="w-full bg-transparent text-sm sm:text-base font-medium text-[var(--text)] outline-none placeholder:text-stone-400"
           />
           {searchQuery && (
             <button
@@ -158,12 +158,12 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
         {/* Быстрые подсказки если пусто */}
         {!q && (
           <div className="p-6 text-center space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#E15A42] flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[var(--accent)] flex items-center justify-center mx-auto">
               <Search className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-[#1F1D1A]">Быстрый поиск по дому «Где лежит?»</h4>
-              <p className="text-xs text-[#8A8477] mt-1 max-w-sm mx-auto">
+              <h4 className="text-sm font-semibold text-[var(--text)]">Быстрый поиск по дому «Где лежит?»</h4>
+              <p className="text-xs text-[var(--muted)] mt-1 max-w-sm mx-auto">
                 Введите название инструмента, лекарства, документа или мастера для мгновенного нахождения
               </p>
             </div>
@@ -173,7 +173,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                   <button
                     key={chip}
                     onClick={() => setSearchQuery(chip)}
-                    className="px-3 py-1.5 rounded-xl bg-white border border-stone-200 text-xs text-stone-700 hover:border-[#E15A42] hover:text-[#E15A42] transition-colors cursor-pointer shadow-2xs"
+                    className="px-3 py-1.5 rounded-xl bg-[var(--surface)] border border-stone-200 text-xs text-stone-700 hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors cursor-pointer shadow-none"
                   >
                     {chip}
                   </button>
@@ -196,7 +196,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                 {/* 1. Вещи и Инвентарь */}
                 {matchedInventory.length > 0 && (
                   <div className="space-y-1.5">
-                    <div className="text-[11px] font-bold text-amber-700 uppercase tracking-wider px-2">
+                    <div className="text-[12px] font-semibold text-amber-700 px-2">
                       Вещи и имущество ({matchedInventory.length})
                     </div>
                     {matchedInventory.map((item) => (
@@ -206,15 +206,15 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                           onClose();
                           onNavigate('inventory');
                         }}
-                        className="p-3 rounded-2xl bg-white border border-[#EBE7DF] hover:border-[#E15A42]/50 hover:shadow-xs transition-all cursor-pointer flex items-center justify-between"
+                        className="p-3 rounded-2xl bg-[var(--surface)] border border-[var(--line)] hover:border-[var(--accent)]/50 hover:shadow-[var(--shadow)] transition-all cursor-pointer flex items-center justify-between"
                       >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
                             <Package className="w-4 h-4" />
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-[#1F1D1A]">{item.name}</div>
-                            <div className="text-[11px] text-[#8A8477] flex items-center gap-1">
+                            <div className="text-xs font-semibold text-[var(--text)]">{item.name}</div>
+                            <div className="text-[12px] text-[var(--muted)] flex items-center gap-1">
                               <MapPin className="w-3 h-3 text-stone-400" />
                               <span>Зона: <strong>{item.locationZone}</strong></span>
                             </div>
@@ -229,7 +229,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                 {/* 2. Аптечка */}
                 {matchedMeds.length > 0 && (
                   <div className="space-y-1.5">
-                    <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider px-2">
+                    <div className="text-[12px] font-semibold text-emerald-700 px-2">
                       Домашняя аптечка ({matchedMeds.length})
                     </div>
                     {matchedMeds.map((med) => (
@@ -239,15 +239,15 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                           onClose();
                           onNavigate('firstaid');
                         }}
-                        className="p-3 rounded-2xl bg-white border border-[#EBE7DF] hover:border-emerald-500/50 hover:shadow-xs transition-all cursor-pointer flex items-center justify-between"
+                        className="p-3 rounded-2xl bg-[var(--surface)] border border-[var(--line)] hover:border-emerald-500/50 hover:shadow-[var(--shadow)] transition-all cursor-pointer flex items-center justify-between"
                       >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
                             <Pill className="w-4 h-4" />
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-[#1F1D1A]">{med.name}</div>
-                            <div className="text-[11px] text-[#8A8477]">
+                            <div className="text-xs font-semibold text-[var(--text)]">{med.name}</div>
+                            <div className="text-[12px] text-[var(--muted)]">
                               {med.activeSubstance || med.instructions || 'Препарат'} {med.location ? `• Где: ${med.location}` : ''}
                             </div>
                           </div>
@@ -261,7 +261,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                 {/* 3. Мастера и контакты */}
                 {matchedContacts.length > 0 && (
                   <div className="space-y-1.5">
-                    <div className="text-[11px] font-bold text-sky-700 uppercase tracking-wider px-2">
+                    <div className="text-[12px] font-semibold text-[var(--accent)] px-2">
                       Мастера и службы ({matchedContacts.length})
                     </div>
                     {matchedContacts.map((c) => (
@@ -271,15 +271,15 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                           onClose();
                           onNavigate('contacts');
                         }}
-                        className="p-3 rounded-2xl bg-white border border-[#EBE7DF] hover:border-sky-500/50 hover:shadow-xs transition-all cursor-pointer flex items-center justify-between"
+                        className="p-3 rounded-2xl bg-[var(--surface)] border border-[var(--line)] hover:border-sky-500/50 hover:shadow-[var(--shadow)] transition-all cursor-pointer flex items-center justify-between"
                       >
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center shrink-0">
+                          <div className="w-8 h-8 rounded-xl bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center shrink-0">
                             <Phone className="w-4 h-4" />
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-[#1F1D1A]">{c.name}</div>
-                            <div className="text-[11px] text-[#8A8477]">
+                            <div className="text-xs font-semibold text-[var(--text)]">{c.name}</div>
+                            <div className="text-[12px] text-[var(--muted)]">
                               {c.specialty} • {c.phone} {c.address ? `• ${c.address}` : ''}
                             </div>
                           </div>
@@ -293,7 +293,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                 {/* 4. Документы */}
                 {matchedDocs.length > 0 && (
                   <div className="space-y-1.5">
-                    <div className="text-[11px] font-bold text-rose-700 uppercase tracking-wider px-2">
+                    <div className="text-[12px] font-semibold text-rose-700 px-2">
                       Документы дома ({matchedDocs.length})
                     </div>
                     {matchedDocs.map((doc) => (
@@ -303,15 +303,15 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                           onClose();
                           onNavigate('docs');
                         }}
-                        className="p-3 rounded-2xl bg-white border border-[#EBE7DF] hover:border-rose-500/50 hover:shadow-xs transition-all cursor-pointer flex items-center justify-between"
+                        className="p-3 rounded-2xl bg-[var(--surface)] border border-[var(--line)] hover:border-rose-500/50 hover:shadow-[var(--shadow)] transition-all cursor-pointer flex items-center justify-between"
                       >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center shrink-0">
                             <FileText className="w-4 h-4" />
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-[#1F1D1A]">{doc.title}</div>
-                            <div className="text-[11px] text-[#8A8477]">
+                            <div className="text-xs font-semibold text-[var(--text)]">{doc.title}</div>
+                            <div className="text-[12px] text-[var(--muted)]">
                               Категория: {doc.category} {doc.expiryDate ? `• До: ${doc.expiryDate}` : ''}
                             </div>
                           </div>
@@ -325,7 +325,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                 {/* 5. Задачи */}
                 {matchedTasks.length > 0 && (
                   <div className="space-y-1.5">
-                    <div className="text-[11px] font-bold text-stone-600 uppercase tracking-wider px-2">
+                    <div className="text-[12px] font-semibold text-stone-600 px-2">
                       Задачи ({matchedTasks.length})
                     </div>
                     {matchedTasks.map((t) => (
@@ -335,15 +335,15 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                           onClose();
                           onNavigate('tasks');
                         }}
-                        className="p-3 rounded-2xl bg-white border border-[#EBE7DF] hover:border-stone-400 hover:shadow-xs transition-all cursor-pointer flex items-center justify-between"
+                        className="p-3 rounded-2xl bg-[var(--surface)] border border-[var(--line)] hover:border-stone-400 hover:shadow-[var(--shadow)] transition-all cursor-pointer flex items-center justify-between"
                       >
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 rounded-xl bg-stone-100 text-stone-600 flex items-center justify-center shrink-0">
                             <CheckSquare className="w-4 h-4" />
                           </div>
                           <div>
-                            <div className="text-xs font-bold text-[#1F1D1A]">{t.title}</div>
-                            <div className="text-[11px] text-[#8A8477]">
+                            <div className="text-xs font-semibold text-[var(--text)]">{t.title}</div>
+                            <div className="text-[12px] text-[var(--muted)]">
                               Зона: {t.zone} • Срок: {t.dueDate}
                             </div>
                           </div>

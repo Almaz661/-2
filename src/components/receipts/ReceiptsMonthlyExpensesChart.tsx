@@ -302,27 +302,27 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-[#1F1E1C] text-white p-3 rounded-xl shadow-xl border border-white/10 text-xs space-y-1.5 backdrop-blur-md">
-          <div className="flex items-center space-x-1.5 font-bold">
+        <div className="bg-[var(--inverse)] text-white p-3 rounded-xl shadow-[var(--shadow)] border border-[var(--surface)]/10 text-xs space-y-1.5 backdrop-blur-md">
+          <div className="flex items-center space-x-1.5 font-semibold">
             <span className="text-base">{data.icon}</span>
             <span>{data.name}</span>
           </div>
-          <div className="flex items-baseline justify-between gap-4 pt-1 border-t border-white/10">
+          <div className="flex items-baseline justify-between gap-4 pt-1 border-t border-[var(--surface)]/10">
             <span className="text-white/70">Сумма расходов:</span>
-            <span className="font-extrabold text-sm text-emerald-400">
+            <span className="font-semibold text-sm text-emerald-400">
               {data.value.toFixed(2)} {currencySymbol}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-4 text-[11px] text-white/60">
+          <div className="flex items-center justify-between gap-4 text-[12px] text-white/60">
             <span>Доля в месяце:</span>
             <span className="font-semibold text-white/90">{data.percentage}%</span>
           </div>
-          <div className="flex items-center justify-between gap-4 text-[11px] text-white/60">
+          <div className="flex items-center justify-between gap-4 text-[12px] text-white/60">
             <span>Куплено товаров:</span>
             <span>{data.itemCount} шт.</span>
           </div>
           {onSelectCategory && (
-            <div className="text-[10px] text-orange-300 pt-1 border-t border-white/10 italic">
+            <div className="text-[12px] text-orange-300 pt-1 border-t border-[var(--surface)]/10 italic">
               Нажмите для фильтрации чеков по этой категории
             </div>
           )}
@@ -337,22 +337,22 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-[#1F1E1C] text-white p-3 rounded-xl shadow-xl border border-white/10 text-xs space-y-1.5">
-          <div className="font-bold text-sm flex items-center space-x-1.5">
+        <div className="bg-[var(--inverse)] text-white p-3 rounded-xl shadow-[var(--shadow)] border border-[var(--surface)]/10 text-xs space-y-1.5">
+          <div className="font-semibold text-sm flex items-center space-x-1.5">
             <span>{data.name}</span>
           </div>
-          <div className="text-[11px] text-white/70">{data.fullName}</div>
-          <div className="flex items-baseline justify-between gap-4 pt-1 border-t border-white/10">
+          <div className="text-[12px] text-white/70">{data.fullName}</div>
+          <div className="flex items-baseline justify-between gap-4 pt-1 border-t border-[var(--surface)]/10">
             <span className="text-white/70">Сумма расходов:</span>
-            <span className="font-extrabold text-emerald-400">
+            <span className="font-semibold text-emerald-400">
               {data.amount.toFixed(2)} {currencySymbol}
             </span>
           </div>
-          <div className="flex items-center justify-between text-[11px] text-white/60">
+          <div className="flex items-center justify-between text-[12px] text-white/60">
             <span>Доля в месяце:</span>
             <span className="font-semibold text-white/90">{data.percentage}%</span>
           </div>
-          <div className="flex items-center justify-between text-[11px] text-white/60">
+          <div className="flex items-center justify-between text-[12px] text-white/60">
             <span>Куплено товаров:</span>
             <span>{data.count} шт.</span>
           </div>
@@ -367,21 +367,21 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-[#1F1E1C] text-white p-3 rounded-xl shadow-xl border border-white/10 text-xs space-y-1.5">
-          <div className="font-bold flex items-center justify-between gap-4 text-sm">
+        <div className="bg-[var(--inverse)] text-white p-3 rounded-xl shadow-[var(--shadow)] border border-[var(--surface)]/10 text-xs space-y-1.5">
+          <div className="font-semibold flex items-center justify-between gap-4 text-sm">
             <span>{data.date || data.label}</span>
-            <span className="text-orange-300 text-[11px] font-medium">
+            <span className="text-orange-300 text-[12px] font-medium">
               {data.count} {data.count === 1 ? 'чек' : 'чека'}
             </span>
           </div>
-          <div className="flex items-baseline justify-between gap-4 pt-1 border-t border-white/10">
+          <div className="flex items-baseline justify-between gap-4 pt-1 border-t border-[var(--surface)]/10">
             <span className="text-white/70">Траты в этот день:</span>
-            <span className="font-extrabold text-emerald-400">
+            <span className="font-semibold text-emerald-400">
               {data.amount.toFixed(2)} {currencySymbol}
             </span>
           </div>
           {data.itemsCount !== undefined && (
-            <div className="text-[11px] text-white/60">
+            <div className="text-[12px] text-white/60">
               Товаров в чеках: <strong className="text-white">{data.itemsCount} шт</strong>
             </div>
           )}
@@ -392,24 +392,24 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-[#E8E4DA] shadow-xs p-5 md:p-6 space-y-6">
+    <div className="bg-[var(--surface)] rounded-2xl border border-[var(--line)] shadow-[var(--shadow)] p-5 md:p-6 space-y-6">
       {/* Верхняя шапка: Заголовок + Селектор месяца + Переключатель диаграмм */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#F2EFE9]">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[var(--surface-3)]">
         <div className="space-y-1">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#E15A42] to-[#F28C38] text-white flex items-center justify-center shadow-xs">
+            <div className="w-9 h-9 rounded-full bg-[var(--accent)] text-white flex items-center justify-center shadow-[var(--shadow)]">
               <PieChart className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base md:text-lg font-extrabold text-[#1F1E1C] flex items-center space-x-2">
+              <h2 className="text-base md:text-lg font-semibold text-[var(--text)] flex items-center space-x-2">
                 <span>Расходы по чекам за месяц</span>
                 {selectedMonth === currentCalendarMonth && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-[#E15A42]">
+                  <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-[var(--accent)]">
                     Текущий месяц
                   </span>
                 )}
               </h2>
-              <p className="text-xs text-[#7A746B]">
+              <p className="text-xs text-[var(--muted)]">
                 Визуализация Recharts: категории, рейтинг трат и динамика за{' '}
                 {formatMonthLabel(selectedMonth).toLowerCase()}
               </p>
@@ -420,12 +420,12 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
         {/* Управление: Селектор периода и переключение вида диаграмм */}
         <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
           {/* Селектор месяца */}
-          <div className="flex items-center space-x-1.5 bg-[#FAF9F5] border border-[#DDD8CD] px-3 py-1.5 rounded-xl">
-            <Calendar className="w-3.5 h-3.5 text-[#E15A42]" />
+          <div className="flex items-center space-x-1.5 bg-[var(--surface-2)] border border-[var(--line-strong)] px-3 py-1.5 rounded-xl">
+            <Calendar className="w-3.5 h-3.5 text-[var(--accent)]" />
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="text-xs font-bold text-[#1F1E1C] bg-transparent focus:outline-none cursor-pointer pr-1"
+              className="text-xs font-semibold text-[var(--text)] bg-transparent focus:outline-none cursor-pointer pr-1"
             >
               <option value={currentCalendarMonth}>
                 Текущий месяц ({formatMonthLabel(currentCalendarMonth)})
@@ -442,15 +442,11 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
           </div>
 
           {/* Переключатель вида: Сводка / Круг / Столбцы / Динамика */}
-          <div className="flex items-center bg-[#FAF9F5] border border-[#DDD8CD] p-1 rounded-xl">
+          <div className="flex items-center bg-[var(--surface-2)] border border-[var(--line-strong)] p-1 rounded-xl">
             <button
               type="button"
               onClick={() => setChartMode('both')}
-              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-colors cursor-pointer ${
-                chartMode === 'both'
-                  ? 'bg-white text-[#E15A42] shadow-2xs font-bold'
-                  : 'text-[#6D675E] hover:text-[#1F1E1C]'
-              }`}
+              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-colors cursor-pointer ${ chartMode === 'both' ? 'bg-[var(--surface)] text-[var(--accent)] shadow-none font-semibold' : 'text-[var(--text-2)] hover:text-[var(--text)]' }`}
               title="Комплексная сводка (Круг + Рейтинг)"
             >
               <Layers className="w-3.5 h-3.5" />
@@ -459,11 +455,7 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
             <button
               type="button"
               onClick={() => setChartMode('donut')}
-              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-colors cursor-pointer ${
-                chartMode === 'donut'
-                  ? 'bg-white text-[#E15A42] shadow-2xs font-bold'
-                  : 'text-[#6D675E] hover:text-[#1F1E1C]'
-              }`}
+              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-colors cursor-pointer ${ chartMode === 'donut' ? 'bg-[var(--surface)] text-[var(--accent)] shadow-none font-semibold' : 'text-[var(--text-2)] hover:text-[var(--text)]' }`}
               title="Круговая диаграмма долей"
             >
               <PieChart className="w-3.5 h-3.5" />
@@ -472,11 +464,7 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
             <button
               type="button"
               onClick={() => setChartMode('bar')}
-              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-colors cursor-pointer ${
-                chartMode === 'bar'
-                  ? 'bg-white text-[#E15A42] shadow-2xs font-bold'
-                  : 'text-[#6D675E] hover:text-[#1F1E1C]'
-              }`}
+              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-colors cursor-pointer ${ chartMode === 'bar' ? 'bg-[var(--surface)] text-[var(--accent)] shadow-none font-semibold' : 'text-[var(--text-2)] hover:text-[var(--text)]' }`}
               title="Столбчатый рейтинг категорий"
             >
               <BarChart3 className="w-3.5 h-3.5" />
@@ -485,11 +473,7 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
             <button
               type="button"
               onClick={() => setChartMode('timeline')}
-              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-colors cursor-pointer ${
-                chartMode === 'timeline'
-                  ? 'bg-white text-[#E15A42] shadow-2xs font-bold'
-                  : 'text-[#6D675E] hover:text-[#1F1E1C]'
-              }`}
+              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition-colors cursor-pointer ${ chartMode === 'timeline' ? 'bg-[var(--surface)] text-[var(--accent)] shadow-none font-semibold' : 'text-[var(--text-2)] hover:text-[var(--text)]' }`}
               title="Динамика трат по дням"
             >
               <Activity className="w-3.5 h-3.5" />
@@ -502,67 +486,64 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
       {/* Карточки макро-распределения: Продукты vs Бытовая химия vs Прочее */}
       {breakdown.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="bg-[#FAF9F5] p-3.5 rounded-2xl border border-[#E8E4DA] flex items-center justify-between">
+          <div className="bg-[var(--surface-2)] p-3.5 rounded-2xl border border-[var(--line)] flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <span className="text-2xl">🍏</span>
               <div>
-                <span className="text-[11px] font-bold text-[#7A746B] uppercase block">
+                <span className="text-[12px] font-semibold text-[var(--muted)] block">
                   Продукты питания
                 </span>
-                <span className="text-base font-extrabold text-[#1F1E1C]">
+                <span className="text-base font-semibold text-[var(--text)]">
                   {macroStats.food.amount.toFixed(2)} {currencySymbol}
                 </span>
               </div>
             </div>
             <div className="text-right">
-              <span className="text-xs font-black text-[#E15A42] px-2 py-0.5 rounded-md bg-orange-100 block">
+              <span className="text-xs font-semibold text-[var(--accent)] px-2 py-0.5 rounded-md bg-orange-100 block">
                 {macroStats.food.percent}%
               </span>
-              <span className="text-[10px] text-[#8C867D] mt-0.5 block">
+              <span className="text-[12px] text-[var(--muted)] mt-0.5 block">
                 {macroStats.food.count} тов.
               </span>
             </div>
           </div>
 
-          <div className="bg-[#FAF9F5] p-3.5 rounded-2xl border border-[#E8E4DA] flex items-center justify-between">
+          <div className="bg-[var(--surface-2)] p-3.5 rounded-2xl border border-[var(--line)] flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <span className="text-2xl">🧼</span>
               <div>
-                <span className="text-[11px] font-bold text-[#7A746B] uppercase block">
+                <span className="text-[12px] font-semibold text-[var(--muted)] block">
                   Бытовая химия и дом
                 </span>
-                <span className="text-base font-extrabold text-[#1F1E1C]">
+                <span className="text-base font-semibold text-[var(--text)]">
                   {macroStats.household.amount.toFixed(2)} {currencySymbol}
                 </span>
               </div>
             </div>
             <div className="text-right">
-              <span className="text-xs font-black text-indigo-600 px-2 py-0.5 rounded-md bg-indigo-50 block">
+              <span className="text-xs font-semibold text-[var(--accent)] px-2 py-0.5 rounded-md bg-[var(--accent-soft)] block">
                 {macroStats.household.percent}%
               </span>
-              <span className="text-[10px] text-[#8C867D] mt-0.5 block">
+              <span className="text-[12px] text-[var(--muted)] mt-0.5 block">
                 {macroStats.household.count} тов.
               </span>
             </div>
           </div>
 
-          <div className="bg-[#FAF9F5] p-3.5 rounded-2xl border border-[#E8E4DA] flex items-center justify-between">
+          <div className="bg-[var(--surface-2)] p-3.5 rounded-2xl border border-[var(--line)] flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <span className="text-2xl">📦</span>
               <div>
-                <span className="text-[11px] font-bold text-[#7A746B] uppercase block">
+                <span className="text-[12px] font-semibold text-[var(--muted)] block">
                   Прочее и аптека
                 </span>
-                <span className="text-base font-extrabold text-[#1F1E1C]">
+                <span className="text-base font-semibold text-[var(--text)]">
                   {macroStats.other.amount.toFixed(2)} {currencySymbol}
                 </span>
               </div>
             </div>
             <div className="text-right">
-              <span className="text-xs font-black text-amber-600 px-2 py-0.5 rounded-md bg-amber-50 block">
+              <span className="text-xs font-semibold text-amber-600 px-2 py-0.5 rounded-md bg-amber-50 block">
                 {macroStats.other.percent}%
               </span>
-              <span className="text-[10px] text-[#8C867D] mt-0.5 block">
+              <span className="text-[12px] text-[var(--muted)] mt-0.5 block">
                 {macroStats.other.count} тов.
               </span>
             </div>
@@ -572,15 +553,15 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
 
       {/* Основная секция визуализации Recharts */}
       {breakdown.length === 0 ? (
-        <div className="bg-[#FAF9F5] rounded-2xl p-8 text-center border border-[#E8E4DA] space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-orange-100 text-[#E15A42] flex items-center justify-center mx-auto">
+        <div className="bg-[var(--surface-2)] rounded-2xl p-8 text-center border border-[var(--line)] space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-orange-100 text-[var(--accent)] flex items-center justify-center mx-auto">
             <PieChart className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="font-bold text-sm text-[#1F1E1C]">
+            <h4 className="font-semibold text-sm text-[var(--text)]">
               Нет данных по чекам за {formatMonthLabel(selectedMonth).toLowerCase()}
             </h4>
-            <p className="text-xs text-[#7A746B] max-w-sm mx-auto mt-1">
+            <p className="text-xs text-[var(--muted)] max-w-sm mx-auto mt-1">
               {receipts.length > 0
                 ? 'В этом месяце покупок пока нет. Выберите другой период выше или нажмите «Все месяцы».'
                 : 'Загрузите свой чек или нажмите кнопку ниже, чтобы загрузить примеры чеков и протестировать графики.'}
@@ -591,7 +572,7 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
               <button
                 type="button"
                 onClick={() => setSelectedMonth('all')}
-                className="px-4 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-[#E15A42] font-bold text-xs border border-orange-200 transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-[var(--accent)] font-semibold text-xs border border-orange-200 transition-colors cursor-pointer"
               >
                 Показать все месяцы ({receipts.length} чеков)
               </button>
@@ -600,7 +581,7 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
                 <button
                   type="button"
                   onClick={onLoadSamples}
-                  className="px-4 py-2 rounded-xl bg-[#E15A42] hover:bg-[#D04A33] text-white font-bold text-xs inline-flex items-center space-x-1.5 shadow-sm transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-full bg-[var(--accent)] hover:brightness-110 text-white font-semibold text-xs inline-flex items-center space-x-1.5 transition-colors cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Загрузить примеры чеков (Jumbo, REWE, dm)</span>
@@ -614,19 +595,15 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
           {/* 1. Сетка круговой и столбчатой диаграмм */}
           {(chartMode === 'both' || chartMode === 'donut' || chartMode === 'bar') && (
             <div
-              className={`grid gap-6 ${
-                chartMode === 'both' ? 'grid-cols-1 lg:grid-cols-12' : 'grid-cols-1'
-              }`}
+              className={`grid gap-6 ${ chartMode === 'both' ? 'grid-cols-1 lg:grid-cols-12' : 'grid-cols-1' }`}
             >
               {/* Круговая диаграмма (Recharts PieChart / Donut) */}
               {(chartMode === 'donut' || chartMode === 'both') && (
                 <div
-                  className={`${
-                    chartMode === 'both' ? 'lg:col-span-5' : 'w-full'
-                  } flex flex-col items-center justify-between bg-[#FAF9F5] rounded-2xl p-4 border border-[#E8E4DA] relative`}
+                  className={`${ chartMode === 'both' ? 'lg:col-span-5' : 'w-full' } flex flex-col items-center justify-between bg-[var(--surface-2)] rounded-2xl p-4 border border-[var(--line)] relative`}
                 >
                   <div className="w-full text-center mb-1">
-                    <span className="text-xs font-bold text-[#555047] uppercase tracking-wider">
+                    <span className="text-xs font-semibold text-[var(--text-2)]">
                       Доли категорий в расходах
                     </span>
                   </div>
@@ -659,7 +636,7 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
                                 key={`cell-${index}`}
                                 fill={entry.color}
                                 opacity={isFaded ? 0.35 : 1}
-                                stroke={isSelected ? '#1F1E1C' : '#FFFFFF'}
+                                stroke={isSelected ? 'var(--text)' : 'var(--surface)'}
                                 strokeWidth={isSelected ? 3 : 2}
                                 style={{ outline: 'none' }}
                               />
@@ -671,19 +648,19 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
 
                     {/* Центральный бейдж с суммой и месяцем */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                      <span className="text-[10px] text-[#8C867D] font-medium uppercase tracking-wider">
+                      <span className="text-[12px] text-[var(--muted)] font-medium">
                         {formatMonthLabel(selectedMonth).slice(0, 7)}
                       </span>
-                      <span className="text-xl font-black text-[#1F1E1C]">
+                      <span className="text-xl font-semibold text-[var(--text)]">
                         {totalMonthSpent.toFixed(2)}
                       </span>
-                      <span className="text-[11px] font-bold text-[#E15A42]">
+                      <span className="text-[12px] font-semibold text-[var(--accent)]">
                         {currencySymbol}
                       </span>
                     </div>
                   </div>
 
-                  <div className="text-[11px] text-[#8C867D] text-center mt-1">
+                  <div className="text-[12px] text-[var(--muted)] text-center mt-1">
                     Нажмите на срез диаграммы для фильтрации чеков
                   </div>
                 </div>
@@ -692,15 +669,13 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
               {/* Столбчатая диаграмма (Recharts BarChart) */}
               {(chartMode === 'bar' || chartMode === 'both') && (
                 <div
-                  className={`${
-                    chartMode === 'both' ? 'lg:col-span-7' : 'w-full'
-                  } bg-[#FAF9F5] rounded-2xl p-4 border border-[#E8E4DA] flex flex-col justify-between`}
+                  className={`${ chartMode === 'both' ? 'lg:col-span-7' : 'w-full' } bg-[var(--surface-2)] rounded-2xl p-4 border border-[var(--line)] flex flex-col justify-between`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-[#555047] uppercase tracking-wider">
+                    <span className="text-xs font-semibold text-[var(--text-2)]">
                       Рейтинг трат по категориям ({currencySymbol})
                     </span>
-                    <span className="text-[11px] text-[#8C867D] font-medium">
+                    <span className="text-[12px] text-[var(--muted)] font-medium">
                       {breakdown.length} категорий
                     </span>
                   </div>
@@ -712,18 +687,18 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
                         layout="vertical"
                         margin={{ top: 5, right: 25, left: 20, bottom: 5 }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#EBE7DF" />
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--line)" />
                         <XAxis
                           type="number"
                           domain={[0, 'auto']}
-                          tick={{ fontSize: 11, fill: '#7A746B' }}
+                          tick={{ fontSize: 11, fill: 'var(--muted)' }}
                           tickFormatter={(val) => `${val} ${currencySymbol}`}
                         />
                         <YAxis
                           dataKey="name"
                           type="category"
                           width={110}
-                          tick={{ fontSize: 11, fill: '#3D3A36', fontWeight: 600 }}
+                          tick={{ fontSize: 11, fill: 'var(--text)', fontWeight: 600 }}
                         />
                         <RechartsTooltip content={<CustomBarTooltip />} />
                         <Bar
@@ -746,7 +721,7 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
                                 key={`bar-${index}`}
                                 fill={entry.color}
                                 opacity={isFaded ? 0.35 : 1}
-                                stroke={isSelected ? '#1F1E1C' : 'none'}
+                                stroke={isSelected ? 'var(--text)' : 'none'}
                                 strokeWidth={isSelected ? 2 : 0}
                               />
                             );
@@ -756,9 +731,9 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
                     </ResponsiveContainer>
                   </div>
 
-                  <div className="text-[11px] text-[#8C867D] text-right mt-1">
+                  <div className="text-[12px] text-[var(--muted)] text-right mt-1">
                     Всего за период:{' '}
-                    <strong className="text-[#1F1E1C]">
+                    <strong className="text-[var(--text)]">
                       {totalMonthSpent.toFixed(2)} {currencySymbol}
                     </strong>
                   </div>
@@ -769,15 +744,15 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
 
           {/* 2. График динамики трат по дням месяца (Recharts AreaChart) */}
           {(chartMode === 'timeline' || (chartMode === 'both' && timelineData.length > 1)) && (
-            <div className="bg-[#FAF9F5] rounded-2xl p-4 border border-[#E8E4DA] space-y-3">
+            <div className="bg-[var(--surface-2)] rounded-2xl p-4 border border-[var(--line)] space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Activity className="w-4 h-4 text-[#E15A42]" />
-                  <span className="text-xs font-bold text-[#555047] uppercase tracking-wider">
+                  <Activity className="w-4 h-4 text-[var(--accent)]" />
+                  <span className="text-xs font-semibold text-[var(--text-2)]">
                     Динамика трат по дням ({currencySymbol})
                   </span>
                 </div>
-                <span className="text-[11px] text-[#8C867D]">
+                <span className="text-[12px] text-[var(--muted)]">
                   {timelineData.length} {timelineData.length === 1 ? 'день с покупками' : 'дней с покупками'}
                 </span>
               </div>
@@ -790,24 +765,24 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
                   >
                     <defs>
                       <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#E15A42" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#E15A42" stopOpacity={0.0} />
+                        <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="var(--accent)" stopOpacity={0.0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EBE7DF" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--line)" />
                     <XAxis
                       dataKey="label"
-                      tick={{ fontSize: 11, fill: '#7A746B' }}
+                      tick={{ fontSize: 11, fill: 'var(--muted)' }}
                     />
                     <YAxis
-                      tick={{ fontSize: 11, fill: '#7A746B' }}
+                      tick={{ fontSize: 11, fill: 'var(--muted)' }}
                       tickFormatter={(val) => `${val} ${currencySymbol}`}
                     />
                     <RechartsTooltip content={<CustomTimelineTooltip />} />
                     <Area
                       type="monotone"
                       dataKey="amount"
-                      stroke="#E15A42"
+                      stroke="var(--accent)"
                       strokeWidth={2.5}
                       fillOpacity={1}
                       fill="url(#colorAmount)"
@@ -822,17 +797,17 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
 
       {/* Интерактивные чипы категорий для быстрой фильтрации */}
       {breakdown.length > 0 && (
-        <div className="space-y-2 pt-2 border-t border-[#F2EFE9]">
-          <div className="flex items-center justify-between text-xs text-[#7A746B]">
-            <span className="font-bold uppercase tracking-wider text-[11px] flex items-center space-x-1.5">
-              <Filter className="w-3.5 h-3.5 text-[#E15A42]" />
+        <div className="space-y-2 pt-2 border-t border-[var(--surface-3)]">
+          <div className="flex items-center justify-between text-xs text-[var(--muted)]">
+            <span className="font-semibold text-[12px] flex items-center space-x-1.5">
+              <Filter className="w-3.5 h-3.5 text-[var(--accent)]" />
               <span>Категории расходов (нажмите на карточку для фильтра чеков):</span>
             </span>
             {selectedCategory !== 'all' && onSelectCategory && (
               <button
                 type="button"
                 onClick={() => onSelectCategory('all')}
-                className="text-[11px] text-[#E15A42] font-bold hover:underline cursor-pointer"
+                className="text-[12px] text-[var(--accent)] font-semibold hover:underline cursor-pointer"
               >
                 Сбросить фильтр категории ({breakdown.length})
               </button>
@@ -850,26 +825,22 @@ export const ReceiptsMonthlyExpensesChart: React.FC<ReceiptsMonthlyExpensesChart
                     onSelectCategory &&
                     onSelectCategory(isSelected ? 'all' : item.category)
                   }
-                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                    isSelected
-                      ? 'border-[#E15A42] bg-[#FFF5F2] ring-2 ring-[#E15A42]/20 shadow-xs'
-                      : 'border-[#E8E4DA] bg-white hover:border-[#D5D0C5] hover:bg-[#FAF9F5]'
-                  }`}
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${ isSelected ? 'border-[var(--accent)] bg-[var(--accent-soft)] ring-2 ring-[var(--accent)]/20 shadow-[var(--shadow)]' : 'border-[var(--line)] bg-[var(--surface)] hover:border-[var(--line-strong)] hover:bg-[var(--surface-2)]' }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-base">{item.meta.icon}</span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-[#FAF9F5] border border-[#DDD8CD] text-[#555047]">
+                    <span className="text-[12px] font-semibold px-1.5 py-0.5 rounded-md bg-[var(--surface-2)] border border-[var(--line-strong)] text-[var(--text-2)]">
                       {item.percentage}%
                     </span>
                   </div>
-                  <div className="font-bold text-xs text-[#1F1E1C] truncate">
+                  <div className="font-semibold text-xs text-[var(--text)] truncate">
                     {item.meta.shortLabel}
                   </div>
-                  <div className="flex items-baseline justify-between mt-1 text-[11px]">
-                    <span className="font-extrabold text-[#1F1E1C]">
+                  <div className="flex items-baseline justify-between mt-1 text-[12px]">
+                    <span className="font-semibold text-[var(--text)]">
                       {item.totalAmount.toFixed(2)} {currencySymbol}
                     </span>
-                    <span className="text-[10px] text-[#8C867D]">
+                    <span className="text-[12px] text-[var(--muted)]">
                       {item.itemCount} шт
                     </span>
                   </div>

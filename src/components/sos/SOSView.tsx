@@ -1,3 +1,5 @@
+import { EmergencyGuides } from './EmergencyGuides';
+import { ShutoffPhoto } from './ShutoffPhoto';
 import React, { useEffect, useState } from 'react';
 import {
   AlertTriangle,
@@ -300,11 +302,11 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
         role: contactFormData.role || 'Экстренная связь',
         phone: contactFormData.phone?.trim() || '',
         color: contactFormData.color || {
-          bg: 'bg-blue-50',
-          text: 'text-blue-700',
-          border: 'border-blue-200',
+          bg: 'bg-[var(--accent-soft)]',
+          text: 'text-[var(--accent)]',
+          border: 'border-[var(--line)]',
           hex: '#2563EB',
-          badgeBg: 'bg-blue-100 text-blue-800',
+          badgeBg: 'bg-[var(--accent-soft)] text-[var(--accent)]',
         },
       });
     }
@@ -414,20 +416,20 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-900/95 backdrop-blur-md text-stone-100 flex flex-col">
+    <div className="theme-fixed fixed inset-0 z-50 overflow-y-auto bg-[var(--text)]/95 backdrop-blur-md text-[var(--surface-3)] flex flex-col">
       {/* ==================== ВЕРХНЯЯ ЭКСТРЕННАЯ ПАНЕЛЬ ==================== */}
-      <header className="sticky top-0 z-30 bg-gradient-to-r from-red-700 via-rose-700 to-red-800 text-white shadow-xl px-4 sm:px-8 py-3.5 border-b border-red-500/30">
+      <header className="sticky top-0 z-30 bg-red-600 text-white shadow-[var(--shadow)] px-4 sm:px-8 py-3.5 border-b border-red-500/30">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center animate-pulse border border-white/25">
+            <div className="w-10 h-10 rounded-xl bg-[var(--surface)]/15 flex items-center justify-center border border-[var(--surface)]/25">
               <ShieldAlert className="w-6 h-6 text-white" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight uppercase">
+                <h1 className="text-xl sm:text-2xl font-semibold tracking-tight ">
                   Экстренный режим SOS
                 </h1>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-xs font-bold bg-white text-red-700 uppercase">
+                <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-[var(--surface)] text-red-700 ">
                   Без пароля
                 </span>
               </div>
@@ -443,7 +445,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
               onClick={() => {
                 clearAllCacheAndReload();
               }}
-              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-black/25 hover:bg-black/40 text-red-100 text-xs font-semibold border border-white/20 active:scale-95 transition-all cursor-pointer shadow-sm"
+              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-black/25 hover:bg-black/40 text-red-100 text-xs font-semibold border border-[var(--surface)]/20 active:scale-95 transition-all cursor-pointer shadow-[var(--shadow)]"
               title="Сбросить локальный кэш и обновить приложение"
             >
               <RefreshCw className="w-3.5 h-3.5 text-amber-300" />
@@ -453,12 +455,12 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
             {/* Большая кнопка выхода */}
             <button
               onClick={onClose}
-              className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-black/35 hover:bg-black/50 text-white text-xs sm:text-sm font-semibold border border-white/25 active:scale-95 transition-all cursor-pointer shadow-sm"
+              className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-black/35 hover:bg-black/50 text-white text-xs sm:text-sm font-semibold border border-[var(--surface)]/25 active:scale-95 transition-all cursor-pointer shadow-[var(--shadow)]"
               title="Закрыть SOS (Esc)"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Назад в дом</span>
-              <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[10px] bg-white/20 rounded font-mono">
+              <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[12px] bg-[var(--surface)]/20 rounded font-mono">
                 Esc
               </kbd>
             </button>
@@ -467,7 +469,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
 
         {/* Переключатель объектов: Все объекты, Квартира, У Сергея, Дача + Кнопка ДОБАВИТЬ ОБЪЕКТ */}
         <div className="max-w-6xl mx-auto mt-3 pt-2.5 border-t border-red-500/30 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none">
-          <div className="flex items-center space-x-1.5 bg-black/25 p-1 rounded-xl border border-white/10 shrink-0">
+          <div className="flex items-center space-x-1.5 bg-black/25 p-1 rounded-xl border border-[var(--surface)]/10 shrink-0">
             <button
               onClick={() => {
                 setSelectedPropId('all');
@@ -475,8 +477,8 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
               }}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 selectedPropId === 'all'
-                  ? 'bg-white text-red-700 shadow-sm'
-                  : 'text-red-100 hover:bg-white/10'
+                  ? 'bg-[var(--surface)] text-red-700 shadow-[var(--shadow)]'
+                  : 'text-red-100 hover:bg-[var(--surface)]/10'
               }`}
             >
               <Building2 className="w-3.5 h-3.5" />
@@ -492,8 +494,8 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                 }}
                 className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   selectedPropId === prop.id
-                    ? 'bg-white text-red-700 shadow-sm'
-                    : 'text-red-100 hover:bg-white/10'
+                    ? 'bg-[var(--surface)] text-red-700 shadow-[var(--shadow)]'
+                    : 'text-red-100 hover:bg-[var(--surface)]/10'
                 }`}
               >
                 {prop.id.includes('dacha') ? (
@@ -508,7 +510,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
             {/* Кнопка добавления нового объекта в шапку переключателя */}
             <button
               onClick={handleOpenAddProperty}
-              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-amber-300 hover:bg-white/15 transition-all cursor-pointer ml-1 border border-amber-400/40"
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-amber-300 hover:bg-[var(--surface)]/15 transition-all cursor-pointer ml-1 border border-amber-400/40"
               title="Добавить новый объект"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -525,34 +527,25 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
 
       {/* ==================== ОСНОВНОЙ КОНТЕНТ ==================== */}
       <main className="max-w-6xl mx-auto w-full px-4 sm:px-8 py-6 space-y-6 flex-1">
-        {/* ЮРИДИЧЕСКИЙ И МЕДИЦИНСКИЙ ДИСКЛЕЙМЕР */}
-        <div className="bg-amber-950/60 border border-amber-500/40 rounded-xl p-3.5 flex items-start gap-3 text-amber-200 text-xs leading-relaxed shadow-sm">
-          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold text-amber-300 block mb-0.5">Важное предупреждение о безопасности и медицинской ответственности:</span>
-            Информация в этом разделе носит исключительно справочный характер для семьи. При непосредственной угрозе жизни, здоровью, признаках инфаркта, инсульта, тяжелых травмах или пожаре немедленно звоните в государственные службы спасения (112 / Скорая помощь). Всегда сверяйте и актуализируйте аллергии, группы крови и дозировки медикаментов у вашего лечащего врача.
-          </div>
-        </div>
-
         {/* ==================== 1. ГОСУДАРСТВЕННЫЕ ЭКСТРЕННЫЕ СЛУЖБЫ ==================== */}
-        <section className="bg-stone-800/90 rounded-2xl p-4 sm:p-5 border border-red-500/40 shadow-lg">
+        <section className="bg-[var(--text)]/90 rounded-2xl p-4 sm:p-5 border border-red-500/40 shadow-[var(--shadow)]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
             <div className="flex items-center space-x-2">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight flex items-center gap-2">
                 <PhoneCall className="w-5 h-5 text-red-400" />
                 Экстренные службы быстрого реагирования
               </h2>
             </div>
             {/* Переключатель региона: РФ vs Греция/ЕС */}
-            <div className="flex items-center space-x-1 bg-stone-900/80 p-1 rounded-xl border border-stone-700">
+            <div className="flex items-center space-x-1 bg-[var(--text)]/80 p-1 rounded-xl border border-[var(--text-2)]">
               <button
                 type="button"
                 onClick={() => setEmergencyRegion('ru')}
-                className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   emergencyRegion === 'ru'
                     ? 'bg-red-600 text-white shadow-2xs'
-                    : 'text-stone-400 hover:text-white'
+                    : 'text-[var(--muted)] hover:text-white'
                 }`}
               >
                 🇷🇺 РФ / СНГ
@@ -560,10 +553,10 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
               <button
                 type="button"
                 onClick={() => setEmergencyRegion('gr')}
-                className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   emergencyRegion === 'gr'
                     ? 'bg-red-600 text-white shadow-2xs'
-                    : 'text-stone-400 hover:text-white'
+                    : 'text-[var(--muted)] hover:text-white'
                 }`}
               >
                 🇬🇷 Греция / ЕС
@@ -577,70 +570,70 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
               <a
                 href="tel:112"
                 onClick={(e) => handlePhoneAction(e, '112', 'Единая служба спасения 112', showToast)}
-                className="col-span-2 sm:col-span-1 p-3.5 rounded-xl bg-gradient-to-br from-red-600 to-rose-700 text-white hover:brightness-110 active:scale-98 transition-all flex flex-col items-center justify-center text-center shadow-md border border-red-400/50 group cursor-pointer"
+                className="col-span-2 sm:col-span-1 p-3.5 rounded-xl bg-red-600 text-white hover:brightness-110 active:scale-98 transition-all flex flex-col items-center justify-center text-center shadow-[var(--shadow)] border border-red-400/50 group cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                <div className="w-9 h-9 rounded-full bg-[var(--surface)]/20 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                   <ShieldAlert className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-2xl font-black tracking-tight leading-none">112</span>
+                <span className="text-2xl font-semibold tracking-tight leading-none">112</span>
                 <span className="text-xs font-semibold mt-1">Единая служба спасения</span>
-                <span className="text-[10px] text-red-100/80">МЧС • Скорая • Полиция</span>
+                <span className="text-[12px] text-red-100/80">МЧС • Скорая • Полиция</span>
               </a>
 
               {/* 103 Скорая */}
               <a
                 href="tel:103"
                 onClick={(e) => handlePhoneAction(e, '103', 'Скорая медицинская помощь 103', showToast)}
-                className="p-3.5 rounded-xl bg-stone-700/80 hover:bg-stone-700 text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-stone-600 group cursor-pointer"
+                className="p-3.5 rounded-xl bg-[var(--text-2)]/80 hover:bg-[var(--text-2)] text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-[var(--text-2)] group cursor-pointer"
               >
                 <div className="w-9 h-9 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                   <HeartPulse className="w-5 h-5" />
                 </div>
-                <span className="text-2xl font-black tracking-tight leading-none text-rose-400">103</span>
+                <span className="text-2xl font-semibold tracking-tight leading-none text-rose-400">103</span>
                 <span className="text-xs font-semibold mt-1">Скорая помощь</span>
-                <span className="text-[10px] text-stone-400">Неотложная помощь</span>
+                <span className="text-[12px] text-[var(--muted)]">Неотложная помощь</span>
               </a>
 
               {/* 101 Пожарная */}
               <a
                 href="tel:101"
                 onClick={(e) => handlePhoneAction(e, '101', 'Пожарная охрана и МЧС 101', showToast)}
-                className="p-3.5 rounded-xl bg-stone-700/80 hover:bg-stone-700 text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-stone-600 group cursor-pointer"
+                className="p-3.5 rounded-xl bg-[var(--text-2)]/80 hover:bg-[var(--text-2)] text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-[var(--text-2)] group cursor-pointer"
               >
                 <div className="w-9 h-9 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                   <Flame className="w-5 h-5" />
                 </div>
-                <span className="text-2xl font-black tracking-tight leading-none text-amber-400">101</span>
+                <span className="text-2xl font-semibold tracking-tight leading-none text-amber-400">101</span>
                 <span className="text-xs font-semibold mt-1">Пожарные / МЧС</span>
-                <span className="text-[10px] text-stone-400">Огонь, дым, завалы</span>
+                <span className="text-[12px] text-[var(--muted)]">Огонь, дым, завалы</span>
               </a>
 
               {/* 104 Газ */}
               <a
                 href="tel:104"
                 onClick={(e) => handlePhoneAction(e, '104', 'Аварийная газовая служба 104', showToast)}
-                className="p-3.5 rounded-xl bg-stone-700/80 hover:bg-stone-700 text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-stone-600 group cursor-pointer"
+                className="p-3.5 rounded-xl bg-[var(--text-2)]/80 hover:bg-[var(--text-2)] text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-[var(--text-2)] group cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                <div className="w-9 h-9 rounded-full bg-[var(--accent)]/20 text-blue-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                   <Zap className="w-5 h-5" />
                 </div>
-                <span className="text-2xl font-black tracking-tight leading-none text-blue-400">104</span>
+                <span className="text-2xl font-semibold tracking-tight leading-none text-blue-400">104</span>
                 <span className="text-xs font-semibold mt-1">Аварийная газа</span>
-                <span className="text-[10px] text-stone-400">Запах газа, утечка</span>
+                <span className="text-[12px] text-[var(--muted)]">Запах газа, утечка</span>
               </a>
 
               {/* 102 Полиция */}
               <a
                 href="tel:102"
                 onClick={(e) => handlePhoneAction(e, '102', 'Полиция 102', showToast)}
-                className="p-3.5 rounded-xl bg-stone-700/80 hover:bg-stone-700 text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-stone-600 group cursor-pointer"
+                className="p-3.5 rounded-xl bg-[var(--text-2)]/80 hover:bg-[var(--text-2)] text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-[var(--text-2)] group cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                <div className="w-9 h-9 rounded-full bg-[var(--accent)]/20 text-indigo-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                   <User className="w-5 h-5" />
                 </div>
-                <span className="text-2xl font-black tracking-tight leading-none text-indigo-400">102</span>
+                <span className="text-2xl font-semibold tracking-tight leading-none text-indigo-400">102</span>
                 <span className="text-xs font-semibold mt-1">Полиция</span>
-                <span className="text-[10px] text-stone-400">Правопорядок</span>
+                <span className="text-[12px] text-[var(--muted)]">Правопорядок</span>
               </a>
             </div>
           ) : (
@@ -649,85 +642,91 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
               <a
                 href="tel:112"
                 onClick={(e) => handlePhoneAction(e, '112', 'Единый номер спасения ЕС 112', showToast)}
-                className="col-span-2 sm:col-span-1 p-3.5 rounded-xl bg-gradient-to-br from-red-600 to-rose-700 text-white hover:brightness-110 active:scale-98 transition-all flex flex-col items-center justify-center text-center shadow-md border border-red-400/50 group cursor-pointer"
+                className="col-span-2 sm:col-span-1 p-3.5 rounded-xl bg-red-600 text-white hover:brightness-110 active:scale-98 transition-all flex flex-col items-center justify-center text-center shadow-[var(--shadow)] border border-red-400/50 group cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                <div className="w-9 h-9 rounded-full bg-[var(--surface)]/20 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                   <ShieldAlert className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-2xl font-black tracking-tight leading-none">112</span>
+                <span className="text-2xl font-semibold tracking-tight leading-none">112</span>
                 <span className="text-xs font-semibold mt-1">Спасение ЕС / Греция</span>
-                <span className="text-[10px] text-red-100/80">Ευρωπαϊκός Αριθμός</span>
+                <span className="text-[12px] text-red-100/80">Ευρωπαϊκός Αριθμός</span>
               </a>
 
               {/* 166 EKAV Скорая Греция */}
               <a
                 href="tel:166"
                 onClick={(e) => handlePhoneAction(e, '166', 'Скорая помощь Греции EKAV 166', showToast)}
-                className="p-3.5 rounded-xl bg-stone-700/80 hover:bg-stone-700 text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-stone-600 group cursor-pointer"
+                className="p-3.5 rounded-xl bg-[var(--text-2)]/80 hover:bg-[var(--text-2)] text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-[var(--text-2)] group cursor-pointer"
               >
                 <div className="w-9 h-9 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                   <HeartPulse className="w-5 h-5" />
                 </div>
-                <span className="text-2xl font-black tracking-tight leading-none text-rose-400">166</span>
+                <span className="text-2xl font-semibold tracking-tight leading-none text-rose-400">166</span>
                 <span className="text-xs font-semibold mt-1">Скорая (ΕΚΑΒ)</span>
-                <span className="text-[10px] text-stone-400">Неотложная помощь</span>
+                <span className="text-[12px] text-[var(--muted)]">Неотложная помощь</span>
               </a>
 
               {/* 199 Пожарные Греция */}
               <a
                 href="tel:199"
                 onClick={(e) => handlePhoneAction(e, '199', 'Пожарная охрана Греции 199', showToast)}
-                className="p-3.5 rounded-xl bg-stone-700/80 hover:bg-stone-700 text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-stone-600 group cursor-pointer"
+                className="p-3.5 rounded-xl bg-[var(--text-2)]/80 hover:bg-[var(--text-2)] text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-[var(--text-2)] group cursor-pointer"
               >
                 <div className="w-9 h-9 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                   <Flame className="w-5 h-5" />
                 </div>
-                <span className="text-2xl font-black tracking-tight leading-none text-amber-400">199</span>
+                <span className="text-2xl font-semibold tracking-tight leading-none text-amber-400">199</span>
                 <span className="text-xs font-semibold mt-1">Пожарные (Πυροσβεστική)</span>
-                <span className="text-[10px] text-stone-400">Огонь и спасение</span>
+                <span className="text-[12px] text-[var(--muted)]">Огонь и спасение</span>
               </a>
 
               {/* 100 Полиция Греция */}
               <a
                 href="tel:100"
                 onClick={(e) => handlePhoneAction(e, '100', 'Полиция Греции 100', showToast)}
-                className="p-3.5 rounded-xl bg-stone-700/80 hover:bg-stone-700 text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-stone-600 group cursor-pointer"
+                className="p-3.5 rounded-xl bg-[var(--text-2)]/80 hover:bg-[var(--text-2)] text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-[var(--text-2)] group cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
+                <div className="w-9 h-9 rounded-full bg-[var(--accent)]/20 text-indigo-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                   <User className="w-5 h-5" />
                 </div>
-                <span className="text-2xl font-black tracking-tight leading-none text-indigo-400">100</span>
+                <span className="text-2xl font-semibold tracking-tight leading-none text-indigo-400">100</span>
                 <span className="text-xs font-semibold mt-1">Полиция (Αστυνομία)</span>
-                <span className="text-[10px] text-stone-400">Правопорядок</span>
+                <span className="text-[12px] text-[var(--muted)]">Правопорядок</span>
               </a>
 
               {/* Токсикология / Отравления */}
               <a
                 href="tel:+302107793777"
                 onClick={(e) => handlePhoneAction(e, '+302107793777', 'Токсикологический центр Греции', showToast)}
-                className="p-3.5 rounded-xl bg-stone-700/80 hover:bg-stone-700 text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-stone-600 group cursor-pointer"
+                className="p-3.5 rounded-xl bg-[var(--text-2)]/80 hover:bg-[var(--text-2)] text-white active:scale-98 transition-all flex flex-col items-center justify-center text-center border border-[var(--text-2)] group cursor-pointer"
               >
                 <div className="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
-                <span className="text-sm font-black tracking-tight leading-none text-emerald-400 mt-1">210 7793777</span>
+                <span className="text-sm font-semibold tracking-tight leading-none text-emerald-400 mt-1">210 7793777</span>
                 <span className="text-xs font-semibold mt-1">Отравления</span>
-                <span className="text-[10px] text-stone-400">Δηλητηριάσεων</span>
+                <span className="text-[12px] text-[var(--muted)]">Δηλητηριάσεων</span>
               </a>
             </div>
           )}
         </section>
 
+        {/* ==================== 1Б. ЧТО ДЕЛАТЬ ПРИ АВАРИИ ДОМА ==================== */}
+        <EmergencyGuides
+          plumberPhone={properties[0]?.managementCompany?.plumberPhone}
+          electricianPhone={properties[0]?.managementCompany?.electricianPhone}
+        />
+
         {/* ==================== 2. СВЯЗЬ С СЕМЬЕЙ (ДОБАВИТЬ / ИЗМЕНИТЬ / УДАЛИТЬ) ==================== */}
-        <section className="bg-stone-800/90 rounded-2xl p-4 sm:p-5 border border-stone-700 shadow-md">
+        <section className="bg-[var(--text)]/90 rounded-2xl p-4 sm:p-5 border border-[var(--text-2)] shadow-[var(--shadow)]">
           <div className="flex items-center justify-between mb-3.5">
-            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight flex items-center gap-2">
               <User className="w-5 h-5 text-amber-400" />
               Быстрый вызов членов семьи и экстренных контактов
             </h2>
             <button
               onClick={handleOpenAddContact}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-sm"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-[var(--shadow)]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Добавить контакт</span>
@@ -738,16 +737,16 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
             {members.map((member) => (
               <div
                 key={member.id}
-                className="p-3.5 rounded-xl bg-stone-700/60 border border-stone-600 flex items-center justify-between gap-3 group relative"
+                className="p-3.5 rounded-xl bg-[var(--text-2)]/60 border border-[var(--text-2)] flex items-center justify-between gap-3 group relative"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center space-x-2">
-                    <span className="font-bold text-white text-sm truncate">{member.name}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-300 shrink-0">
+                    <span className="font-semibold text-white text-sm truncate">{member.name}</span>
+                    <span className="text-[12px] px-1.5 py-0.5 rounded bg-[var(--text)] text-[var(--line-strong)] shrink-0">
                       {member.role.split('•')[0].trim()}
                     </span>
                   </div>
-                  <p className="text-xs text-stone-300 font-mono mt-0.5 truncate">
+                  <p className="text-xs text-[var(--line-strong)] font-mono mt-0.5 truncate">
                     {member.phone || 'Телефон не указан'}
                   </p>
                 </div>
@@ -758,7 +757,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                     <a
                       href={`tel:${member.phone.replace(/[^+\d]/g, '')}`}
                       onClick={(e) => handlePhoneAction(e, member.phone || '', member.name, showToast)}
-                      className="p-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95 transition-all shadow-sm flex items-center justify-center cursor-pointer"
+                      className="p-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95 transition-all shadow-[var(--shadow)] flex items-center justify-center cursor-pointer"
                       title={`Позвонить ${member.name}`}
                     >
                       <Phone className="w-3.5 h-3.5" />
@@ -768,7 +767,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   {/* Кнопка Изменить */}
                   <button
                     onClick={() => handleOpenEditContact(member)}
-                    className="p-2 rounded-xl bg-stone-600 hover:bg-stone-500 text-stone-200 hover:text-white transition-all cursor-pointer"
+                    className="p-2 rounded-xl bg-[var(--text-2)] hover:bg-[var(--muted)] text-[var(--line)] hover:text-white transition-all cursor-pointer"
                     title="Изменить контакт"
                   >
                     <Pencil className="w-3.5 h-3.5" />
@@ -783,7 +782,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                         title: `контакт «${member.name}»`,
                       })
                     }
-                    className="p-2 rounded-xl bg-stone-600 hover:bg-red-600/80 text-stone-200 hover:text-white transition-all cursor-pointer"
+                    className="p-2 rounded-xl bg-[var(--text-2)] hover:bg-red-600/80 text-[var(--line)] hover:text-white transition-all cursor-pointer"
                     title="Удалить контакт"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -797,7 +796,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
         {/* ==================== 3. КАРТОЧКИ ОБЪЕКТОВ (ДОБАВИТЬ / ИЗМЕНИТЬ / УДАЛИТЬ) ==================== */}
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight flex items-center gap-2">
               <Building2 className="w-5 h-5 text-sky-400" />
               Инженерные паспорта и аварийные узлы {selectedPropId === 'all' ? '(Все объекты)' : ''}
             </h2>
@@ -805,7 +804,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
             {/* КНОПКА ДОБАВИТЬ ОБЪЕКТ */}
             <button
               onClick={handleOpenAddProperty}
-              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-md"
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)] text-white text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-[var(--shadow)]"
             >
               <Plus className="w-4 h-4" />
               <span>Добавить объект</span>
@@ -816,12 +815,12 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
             {displayedProperties.map((prop) => (
               <div
                 key={prop.id}
-                className="bg-stone-800 rounded-2xl border border-stone-700/80 overflow-hidden shadow-lg"
+                className="bg-[var(--text)] rounded-2xl border border-[var(--text-2)]/80 overflow-hidden shadow-[var(--shadow)]"
               >
                 {/* Шапка объекта с кнопками ИЗМЕНИТЬ и УДАЛИТЬ */}
-                <div className="px-5 py-3.5 bg-gradient-to-r from-stone-800 to-stone-750 border-b border-stone-700 flex flex-wrap items-center justify-between gap-3">
+                <div className="px-5 py-3.5 bg-[var(--text)] border-b border-[var(--text-2)] flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center space-x-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--accent)]/20 text-sky-400 flex items-center justify-center">
                       {prop.id.includes('dacha') ? (
                         <Trees className="w-4 h-4" />
                       ) : (
@@ -829,17 +828,17 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                       )}
                     </div>
                     <div>
-                      <h3 className="font-bold text-white text-base leading-tight">
+                      <h3 className="font-semibold text-white text-base leading-tight">
                         {prop.name}
                       </h3>
                       <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                        <p className="text-xs text-stone-300 flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                        <p className="text-xs text-[var(--line-strong)] flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-[var(--muted)] shrink-0" />
                           <span>{prop.address || 'Адрес не указан'}</span>
                         </p>
                         <button
                           onClick={() => handleOpenEditProperty(prop, 'address')}
-                          className="text-[11px] text-sky-400 hover:text-sky-300 flex items-center gap-1 hover:underline cursor-pointer"
+                          className="text-[12px] text-sky-400 hover:text-sky-300 flex items-center gap-1 hover:underline cursor-pointer"
                           title="Изменить адрес и параметры доступа"
                         >
                           <Pencil className="w-3 h-3" />
@@ -851,7 +850,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
 
                   <div className="flex items-center space-x-2 text-xs">
                     {prop.intercomCode && (
-                      <span className="px-2.5 py-1 rounded-lg bg-stone-700 border border-stone-600 text-stone-200">
+                      <span className="px-2.5 py-1 rounded-lg bg-[var(--text-2)] border border-[var(--text-2)] text-[var(--line)]">
                         Домофон: <strong className="text-white">{prop.intercomCode}</strong>
                       </span>
                     )}
@@ -859,7 +858,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                     {/* КНОПКА ИЗМЕНИТЬ ОБЪЕКТ */}
                     <button
                       onClick={() => handleOpenEditProperty(prop, 'all')}
-                      className="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-600 text-white font-semibold transition-all cursor-pointer border border-stone-600"
+                      className="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-[var(--text-2)] hover:bg-[var(--text-2)] text-white font-semibold transition-all cursor-pointer border border-[var(--text-2)]"
                       title="Изменить все данные объекта"
                     >
                       <Pencil className="w-3.5 h-3.5 text-sky-400" />
@@ -875,7 +874,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           title: `объект «${prop.name}»`,
                         })
                       }
-                      className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-stone-700 hover:bg-red-600/80 text-stone-300 hover:text-white font-semibold transition-all cursor-pointer border border-stone-600"
+                      className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-[var(--text-2)] hover:bg-red-600/80 text-[var(--line-strong)] hover:text-white font-semibold transition-all cursor-pointer border border-[var(--text-2)]"
                       title="Удалить объект"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -887,22 +886,22 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                 {/* Сетка инженерии: Вода, Щиток, Аптечка, Ключи */}
                 <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* КАК ПЕРЕКРЫТЬ ВОДУ */}
-                  <div className="p-4 rounded-xl bg-stone-900/60 border border-sky-500/30 flex flex-col justify-between">
+                  <div className="p-4 rounded-xl bg-[var(--text)]/60 border border-sky-500/30 flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2 text-sky-400 font-bold text-sm">
+                        <div className="flex items-center space-x-2 text-sky-400 font-semibold text-sm">
                           <Droplets className="w-4 h-4" />
                           <span>Как перекрыть воду</span>
                         </div>
                         <div className="flex items-center space-x-1.5">
                           {prop.waterShutoff.hasAquaStop && (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                            <span className="px-2 py-0.5 rounded text-[12px] font-semibold bg-[var(--accent)]/20 text-sky-300 border border-sky-500/30">
                               Аквасторож
                             </span>
                           )}
                           <button
                             onClick={() => handleOpenEditProperty(prop, 'water')}
-                            className="px-2 py-0.5 rounded bg-stone-800 hover:bg-sky-950 text-sky-300 hover:text-white border border-stone-700 hover:border-sky-500/50 text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                            className="px-2 py-0.5 rounded bg-[var(--text)] hover:bg-[#082f49] text-sky-300 hover:text-white border border-[var(--text-2)] hover:border-sky-500/50 text-[12px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
                             title="Изменить данные о перекрытии воды и сантехнике"
                           >
                             <Pencil className="w-3 h-3" />
@@ -910,17 +909,18 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           </button>
                         </div>
                       </div>
-                      <p className="text-xs text-stone-300 font-semibold mb-1">
+                      <p className="text-xs text-[var(--line-strong)] font-semibold mb-1">
                         📍 Где находится: {prop.waterShutoff.location}
                       </p>
-                      <p className="text-xs text-stone-400 leading-relaxed bg-stone-800/80 p-2.5 rounded-lg border border-stone-700">
+                      <p className="text-xs text-[var(--muted)] leading-relaxed bg-[var(--text)]/80 p-2.5 rounded-lg border border-[var(--text-2)]">
                         {prop.waterShutoff.instructions}
                       </p>
+                      <ShutoffPhoto propId={prop.id} kind="water" label="кран воды" />
                     </div>
 
                     {/* Телефон дежурного сантехника */}
-                    <div className="mt-3 pt-2.5 border-t border-stone-800 flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-stone-400">Сантехник / мастер по воде:</span>
+                    <div className="mt-3 pt-2.5 border-t border-[var(--text)] flex items-center justify-between gap-2">
+                      <span className="text-[12px] text-[var(--muted)]">Сантехник / мастер по воде:</span>
                       {prop.managementCompany?.plumberPhone ? (
                         <div className="flex items-center space-x-1.5">
                           <a
@@ -933,7 +933,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                                 showToast
                               )
                             }
-                            className="flex items-center space-x-1 text-xs text-sky-400 hover:text-sky-300 font-semibold px-2 py-0.5 rounded bg-sky-950/60 border border-sky-500/30 cursor-pointer"
+                            className="flex items-center space-x-1 text-xs text-sky-400 hover:text-sky-300 font-semibold px-2 py-0.5 rounded bg-[#082f49]/60 border border-sky-500/30 cursor-pointer"
                             title="Позвонить мастеру"
                           >
                             <Phone className="w-3 h-3" />
@@ -941,7 +941,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           </a>
                           <button
                             onClick={() => handleOpenEditProperty(prop, 'water')}
-                            className="p-1 rounded hover:bg-stone-800 text-stone-400 hover:text-sky-400 transition-colors cursor-pointer"
+                            className="p-1 rounded hover:bg-[var(--text)] text-[var(--muted)] hover:text-sky-400 transition-colors cursor-pointer"
                             title="Изменить номер сантехника"
                           >
                             <Pencil className="w-3 h-3" />
@@ -960,18 +960,18 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   </div>
 
                   {/* ГДЕ ЩИТОК И КАК ОБЕСТОЧИТЬ */}
-                  <div className="p-4 rounded-xl bg-stone-900/60 border border-amber-500/30 flex flex-col justify-between">
+                  <div className="p-4 rounded-xl bg-[var(--text)]/60 border border-amber-500/30 flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2 text-amber-400 font-bold text-sm">
+                        <div className="flex items-center space-x-2 text-amber-400 font-semibold text-sm">
                           <Zap className="w-4 h-4" />
                           <span>Где щиток и как обесточить</span>
                         </div>
                         <div className="flex items-center space-x-1.5">
-                          <span className="text-[10px] text-stone-400">220/380V</span>
+                          <span className="text-[12px] text-[var(--muted)]">220/380V</span>
                           <button
                             onClick={() => handleOpenEditProperty(prop, 'electric')}
-                            className="px-2 py-0.5 rounded bg-stone-800 hover:bg-amber-950 text-amber-300 hover:text-white border border-stone-700 hover:border-amber-500/50 text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                            className="px-2 py-0.5 rounded bg-[var(--text)] hover:bg-[var(--text-2)] text-amber-300 hover:text-white border border-[var(--text-2)] hover:border-amber-500/50 text-[12px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
                             title="Изменить данные о щитке и электрике"
                           >
                             <Pencil className="w-3 h-3" />
@@ -979,22 +979,23 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           </button>
                         </div>
                       </div>
-                      <p className="text-xs text-stone-300 font-semibold mb-1">
+                      <p className="text-xs text-[var(--line-strong)] font-semibold mb-1">
                         📍 Расположение: {prop.electricPanel.location}
                       </p>
-                      <div className="space-y-1 bg-stone-800/80 p-2.5 rounded-lg border border-stone-700 text-xs">
+                      <div className="space-y-1 bg-[var(--text)]/80 p-2.5 rounded-lg border border-[var(--text-2)] text-xs">
                         <p className="text-amber-200 font-semibold">
                           Вводной автомат: {prop.electricPanel.mainBreaker}
                         </p>
-                        <p className="text-stone-400 text-[11px] leading-relaxed">
+                        <p className="text-[var(--muted)] text-[12px] leading-relaxed">
                           {prop.electricPanel.notes}
                         </p>
                       </div>
+                      <ShutoffPhoto propId={prop.id} kind="electric" label="электрощит" />
                     </div>
 
                     {/* Телефон дежурного электрика */}
-                    <div className="mt-3 pt-2.5 border-t border-stone-800 flex items-center justify-between gap-2">
-                      <span className="text-[11px] text-stone-400">Дежурный электрик:</span>
+                    <div className="mt-3 pt-2.5 border-t border-[var(--text)] flex items-center justify-between gap-2">
+                      <span className="text-[12px] text-[var(--muted)]">Дежурный электрик:</span>
                       {prop.managementCompany?.electricianPhone ? (
                         <div className="flex items-center space-x-1.5">
                           <a
@@ -1007,7 +1008,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                                 showToast
                               )
                             }
-                            className="flex items-center space-x-1 text-xs text-amber-400 hover:text-amber-300 font-semibold px-2 py-0.5 rounded bg-amber-950/60 border border-amber-500/30 cursor-pointer"
+                            className="flex items-center space-x-1 text-xs text-amber-400 hover:text-amber-300 font-semibold px-2 py-0.5 rounded bg-[var(--text-2)]/60 border border-amber-500/30 cursor-pointer"
                             title="Позвонить электрику"
                           >
                             <Phone className="w-3 h-3" />
@@ -1015,7 +1016,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           </a>
                           <button
                             onClick={() => handleOpenEditProperty(prop, 'electric')}
-                            className="p-1 rounded hover:bg-stone-800 text-stone-400 hover:text-amber-400 transition-colors cursor-pointer"
+                            className="p-1 rounded hover:bg-[var(--text)] text-[var(--muted)] hover:text-amber-400 transition-colors cursor-pointer"
                             title="Изменить номер электрика"
                           >
                             <Pencil className="w-3 h-3" />
@@ -1034,10 +1035,10 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   </div>
 
                   {/* ГДЕ АПТЕЧКА И ПЕРВАЯ ПОМОЩЬ */}
-                  <div className="p-4 rounded-xl bg-stone-900/60 border border-rose-500/30 flex flex-col justify-between">
+                  <div className="p-4 rounded-xl bg-[var(--text)]/60 border border-rose-500/30 flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2 text-rose-400 font-bold text-sm">
+                        <div className="flex items-center space-x-2 text-rose-400 font-semibold text-sm">
                           <Pill className="w-4 h-4" />
                           <span>Где аптечка в объекте</span>
                         </div>
@@ -1054,41 +1055,42 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           </button>
                         )}
                       </div>
-                      <p className="text-xs text-stone-300 leading-relaxed bg-stone-800/80 p-2.5 rounded-lg border border-stone-700">
+                      <p className="text-xs text-[var(--line-strong)] leading-relaxed bg-[var(--text)]/80 p-2.5 rounded-lg border border-[var(--text-2)]">
                         {prop.firstAidLocation}
                       </p>
                     </div>
                   </div>
 
                   {/* КЛЮЧИ, ДОСТУП И УПРАВЛЯЮЩАЯ КОМПАНИЯ */}
-                  <div className="p-4 rounded-xl bg-stone-900/60 border border-stone-700 flex flex-col justify-between">
+                  <div className="p-4 rounded-xl bg-[var(--text)]/60 border border-[var(--text-2)] flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2 text-stone-300 font-bold text-sm">
+                        <div className="flex items-center space-x-2 text-[var(--line-strong)] font-semibold text-sm">
                           <Key className="w-4 h-4 text-emerald-400" />
                           <span>Ключи, доступ и службы дома</span>
                         </div>
                         <button
                           onClick={() => handleOpenEditProperty(prop, 'services')}
-                          className="px-2 py-0.5 rounded bg-stone-800 hover:bg-stone-700 text-emerald-300 hover:text-white border border-stone-700 text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                          className="px-2 py-0.5 rounded bg-[var(--text)] hover:bg-[var(--text-2)] text-emerald-300 hover:text-white border border-[var(--text-2)] text-[12px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
                           title="Изменить ключи, газ и службу дома"
                         >
                           <Pencil className="w-3 h-3" />
                           <span>Изменить</span>
                         </button>
                       </div>
-                      <p className="text-xs text-stone-400 mb-1.5">
-                        <strong className="text-stone-200">Запасные ключи:</strong> {prop.backupKeysLocation}
+                      <p className="text-xs text-[var(--muted)] mb-1.5">
+                        <strong className="text-[var(--line)]">Запасные ключи:</strong> {prop.backupKeysLocation}
                       </p>
                       {prop.gasShutoff && prop.gasShutoff.hasGas && (
-                        <p className="text-xs text-amber-300 bg-amber-950/40 border border-amber-800/50 p-2 rounded-lg mb-2">
+                        <p className="text-xs text-amber-300 bg-[var(--text-2)]/40 border border-amber-800/50 p-2 rounded-lg mb-2">
                           <strong>Газ на объекте:</strong> {prop.gasShutoff.location}. {prop.gasShutoff.instructions}
                         </p>
                       )}
+                      {prop.gasShutoff && prop.gasShutoff.hasGas && <ShutoffPhoto propId={prop.id} kind="gas" label="газовый кран" />}
                     </div>
 
-                    <div className="mt-2 pt-2 border-t border-stone-800 flex flex-wrap items-center justify-between gap-2 text-xs">
-                      <span className="text-stone-400">
+                    <div className="mt-2 pt-2 border-t border-[var(--text)] flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span className="text-[var(--muted)]">
                         {prop.managementCompany.name || 'Служба дома / УК'}:
                       </span>
                       {prop.managementCompany.dispatchPhone ? (
@@ -1103,7 +1105,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                                 showToast
                               )
                             }
-                            className="px-2.5 py-1 rounded bg-stone-700 hover:bg-stone-600 text-white font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+                            className="px-2.5 py-1 rounded bg-[var(--text-2)] hover:bg-[var(--text-2)] text-white font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
                             title="Позвонить в диспетчерскую"
                           >
                             <Phone className="w-3 h-3 text-emerald-400" />
@@ -1111,7 +1113,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           </a>
                           <button
                             onClick={() => handleOpenEditProperty(prop, 'services')}
-                            className="p-1 rounded hover:bg-stone-800 text-stone-400 hover:text-emerald-400 transition-colors cursor-pointer"
+                            className="p-1 rounded hover:bg-[var(--text)] text-[var(--muted)] hover:text-emerald-400 transition-colors cursor-pointer"
                             title="Изменить телефон диспетчерской"
                           >
                             <Pencil className="w-3 h-3" />
@@ -1135,17 +1137,17 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
         </section>
 
         {/* ==================== 4. ДЕЙСТВИЯ ПРИ ДТП (ИЗМЕНИТЬ) ==================== */}
-        <section className="bg-stone-800/90 rounded-2xl p-4 sm:p-5 border border-stone-700 shadow-lg">
+        <section className="bg-[var(--text)]/90 rounded-2xl p-4 sm:p-5 border border-[var(--text-2)] shadow-[var(--shadow)]">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center">
                 <Car className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight">
                   Памятка при дорожно-транспортном происшествии (ДТП)
                 </h2>
-                <p className="text-xs text-stone-400">
+                <p className="text-xs text-[var(--muted)]">
                   Автомобиль семьи: {accidentGuidance.carModel} • Госномер:{' '}
                   <strong>{accidentGuidance.plateNumber}</strong>
                 </p>
@@ -1156,7 +1158,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
             <div className="flex items-center space-x-2">
               <button
                 onClick={handleOpenEditAccident}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-stone-700 hover:bg-stone-600 text-white text-xs font-semibold border border-stone-600 transition-all cursor-pointer"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-[var(--text-2)] hover:bg-[var(--text-2)] text-white text-xs font-semibold border border-[var(--text-2)] transition-all cursor-pointer"
               >
                 <Pencil className="w-3.5 h-3.5 text-orange-400" />
                 <span>Изменить авто / полис</span>
@@ -1172,7 +1174,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                     showToast
                   )
                 }
-                className="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-[var(--shadow)] active:scale-95 transition-all cursor-pointer"
               >
                 <Phone className="w-3.5 h-3.5" />
                 <span>Страховая: {accidentGuidance.osagoPhone}</span>
@@ -1181,14 +1183,14 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
           </div>
 
           {/* Плашка данных страховки */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-stone-900/60 border border-stone-700 text-xs mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-[var(--text)]/60 border border-[var(--text-2)] text-xs mb-4">
             <div>
-              <span className="text-stone-400">Полис ОСАГО:</span>
-              <p className="font-bold text-white mt-0.5 flex items-center gap-1.5">
+              <span className="text-[var(--muted)]">Полис ОСАГО:</span>
+              <p className="font-semibold text-white mt-0.5 flex items-center gap-1.5">
                 <span>{accidentGuidance.osagoNumber}</span>
                 <button
                   onClick={() => copyToClipboard(accidentGuidance.osagoNumber, 'Номер ОСАГО', 'osago')}
-                  className="text-stone-400 hover:text-white"
+                  className="text-[var(--muted)] hover:text-white"
                   title="Скопировать"
                 >
                   {copiedKey === 'osago' ? (
@@ -1198,23 +1200,23 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   )}
                 </button>
               </p>
-              <span className="text-[11px] text-stone-400">{accidentGuidance.osagoCompany}</span>
+              <span className="text-[12px] text-[var(--muted)]">{accidentGuidance.osagoCompany}</span>
             </div>
 
             <div>
-              <span className="text-stone-400">Полис КАСКО:</span>
-              <p className="font-bold text-white mt-0.5">{accidentGuidance.kaskoNumber || 'Не оформлен'}</p>
-              <span className="text-[11px] text-stone-400">Аварийный комиссар круглосуточно</span>
+              <span className="text-[var(--muted)]">Полис КАСКО:</span>
+              <p className="font-semibold text-white mt-0.5">{accidentGuidance.kaskoNumber || 'Не оформлен'}</p>
+              <span className="text-[12px] text-[var(--muted)]">Аварийный комиссар круглосуточно</span>
             </div>
 
             <div>
-              <span className="text-stone-400">VIN номер автомобиля:</span>
-              <p className="font-mono text-stone-200 mt-0.5 flex items-center gap-1.5">
+              <span className="text-[var(--muted)]">VIN номер автомобиля:</span>
+              <p className="font-mono text-[var(--line)] mt-0.5 flex items-center gap-1.5">
                 <span>{accidentGuidance.vin || '—'}</span>
                 {accidentGuidance.vin && (
                   <button
                     onClick={() => copyToClipboard(accidentGuidance.vin!, 'VIN', 'vin')}
-                    className="text-stone-400 hover:text-white"
+                    className="text-[var(--muted)] hover:text-white"
                     title="Скопировать"
                   >
                     {copiedKey === 'vin' ? (
@@ -1235,15 +1237,15 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                 key={st.step}
                 className={`p-3.5 rounded-xl border text-xs flex flex-col justify-between ${
                   st.important
-                    ? 'bg-red-950/20 border-red-800/60 text-stone-200'
-                    : 'bg-stone-750/50 border-stone-700 text-stone-300'
+                    ? 'bg-[#450a0a]/20 border-red-800/60 text-[var(--line)]'
+                    : 'bg-[var(--text-2)]/50 border-[var(--text-2)] text-[var(--line-strong)]'
                 }`}
               >
                 <div>
-                  <div className="flex items-center space-x-2 font-bold mb-1.5">
+                  <div className="flex items-center space-x-2 font-semibold mb-1.5">
                     <span
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
-                        st.important ? 'bg-red-500 text-white' : 'bg-stone-700 text-stone-300'
+                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[12px] font-semibold shrink-0 ${
+                        st.important ? 'bg-red-500 text-white' : 'bg-[var(--text-2)] text-[var(--line-strong)]'
                       }`}
                     >
                       {st.step}
@@ -1252,7 +1254,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                       {st.title}
                     </span>
                   </div>
-                  <p className="text-[11px] leading-relaxed text-stone-300 pl-7">
+                  <p className="text-[12px] leading-relaxed text-[var(--line-strong)] pl-7">
                     {st.description}
                   </p>
                 </div>
@@ -1262,17 +1264,17 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
         </section>
 
         {/* ==================== 5. ПИТОМЕЦ И ВЕТКЛИНИКА 24/7 (ИЗМЕНИТЬ) ==================== */}
-        <section className="bg-stone-800/90 rounded-2xl p-4 sm:p-5 border border-stone-700 shadow-md">
+        <section className="bg-[var(--text)]/90 rounded-2xl p-4 sm:p-5 border border-[var(--text-2)] shadow-[var(--shadow)]">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div className="flex items-center space-x-2.5">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
                 <PawPrint className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight">
                   Питомец и круглосуточная ветеринария (24/7)
                 </h2>
-                <p className="text-xs text-stone-400">
+                <p className="text-xs text-[var(--muted)]">
                   {petEmergency.species} {petEmergency.name} • {petEmergency.breed} • Вес: {petEmergency.weight}
                 </p>
               </div>
@@ -1282,7 +1284,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
               {/* Кнопка ИЗМЕНИТЬ ДАННЫЕ ПИТОМЦА */}
               <button
                 onClick={handleOpenEditPet}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-stone-700 hover:bg-stone-600 text-white text-xs font-semibold border border-stone-600 transition-all cursor-pointer shadow-sm active:scale-95"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-[var(--text-2)] hover:bg-[var(--text-2)] text-white text-xs font-semibold border border-[var(--text-2)] transition-all cursor-pointer shadow-[var(--shadow)] active:scale-95"
                 title="Изменить кличку, породу, чип, запреты и клинику"
               >
                 <Pencil className="w-3.5 h-3.5 text-emerald-400" />
@@ -1300,7 +1302,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                       showToast
                     )
                   }
-                  className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-[var(--shadow)] active:scale-95 transition-all cursor-pointer"
                   title="Позвонить в ветклинику"
                 >
                   <Phone className="w-3.5 h-3.5" />
@@ -1314,7 +1316,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                       'vet_phone'
                     )
                   }
-                  className="p-1.5 rounded-xl bg-stone-700 hover:bg-stone-600 text-stone-300 hover:text-white cursor-pointer"
+                  className="p-1.5 rounded-xl bg-[var(--text-2)] hover:bg-[var(--text-2)] text-[var(--line-strong)] hover:text-white cursor-pointer"
                   title="Скопировать телефон ветклиники"
                 >
                   {copiedKey === 'vet_phone' ? (
@@ -1329,21 +1331,21 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Круглосуточная клиника и чип */}
-            <div className="p-4 rounded-xl bg-stone-900/60 border border-stone-700 text-xs space-y-2">
+            <div className="p-4 rounded-xl bg-[var(--text)]/60 border border-[var(--text-2)] text-xs space-y-2">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-stone-200">🏥 {petEmergency.vetClinicName}</span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <span className="font-semibold text-[var(--line)]">🏥 {petEmergency.vetClinicName}</span>
+                <span className="px-2 py-0.5 rounded text-[12px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   Круглосуточно 24/7
                 </span>
               </div>
-              <p className="text-stone-300">
+              <p className="text-[var(--line-strong)]">
                 📍 <strong>Адрес:</strong> {petEmergency.vetClinicAddress}
               </p>
               {petEmergency.chipNumber && (
-                <div className="pt-2 border-t border-stone-800 flex items-center justify-between">
-                  <span className="text-stone-400">Номер микрочипа:</span>
+                <div className="pt-2 border-t border-[var(--text)] flex items-center justify-between">
+                  <span className="text-[var(--muted)]">Номер микрочипа:</span>
                   <div className="flex items-center space-x-1.5">
-                    <span className="font-mono text-stone-200 font-semibold">{petEmergency.chipNumber}</span>
+                    <span className="font-mono text-[var(--line)] font-semibold">{petEmergency.chipNumber}</span>
                     <button
                       onClick={() =>
                         copyToClipboard(
@@ -1352,7 +1354,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           'pet_chip'
                         )
                       }
-                      className="p-1 rounded text-stone-400 hover:text-white cursor-pointer"
+                      className="p-1 rounded text-[var(--muted)] hover:text-white cursor-pointer"
                       title="Скопировать номер микрочипа"
                     >
                       {copiedKey === 'pet_chip' ? (
@@ -1367,21 +1369,21 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
             </div>
 
             {/* Строгие запреты и аллергии */}
-            <div className="p-4 rounded-xl bg-stone-900/60 border border-amber-600/30 text-xs space-y-2">
-              <span className="font-bold text-amber-400 flex items-center gap-1.5">
+            <div className="p-4 rounded-xl bg-[var(--text)]/60 border border-amber-600/30 text-xs space-y-2">
+              <span className="font-semibold text-amber-400 flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4" />
                 Строгие запреты и безопасность питомца
               </span>
-              <ul className="space-y-1.5 text-stone-300 text-[11px] leading-relaxed">
+              <ul className="space-y-1.5 text-[var(--line-strong)] text-[12px] leading-relaxed">
                 {petEmergency.restrictions && petEmergency.restrictions.length > 0 ? (
                   petEmergency.restrictions.map((res, i) => (
                     <li key={i} className="flex items-start gap-1.5">
-                      <span className="text-red-400 font-bold shrink-0">•</span>
+                      <span className="text-red-400 font-semibold shrink-0">•</span>
                       <span>{res}</span>
                     </li>
                   ))
                 ) : (
-                  <li className="text-stone-400 italic">Специальных ограничений не указано</li>
+                  <li className="text-[var(--muted)] italic">Специальных ограничений не указано</li>
                 )}
               </ul>
             </div>
@@ -1389,17 +1391,17 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
         </section>
 
         {/* ==================== 6. МЕДИЦИНСКИЕ ДАННЫЕ СЕМЬИ (ДОБАВИТЬ / ИЗМЕНИТЬ / УДАЛИТЬ) ==================== */}
-        <section className="bg-stone-800/90 rounded-2xl p-4 sm:p-5 border border-stone-700 shadow-md">
+        <section className="bg-[var(--text)]/90 rounded-2xl p-4 sm:p-5 border border-[var(--text-2)] shadow-[var(--shadow)]">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-3.5">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center">
                 <HeartPulse className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                <h2 className="text-base sm:text-lg font-semibold text-white tracking-tight">
                   Медицинские данные членов семьи для врачей скорой
                 </h2>
-                <p className="text-xs text-stone-400">
+                <p className="text-xs text-[var(--muted)]">
                   Группы крови, опасные аллергии, диагнозы и телефон экстренной связи
                 </p>
               </div>
@@ -1408,7 +1410,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
             {/* Кнопка ДОБАВИТЬ МЕДИЦИНСКИЕ ДАННЫЕ */}
             <button
               onClick={handleOpenAddMedical}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-sm"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-600 text-white text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-[var(--shadow)]"
               title="Добавить медицинские данные члена семьи"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -1417,14 +1419,14 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
           </div>
 
           {medicalEmergency.length === 0 ? (
-            <div className="p-8 rounded-2xl bg-stone-900/60 border border-stone-700 text-center space-y-3">
+            <div className="p-8 rounded-2xl bg-[var(--text)]/60 border border-[var(--text-2)] text-center space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 mx-auto flex items-center justify-center">
                 <HeartPulse className="w-6 h-6" />
               </div>
-              <p className="text-sm font-bold text-white">
+              <p className="text-sm font-semibold text-white">
                 Медицинские данные членов семьи пока не внесены
               </p>
-              <p className="text-xs text-stone-400 max-w-md mx-auto">
+              <p className="text-xs text-[var(--muted)] max-w-md mx-auto">
                 Заполните группы крови, опасные аллергии и контакты для врачей скорой помощи
               </p>
               <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
@@ -1433,13 +1435,13 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                     INITIAL_MEDICAL_EMERGENCY.forEach((im) => addMedicalEmergency(im));
                     showToast('Медицинские данные членов семьи по умолчанию восстановлены', 'success');
                   }}
-                  className="px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold transition-all cursor-pointer shadow-md active:scale-95"
+                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-600 text-white text-xs font-semibold transition-all cursor-pointer shadow-[var(--shadow)] active:scale-95"
                 >
                   Заполнить данные семьи (Ольга, Сергей, Артём, София)
                 </button>
                 <button
                   onClick={handleOpenAddMedical}
-                  className="px-4 py-2 rounded-xl bg-stone-700 hover:bg-stone-600 text-white text-xs font-semibold cursor-pointer active:scale-95 transition-all"
+                  className="px-4 py-2 rounded-xl bg-[var(--text-2)] hover:bg-[var(--text-2)] text-white text-xs font-semibold cursor-pointer active:scale-95 transition-all"
                 >
                   + Ввести вручную
                 </button>
@@ -1450,23 +1452,23 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
               {medicalEmergency.map((med) => (
                 <div
                   key={med.memberId}
-                  className="p-4 rounded-xl bg-stone-900/60 border border-stone-700/80 text-xs space-y-2.5 relative group"
+                  className="p-4 rounded-xl bg-[var(--text)]/60 border border-[var(--text-2)]/80 text-xs space-y-2.5 relative group"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <span className="font-bold text-white text-sm">{med.name}</span>
-                      <span className="text-[11px] text-stone-400">({med.role})</span>
+                      <span className="font-semibold text-white text-sm">{med.name}</span>
+                      <span className="text-[12px] text-[var(--muted)]">({med.role})</span>
                     </div>
 
                     <div className="flex items-center space-x-1.5">
-                      <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                      <span className="px-2 py-0.5 rounded text-[12px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">
                         {med.bloodType}
                       </span>
 
                       {/* КНОПКА ИЗМЕНИТЬ МЕДДАННЫЕ */}
                       <button
                         onClick={() => handleOpenEditMedical(med)}
-                        className="px-2.5 py-1 rounded-lg bg-stone-700 hover:bg-stone-600 text-white text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer border border-stone-600"
+                        className="px-2.5 py-1 rounded-lg bg-[var(--text-2)] hover:bg-[var(--text-2)] text-white text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer border border-[var(--text-2)]"
                         title="Изменить медицинские данные"
                       >
                         <Pencil className="w-3 h-3 text-rose-400" />
@@ -1482,7 +1484,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                             title: `медицинскую запись «${med.name}»`,
                           })
                         }
-                        className="px-2 py-1 rounded-lg bg-stone-700 hover:bg-red-600/80 text-stone-200 hover:text-white text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer border border-stone-600"
+                        className="px-2 py-1 rounded-lg bg-[var(--text-2)] hover:bg-red-600/80 text-[var(--line)] hover:text-white text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer border border-[var(--text-2)]"
                         title="Удалить медицинские данные"
                       >
                         <Trash2 className="w-3 h-3" />
@@ -1493,10 +1495,10 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
 
                   {/* Телефон экстренной связи родственника */}
                   {med.emergencyContactPhone && (
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-stone-800/90 border border-stone-700 text-[11px]">
-                      <span className="text-stone-400">Экстренная связь:</span>
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-[var(--text)]/90 border border-[var(--text-2)] text-[12px]">
+                      <span className="text-[var(--muted)]">Экстренная связь:</span>
                       <div className="flex items-center space-x-1.5">
-                        <span className="font-mono text-emerald-400 font-bold">{med.emergencyContactPhone}</span>
+                        <span className="font-mono text-emerald-400 font-semibold">{med.emergencyContactPhone}</span>
                         <button
                           onClick={() =>
                             copyToClipboard(
@@ -1505,7 +1507,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                               `med_phone_${med.memberId}`
                             )
                           }
-                          className="p-1 rounded text-stone-400 hover:text-white cursor-pointer"
+                          className="p-1 rounded text-[var(--muted)] hover:text-white cursor-pointer"
                           title="Скопировать номер"
                         >
                           {copiedKey === `med_phone_${med.memberId}` ? (
@@ -1534,8 +1536,8 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   )}
 
                   {/* Аллергии */}
-                  <div className="bg-stone-800/70 p-2.5 rounded-lg border border-stone-700">
-                    <span className="text-stone-400 font-semibold block mb-1">
+                  <div className="bg-[var(--text)]/70 p-2.5 rounded-lg border border-[var(--text-2)]">
+                    <span className="text-[var(--muted)] font-semibold block mb-1">
                       ⚠️ Аллергии:
                     </span>
                     <div className="flex flex-wrap gap-1">
@@ -1543,20 +1545,20 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                         med.allergies.map((alg, i) => (
                           <span
                             key={i}
-                            className="px-2 py-0.5 rounded text-[11px] bg-red-950/60 text-red-300 border border-red-800/50"
+                            className="px-2 py-0.5 rounded text-[12px] bg-[#450a0a]/60 text-red-300 border border-red-800/50"
                           >
                             {alg}
                           </span>
                         ))
                       ) : (
-                        <span className="text-[11px] text-stone-400">Не выявлены</span>
+                        <span className="text-[12px] text-[var(--muted)]">Не выявлены</span>
                       )}
                     </div>
                   </div>
 
                   {/* Хронические диагнозы */}
                   {med.chronicConditions && med.chronicConditions.length > 0 && (
-                    <div className="text-[11px] text-stone-300 bg-stone-800/50 p-2 rounded-lg border border-stone-750">
+                    <div className="text-[12px] text-[var(--line-strong)] bg-[var(--text)]/50 p-2 rounded-lg border border-[var(--text-2)]">
                       <span className="text-amber-400 font-semibold">Диагнозы: </span>
                       <span>{med.chronicConditions.join(', ')}</span>
                     </div>
@@ -1564,8 +1566,8 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
 
                   {/* Постоянные препараты */}
                   {med.currentMedications && med.currentMedications.length > 0 && (
-                    <div className="text-[11px] text-stone-300 pt-0.5">
-                      <span className="text-stone-400 font-medium">Препараты: </span>
+                    <div className="text-[12px] text-[var(--line-strong)] pt-0.5">
+                      <span className="text-[var(--muted)] font-medium">Препараты: </span>
                       <span>{med.currentMedications.join(', ')}</span>
                     </div>
                   )}
@@ -1579,33 +1581,33 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
       {/* ==================== МОДАЛЬНОЕ ОКНО: ОБЪЕКТ (ДОБАВИТЬ / ИЗМЕНИТЬ) ==================== */}
       {isPropertyModalOpen && propertyFormData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="bg-stone-800 border border-stone-700 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 text-stone-100 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-700">
+          <div className="bg-[var(--text)] border border-[var(--text-2)] rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 text-[var(--surface-3)] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--text-2)]">
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-[var(--accent)]/20 text-sky-400 flex items-center justify-center">
                   <Building2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-bold text-white">
+                  <h3 className="text-base sm:text-lg font-semibold text-white">
                     {propertyFormData.id
                       ? `Изменить: ${propertyFormData.name || 'Объект дома'}`
                       : 'Добавить новый объект дома'}
                   </h3>
-                  <p className="text-[11px] text-stone-400">
+                  <p className="text-[12px] text-[var(--muted)]">
                     Любой город, телефоны экстренных мастеров и инженерия
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsPropertyModalOpen(false)}
-                className="text-stone-400 hover:text-white p-1 rounded-lg"
+                className="text-[var(--muted)] hover:text-white p-1 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Вкладки быстрого перехода: Все данные, Вода и сантехник, Щиток и электрик, Службы и ключи, Адрес */}
-            <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 border-b border-stone-700/80 text-xs scrollbar-none">
+            <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 border-b border-[var(--text-2)]/80 text-xs scrollbar-none">
               {[
                 { id: 'all', label: 'Все данные' },
                 { id: 'water', label: '💧 Вода и сантехник' },
@@ -1619,8 +1621,8 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   onClick={() => setPropertyEditSection(tab.id as any)}
                   className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-all cursor-pointer ${
                     propertyEditSection === tab.id
-                      ? 'bg-sky-600 text-white font-bold shadow'
-                      : 'bg-stone-900/80 text-stone-300 hover:bg-stone-700'
+                      ? 'bg-[var(--accent)] text-white font-semibold shadow'
+                      : 'bg-[var(--text)]/80 text-[var(--line-strong)] hover:bg-[var(--text-2)]'
                   }`}
                 >
                   {tab.label}
@@ -1631,15 +1633,15 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
             <form onSubmit={handleSaveProperty} className="space-y-4 text-xs">
               {/* РАЗДЕЛ: АДРЕС И ДОСТУП */}
               {(propertyEditSection === 'all' || propertyEditSection === 'address') && (
-                <div className="p-3.5 rounded-2xl bg-stone-900/80 border border-stone-700 space-y-3">
-                  <span className="font-bold text-stone-200 flex items-center gap-1.5">
+                <div className="p-3.5 rounded-2xl bg-[var(--text)]/80 border border-[var(--text-2)] space-y-3">
+                  <span className="font-semibold text-[var(--line)] flex items-center gap-1.5">
                     <MapPin className="w-4 h-4 text-sky-400" />
                     Название объекта, адрес и доступ
                   </span>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-stone-300 font-semibold mb-1">
+                      <label className="block text-[var(--line-strong)] font-semibold mb-1">
                         Название объекта *
                       </label>
                       <input
@@ -1650,12 +1652,12 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                         onChange={(e) =>
                           setPropertyFormData({ ...propertyFormData, name: e.target.value })
                         }
-                        className="w-full px-3 py-2 rounded-xl bg-stone-800 border border-stone-700 text-white focus:outline-none focus:border-sky-500"
+                        className="w-full px-3 py-2 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-sky-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-stone-300 font-semibold mb-1">
+                      <label className="block text-[var(--line-strong)] font-semibold mb-1">
                         Краткое имя (для вкладок)
                       </label>
                       <input
@@ -1665,13 +1667,13 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                         onChange={(e) =>
                           setPropertyFormData({ ...propertyFormData, shortName: e.target.value })
                         }
-                        className="w-full px-3 py-2 rounded-xl bg-stone-800 border border-stone-700 text-white focus:outline-none focus:border-sky-500"
+                        className="w-full px-3 py-2 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-sky-500"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-stone-300 font-semibold mb-1">
+                    <label className="block text-[var(--line-strong)] font-semibold mb-1">
                       Полный адрес (любой город и регион)
                     </label>
                     <input
@@ -1681,13 +1683,13 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                       onChange={(e) =>
                         setPropertyFormData({ ...propertyFormData, address: e.target.value })
                       }
-                      className="w-full px-3 py-2 rounded-xl bg-stone-800 border border-stone-700 text-white focus:outline-none focus:border-sky-500"
+                      className="w-full px-3 py-2 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-sky-500"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-stone-300 font-semibold mb-1">
+                      <label className="block text-[var(--line-strong)] font-semibold mb-1">
                         Код домофона / калитки
                       </label>
                       <input
@@ -1697,12 +1699,12 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                         onChange={(e) =>
                           setPropertyFormData({ ...propertyFormData, intercomCode: e.target.value })
                         }
-                        className="w-full px-3 py-2 rounded-xl bg-stone-800 border border-stone-700 text-white focus:outline-none focus:border-sky-500"
+                        className="w-full px-3 py-2 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-sky-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-stone-300 font-semibold mb-1">
+                      <label className="block text-[var(--line-strong)] font-semibold mb-1">
                         Wi-Fi сеть (SSID)
                       </label>
                       <input
@@ -1718,7 +1720,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                             },
                           })
                         }
-                        className="w-full px-3 py-2 rounded-xl bg-stone-800 border border-stone-700 text-white focus:outline-none focus:border-sky-500"
+                        className="w-full px-3 py-2 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-sky-500"
                       />
                     </div>
                   </div>
@@ -1727,13 +1729,13 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
 
               {/* РАЗДЕЛ: ВОДА И САНТЕХНИК */}
               {(propertyEditSection === 'all' || propertyEditSection === 'water') && (
-                <div className="p-3.5 rounded-2xl bg-stone-900/80 border border-sky-500/30 space-y-3">
+                <div className="p-3.5 rounded-2xl bg-[var(--text)]/80 border border-sky-500/30 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sky-400 flex items-center gap-1.5">
+                    <span className="font-semibold text-sky-400 flex items-center gap-1.5">
                       <Droplets className="w-4 h-4" />
                       Перекрытие воды и мастер-сантехник
                     </span>
-                    <label className="flex items-center space-x-2 text-stone-300 cursor-pointer">
+                    <label className="flex items-center space-x-2 text-[var(--line-strong)] cursor-pointer">
                       <input
                         type="checkbox"
                         checked={!!propertyFormData.waterShutoff?.hasAquaStop}
@@ -1754,7 +1756,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   </div>
 
                   <div>
-                    <label className="block text-stone-400 mb-0.5">Где находятся краны:</label>
+                    <label className="block text-[var(--muted)] mb-0.5">Где находятся краны:</label>
                     <input
                       type="text"
                       placeholder="Санузел, ревизионный люк за унитазом..."
@@ -1769,12 +1771,12 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           },
                         })
                       }
-                      className="w-full px-3 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-white"
+                      className="w-full px-3 py-1.5 rounded-lg bg-[var(--text)] border border-[var(--text-2)] text-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-stone-400 mb-0.5">Инструкция по перекрытию:</label>
+                    <label className="block text-[var(--muted)] mb-0.5">Инструкция по перекрытию:</label>
                     <textarea
                       rows={2}
                       placeholder="Повернуть оба вентиля на 90 градусов по часовой стрелке..."
@@ -1789,7 +1791,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           },
                         })
                       }
-                      className="w-full px-3 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-white"
+                      className="w-full px-3 py-1.5 rounded-lg bg-[var(--text)] border border-[var(--text-2)] text-white"
                     />
                   </div>
 
@@ -1815,7 +1817,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           },
                         })
                       }
-                      className="w-full px-3 py-2 rounded-lg bg-stone-800 border border-sky-500/40 text-white focus:outline-none focus:border-sky-400"
+                      className="w-full px-3 py-2 rounded-lg bg-[var(--text)] border border-sky-500/40 text-white focus:outline-none focus:border-sky-400"
                     />
                   </div>
                 </div>
@@ -1823,15 +1825,15 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
 
               {/* РАЗДЕЛ: ЭЛЕКТРИЧЕСТВО И ЭЛЕКТРИК */}
               {(propertyEditSection === 'all' || propertyEditSection === 'electric') && (
-                <div className="p-3.5 rounded-2xl bg-stone-900/80 border border-amber-500/30 space-y-3">
-                  <span className="font-bold text-amber-400 flex items-center gap-1.5">
+                <div className="p-3.5 rounded-2xl bg-[var(--text)]/80 border border-amber-500/30 space-y-3">
+                  <span className="font-semibold text-amber-400 flex items-center gap-1.5">
                     <Zap className="w-4 h-4" />
                     Электрощиток и дежурный электрик
                   </span>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-stone-400 mb-0.5">Где щиток:</label>
+                      <label className="block text-[var(--muted)] mb-0.5">Где щиток:</label>
                       <input
                         type="text"
                         placeholder="Прихожая слева от двери..."
@@ -1846,12 +1848,12 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                             },
                           })
                         }
-                        className="w-full px-3 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-[var(--text)] border border-[var(--text-2)] text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-stone-400 mb-0.5">Вводной автомат:</label>
+                      <label className="block text-[var(--muted)] mb-0.5">Вводной автомат:</label>
                       <input
                         type="text"
                         placeholder="Левый верхний тумблер (опустить вниз)"
@@ -1866,13 +1868,13 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                             },
                           })
                         }
-                        className="w-full px-3 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-[var(--text)] border border-[var(--text-2)] text-white"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-stone-400 mb-0.5">Примечания к автоматам:</label>
+                    <label className="block text-[var(--muted)] mb-0.5">Примечания к автоматам:</label>
                     <input
                       type="text"
                       placeholder="Стиралка на №5, бойлер на №6..."
@@ -1887,7 +1889,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           },
                         })
                       }
-                      className="w-full px-3 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-white"
+                      className="w-full px-3 py-1.5 rounded-lg bg-[var(--text)] border border-[var(--text-2)] text-white"
                     />
                   </div>
 
@@ -1913,7 +1915,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                           },
                         })
                       }
-                      className="w-full px-3 py-2 rounded-lg bg-stone-800 border border-amber-500/40 text-white focus:outline-none focus:border-amber-400"
+                      className="w-full px-3 py-2 rounded-lg bg-[var(--text)] border border-amber-500/40 text-white focus:outline-none focus:border-amber-400"
                     />
                   </div>
                 </div>
@@ -1921,15 +1923,15 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
 
               {/* РАЗДЕЛ: СЛУЖБЫ ДОМА, ДИСПЕТЧЕРСКАЯ И КЛЮЧИ */}
               {(propertyEditSection === 'all' || propertyEditSection === 'services') && (
-                <div className="p-3.5 rounded-2xl bg-stone-900/80 border border-stone-700 space-y-3">
-                  <span className="font-bold text-emerald-400 flex items-center gap-1.5">
+                <div className="p-3.5 rounded-2xl bg-[var(--text)]/80 border border-[var(--text-2)] space-y-3">
+                  <span className="font-semibold text-emerald-400 flex items-center gap-1.5">
                     <Key className="w-4 h-4" />
                     Службы дома, диспетчерская, аптечка и ключи
                   </span>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-stone-400 mb-0.5">Название УК / ТСЖ / службы:</label>
+                      <label className="block text-[var(--muted)] mb-0.5">Название УК / ТСЖ / службы:</label>
                       <input
                         type="text"
                         placeholder="Например: УК Комфорт или ТСЖ"
@@ -1947,12 +1949,12 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                             },
                           })
                         }
-                        className="w-full px-3 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-[var(--text)] border border-[var(--text-2)] text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-stone-400 mb-0.5">Аварийная диспетчерская (телефон):</label>
+                      <label className="block text-[var(--muted)] mb-0.5">Аварийная диспетчерская (телефон):</label>
                       <input
                         type="text"
                         placeholder="+7 (___) ___-__-__"
@@ -1970,14 +1972,14 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                             },
                           })
                         }
-                        className="w-full px-3 py-1.5 rounded-lg bg-stone-800 border border-stone-700 text-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-[var(--text)] border border-[var(--text-2)] text-white"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-stone-300 font-semibold mb-1">
+                      <label className="block text-[var(--line-strong)] font-semibold mb-1">
                         Где лежит аптечка в объекте:
                       </label>
                       <input
@@ -1987,12 +1989,12 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                         onChange={(e) =>
                           setPropertyFormData({ ...propertyFormData, firstAidLocation: e.target.value })
                         }
-                        className="w-full px-3 py-2 rounded-xl bg-stone-800 border border-stone-700 text-white focus:outline-none"
+                        className="w-full px-3 py-2 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-stone-300 font-semibold mb-1">
+                      <label className="block text-[var(--line-strong)] font-semibold mb-1">
                         Где запасные ключи:
                       </label>
                       <input
@@ -2002,14 +2004,14 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                         onChange={(e) =>
                           setPropertyFormData({ ...propertyFormData, backupKeysLocation: e.target.value })
                         }
-                        className="w-full px-3 py-2 rounded-xl bg-stone-800 border border-stone-700 text-white focus:outline-none"
+                        className="w-full px-3 py-2 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none"
                       />
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-3 border-t border-stone-700">
+              <div className="flex items-center justify-between pt-3 border-t border-[var(--text-2)]">
                 {propertyEditSection !== 'all' ? (
                   <button
                     type="button"
@@ -2024,13 +2026,13 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   <button
                     type="button"
                     onClick={() => setIsPropertyModalOpen(false)}
-                    className="px-4 py-2 rounded-xl bg-stone-700 hover:bg-stone-600 text-stone-200 cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-[var(--text-2)] hover:bg-[var(--text-2)] text-[var(--line)] cursor-pointer"
                   >
                     Отмена
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold cursor-pointer active:scale-95 transition-all shadow-md"
+                    className="px-5 py-2 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)] text-white font-semibold cursor-pointer active:scale-95 transition-all shadow-[var(--shadow)]"
                   >
                     {propertyFormData.id ? 'Сохранить изменения' : 'Добавить объект'}
                   </button>
@@ -2044,14 +2046,14 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
       {/* ==================== МОДАЛЬНОЕ ОКНО: КОНТАКТ (ДОБАВИТЬ / ИЗМЕНИТЬ) ==================== */}
       {isContactModalOpen && contactFormData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="bg-stone-800 border border-stone-700 rounded-3xl w-full max-w-md shadow-2xl p-6 text-stone-100 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-700">
-              <h3 className="text-lg font-bold text-white">
+          <div className="bg-[var(--text)] border border-[var(--text-2)] rounded-3xl w-full max-w-md shadow-2xl p-6 text-[var(--surface-3)] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--text-2)]">
+              <h3 className="text-lg font-semibold text-white">
                 {contactFormData.id ? 'Изменить контакт семьи' : 'Добавить контакт семьи'}
               </h3>
               <button
                 onClick={() => setIsContactModalOpen(false)}
-                className="text-stone-400 hover:text-white p-1"
+                className="text-[var(--muted)] hover:text-white p-1"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2059,50 +2061,50 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
 
             <form onSubmit={handleSaveContact} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-stone-300 font-semibold mb-1">Имя *</label>
+                <label className="block text-[var(--line-strong)] font-semibold mb-1">Имя *</label>
                 <input
                   type="text"
                   required
                   placeholder="Имя члена семьи или контактного лица"
                   value={contactFormData.name || ''}
                   onChange={(e) => setContactFormData({ ...contactFormData, name: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-stone-900 border border-stone-700 text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-amber-500"
                 />
               </div>
 
               <div>
-                <label className="block text-stone-300 font-semibold mb-1">Роль / статус</label>
+                <label className="block text-[var(--line-strong)] font-semibold mb-1">Роль / статус</label>
                 <input
                   type="text"
                   placeholder="Мама • Владелец, Папа, Бабушка, Доверенное лицо"
                   value={contactFormData.role || ''}
                   onChange={(e) => setContactFormData({ ...contactFormData, role: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-stone-900 border border-stone-700 text-white focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-stone-300 font-semibold mb-1">Номер телефона</label>
+                <label className="block text-[var(--line-strong)] font-semibold mb-1">Номер телефона</label>
                 <input
                   type="tel"
                   placeholder="+7 (999) 000-00-00"
                   value={contactFormData.phone || ''}
                   onChange={(e) => setContactFormData({ ...contactFormData, phone: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-stone-900 border border-stone-700 text-white focus:outline-none focus:border-amber-500 font-mono"
+                  className="w-full px-3 py-2 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-amber-500 font-mono"
                 />
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-stone-700">
+              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-[var(--text-2)]">
                 <button
                   type="button"
                   onClick={() => setIsContactModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-stone-700 hover:bg-stone-600 text-stone-200"
+                  className="px-4 py-2 rounded-xl bg-[var(--text-2)] hover:bg-[var(--text-2)] text-[var(--line)]"
                 >
                   Отмена
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold cursor-pointer active:scale-95 transition-all"
+                  className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold cursor-pointer active:scale-95 transition-all"
                 >
                   {contactFormData.id ? 'Сохранить' : 'Добавить'}
                 </button>
@@ -2115,15 +2117,15 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
       {/* ==================== МОДАЛЬНОЕ ОКНО: ДТП (ИЗМЕНИТЬ) ==================== */}
       {isAccidentModalOpen && accidentFormData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="bg-stone-800 border border-stone-700 rounded-3xl w-full max-w-lg shadow-2xl p-6 text-stone-100 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-700">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+          <div className="bg-[var(--text)] border border-[var(--text-2)] rounded-3xl w-full max-w-lg shadow-2xl p-6 text-[var(--surface-3)] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--text-2)]">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                 <Car className="w-5 h-5 text-orange-400" />
                 Изменить данные автомобиля и страховки
               </h3>
               <button
                 onClick={() => setIsAccidentModalOpen(false)}
-                className="text-stone-400 hover:text-white p-1"
+                className="text-[var(--muted)] hover:text-white p-1"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2132,102 +2134,102 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
             <form onSubmit={handleSaveAccident} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-stone-400 mb-1">Марка и модель авто:</label>
+                  <label className="block text-[var(--muted)] mb-1">Марка и модель авто:</label>
                   <input
                     type="text"
                     value={accidentFormData.carModel}
                     onChange={(e) =>
                       setAccidentFormData({ ...accidentFormData, carModel: e.target.value })
                     }
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white"
+                    className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-400 mb-1">Госномер:</label>
+                  <label className="block text-[var(--muted)] mb-1">Госномер:</label>
                   <input
                     type="text"
                     value={accidentFormData.plateNumber}
                     onChange={(e) =>
                       setAccidentFormData({ ...accidentFormData, plateNumber: e.target.value })
                     }
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white font-mono"
+                    className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-stone-400 mb-1">VIN автомобиля:</label>
+                <label className="block text-[var(--muted)] mb-1">VIN автомобиля:</label>
                 <input
                   type="text"
                   value={accidentFormData.vin || ''}
                   onChange={(e) =>
                     setAccidentFormData({ ...accidentFormData, vin: e.target.value })
                   }
-                  className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white font-mono"
+                  className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white font-mono"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-stone-400 mb-1">Страховая компания:</label>
+                  <label className="block text-[var(--muted)] mb-1">Страховая компания:</label>
                   <input
                     type="text"
                     value={accidentFormData.osagoCompany}
                     onChange={(e) =>
                       setAccidentFormData({ ...accidentFormData, osagoCompany: e.target.value })
                     }
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white"
+                    className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-400 mb-1">Номер полиса ОСАГО:</label>
+                  <label className="block text-[var(--muted)] mb-1">Номер полиса ОСАГО:</label>
                   <input
                     type="text"
                     value={accidentFormData.osagoNumber}
                     onChange={(e) =>
                       setAccidentFormData({ ...accidentFormData, osagoNumber: e.target.value })
                     }
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white font-mono"
+                    className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white font-mono"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-stone-400 mb-1">Горячая линия страховой:</label>
+                  <label className="block text-[var(--muted)] mb-1">Горячая линия страховой:</label>
                   <input
                     type="text"
                     value={accidentFormData.osagoPhone}
                     onChange={(e) =>
                       setAccidentFormData({ ...accidentFormData, osagoPhone: e.target.value })
                     }
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white"
+                    className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-400 mb-1">Номер полиса КАСКО:</label>
+                  <label className="block text-[var(--muted)] mb-1">Номер полиса КАСКО:</label>
                   <input
                     type="text"
                     value={accidentFormData.kaskoNumber || ''}
                     onChange={(e) =>
                       setAccidentFormData({ ...accidentFormData, kaskoNumber: e.target.value })
                     }
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white font-mono"
+                    className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white font-mono"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-stone-700">
+              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-[var(--text-2)]">
                 <button
                   type="button"
                   onClick={() => setIsAccidentModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-stone-700 hover:bg-stone-600 text-stone-200"
+                  className="px-4 py-2 rounded-xl bg-[var(--text-2)] hover:bg-[var(--text-2)] text-[var(--line)]"
                 >
                   Отмена
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold cursor-pointer active:scale-95 transition-all"
+                  className="px-5 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-semibold cursor-pointer active:scale-95 transition-all"
                 >
                   Сохранить
                 </button>
@@ -2240,15 +2242,15 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
       {/* ==================== МОДАЛЬНОЕ ОКНО: ПИТОМЕЦ (ИЗМЕНИТЬ) ==================== */}
       {isPetModalOpen && petFormData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="bg-stone-800 border border-stone-700 rounded-3xl w-full max-w-lg shadow-2xl p-6 text-stone-100 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-700">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+          <div className="bg-[var(--text)] border border-[var(--text-2)] rounded-3xl w-full max-w-lg shadow-2xl p-6 text-[var(--surface-3)] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--text-2)]">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                 <PawPrint className="w-5 h-5 text-emerald-400" />
                 Изменить данные питомца и ветклиники
               </h3>
               <button
                 onClick={() => setIsPetModalOpen(false)}
-                className="text-stone-400 hover:text-white p-1"
+                className="text-[var(--muted)] hover:text-white p-1"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2257,85 +2259,85 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
             <form onSubmit={handleSavePet} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-stone-400 mb-1">Кличка:</label>
+                  <label className="block text-[var(--muted)] mb-1">Кличка:</label>
                   <input
                     type="text"
                     value={petFormData.name}
                     onChange={(e) => setPetFormData({ ...petFormData, name: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white"
+                    className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-400 mb-1">Вид и порода:</label>
+                  <label className="block text-[var(--muted)] mb-1">Вид и порода:</label>
                   <input
                     type="text"
                     value={petFormData.breed}
                     onChange={(e) => setPetFormData({ ...petFormData, breed: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white"
+                    className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-stone-400 mb-1">Вес:</label>
+                  <label className="block text-[var(--muted)] mb-1">Вес:</label>
                   <input
                     type="text"
                     value={petFormData.weight}
                     onChange={(e) => setPetFormData({ ...petFormData, weight: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white"
+                    className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-400 mb-1">Номер микрочипа:</label>
+                  <label className="block text-[var(--muted)] mb-1">Номер микрочипа:</label>
                   <input
                     type="text"
                     value={petFormData.chipNumber || ''}
                     onChange={(e) => setPetFormData({ ...petFormData, chipNumber: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white font-mono"
+                    className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-stone-400 mb-1">Ветклиника (название):</label>
+                <label className="block text-[var(--muted)] mb-1">Ветклиника (название):</label>
                 <input
                   type="text"
                   value={petFormData.vetClinicName}
                   onChange={(e) =>
                     setPetFormData({ ...petFormData, vetClinicName: e.target.value })
                   }
-                  className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white"
+                  className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-stone-400 mb-1">Телефон ветклиники 24/7:</label>
+                  <label className="block text-[var(--muted)] mb-1">Телефон ветклиники 24/7:</label>
                   <input
                     type="text"
                     value={petFormData.vetClinicPhone}
                     onChange={(e) =>
                       setPetFormData({ ...petFormData, vetClinicPhone: e.target.value })
                     }
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white"
+                    className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-400 mb-1">Адрес ветклиники:</label>
+                  <label className="block text-[var(--muted)] mb-1">Адрес ветклиники:</label>
                   <input
                     type="text"
                     value={petFormData.vetClinicAddress}
                     onChange={(e) =>
                       setPetFormData({ ...petFormData, vetClinicAddress: e.target.value })
                     }
-                    className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white"
+                    className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-stone-400 mb-1">
+                <label className="block text-[var(--muted)] mb-1">
                   Строгие запреты и токсичные продукты (каждый с новой строки):
                 </label>
                 <textarea
@@ -2343,21 +2345,21 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   value={petRestrictionsText}
                   onChange={(e) => setPetRestrictionsText(e.target.value)}
                   placeholder="Шоколад, виноград, авокадо смертельно опасны&#10;Не кормить со стола&#10;Аллергия на куриный белок"
-                  className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-stone-700">
+              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-[var(--text-2)]">
                 <button
                   type="button"
                   onClick={() => setIsPetModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-stone-700 hover:bg-stone-600 text-stone-200"
+                  className="px-4 py-2 rounded-xl bg-[var(--text-2)] hover:bg-[var(--text-2)] text-[var(--line)]"
                 >
                   Отмена
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold cursor-pointer active:scale-95 transition-all"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold cursor-pointer active:scale-95 transition-all"
                 >
                   Сохранить
                 </button>
@@ -2370,15 +2372,15 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
       {/* ==================== МОДАЛЬНОЕ ОКНО: МЕДИЦИНСКИЕ ДАННЫЕ (ДОБАВИТЬ / ИЗМЕНИТЬ) ==================== */}
       {isMedicalModalOpen && medicalFormData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="bg-stone-800 border border-stone-700 rounded-3xl w-full max-w-lg shadow-2xl p-6 text-stone-100 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-700">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+          <div className="bg-[var(--text)] border border-[var(--text-2)] rounded-3xl w-full max-w-lg shadow-2xl p-6 text-[var(--surface-3)] space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--text-2)]">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                 <HeartPulse className="w-5 h-5 text-rose-400" />
                 {medicalFormData.name ? 'Изменить медицинские данные' : 'Добавить медицинские данные'}
               </h3>
               <button
                 onClick={() => setIsMedicalModalOpen(false)}
-                className="text-stone-400 hover:text-white p-1"
+                className="text-[var(--muted)] hover:text-white p-1"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2387,7 +2389,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
             <form onSubmit={handleSaveMedical} className="space-y-3.5 text-xs">
               {/* Быстрый выбор члена семьи или ручной ввод */}
               <div>
-                <label className="block text-stone-400 mb-1 font-medium">Член семьи *</label>
+                <label className="block text-[var(--muted)] mb-1 font-medium">Член семьи *</label>
                 {members.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {members.map((m) => (
@@ -2418,8 +2420,8 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                         }}
                         className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border cursor-pointer ${
                           medicalFormData.name === m.name
-                            ? 'bg-rose-900/60 text-white border-rose-500/80 shadow-xs'
-                            : 'bg-stone-900 text-stone-300 border-stone-700 hover:border-stone-500'
+                            ? 'bg-[#881337]/60 text-white border-rose-500/80 shadow-xs'
+                            : 'bg-[var(--text)] text-[var(--line-strong)] border-[var(--text-2)] hover:border-[var(--muted)]'
                         }`}
                       >
                         {m.name}
@@ -2435,7 +2437,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                       placeholder="Имя (Ольга, Сергей...)"
                       value={medicalFormData.name || ''}
                       onChange={(e) => setMedicalFormData({ ...medicalFormData, name: e.target.value })}
-                      className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white focus:outline-none focus:border-rose-500"
+                      className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-rose-500"
                     />
                   </div>
                   <div>
@@ -2444,7 +2446,7 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                       placeholder="Роль (Мама, Отец, Ребёнок...)"
                       value={medicalFormData.role || ''}
                       onChange={(e) => setMedicalFormData({ ...medicalFormData, role: e.target.value })}
-                      className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white focus:outline-none focus:border-rose-500"
+                      className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-rose-500"
                     />
                   </div>
                 </div>
@@ -2452,17 +2454,17 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
 
               {/* Группа крови и резус */}
               <div>
-                <label className="block text-stone-400 mb-1 font-medium">Группа крови и резус-фактор:</label>
+                <label className="block text-[var(--muted)] mb-1 font-medium">Группа крови и резус-фактор:</label>
                 <div className="flex flex-wrap gap-1 mb-1.5">
                   {['I (0) Rh+', 'I (0) Rh-', 'II (A) Rh+', 'II (A) Rh-', 'III (B) Rh+', 'III (B) Rh-', 'IV (AB) Rh+', 'IV (AB) Rh-'].map((bg) => (
                     <button
                       key={bg}
                       type="button"
                       onClick={() => setMedicalFormData({ ...medicalFormData, bloodType: bg })}
-                      className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all border cursor-pointer ${
+                      className={`px-2 py-0.5 rounded text-[12px] font-semibold transition-all border cursor-pointer ${
                         medicalFormData.bloodType === bg
                           ? 'bg-rose-600 text-white border-rose-400'
-                          : 'bg-stone-900 text-stone-300 border-stone-700 hover:border-stone-500'
+                          : 'bg-[var(--text)] text-[var(--line-strong)] border-[var(--text-2)] hover:border-[var(--muted)]'
                       }`}
                     >
                       {bg}
@@ -2474,13 +2476,13 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   placeholder="Или введите вручную: II (A) Rh+"
                   value={medicalFormData.bloodType || ''}
                   onChange={(e) => setMedicalFormData({ ...medicalFormData, bloodType: e.target.value })}
-                  className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white focus:outline-none focus:border-rose-500"
+                  className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-rose-500"
                 />
               </div>
 
               {/* Телефон экстренной связи */}
               <div>
-                <label className="block text-stone-400 mb-1 font-medium">
+                <label className="block text-[var(--muted)] mb-1 font-medium">
                   Телефон экстренной связи родственника:
                 </label>
                 <input
@@ -2490,13 +2492,13 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   onChange={(e) =>
                     setMedicalFormData({ ...medicalFormData, emergencyContactPhone: e.target.value })
                   }
-                  className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white focus:outline-none focus:border-rose-500 font-mono"
+                  className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-rose-500 font-mono"
                 />
               </div>
 
               {/* Опасные аллергии */}
               <div>
-                <label className="block text-stone-400 mb-1 font-medium">
+                <label className="block text-[var(--muted)] mb-1 font-medium">
                   Опасные аллергии (через запятую):
                 </label>
                 <input
@@ -2504,13 +2506,13 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   placeholder="Пенициллин, лидокаин, орехи, цветение берёзы..."
                   value={medAllergiesText}
                   onChange={(e) => setMedAllergiesText(e.target.value)}
-                  className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white focus:outline-none focus:border-rose-500"
+                  className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-rose-500"
                 />
               </div>
 
               {/* Хронические диагнозы */}
               <div>
-                <label className="block text-stone-400 mb-1 font-medium">
+                <label className="block text-[var(--muted)] mb-1 font-medium">
                   Хронические диагнозы и особенности (через запятую):
                 </label>
                 <input
@@ -2518,13 +2520,13 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   placeholder="Бронхиальная астма, гипертония, сахарный диабет 1 типа..."
                   value={medConditionsText}
                   onChange={(e) => setMedConditionsText(e.target.value)}
-                  className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white focus:outline-none focus:border-rose-500"
+                  className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-rose-500"
                 />
               </div>
 
               {/* Постоянные препараты */}
               <div>
-                <label className="block text-stone-400 mb-1 font-medium">
+                <label className="block text-[var(--muted)] mb-1 font-medium">
                   Постоянные препараты и дозировки (через запятую):
                 </label>
                 <input
@@ -2532,21 +2534,21 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
                   placeholder="L-тироксин 50 мкг, ингалятор Сальбутамол..."
                   value={medMedicationsText}
                   onChange={(e) => setMedMedicationsText(e.target.value)}
-                  className="w-full px-3 py-1.5 rounded-xl bg-stone-900 border border-stone-700 text-white focus:outline-none focus:border-rose-500"
+                  className="w-full px-3 py-1.5 rounded-xl bg-[var(--text)] border border-[var(--text-2)] text-white focus:outline-none focus:border-rose-500"
                 />
               </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-stone-700">
+              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-[var(--text-2)]">
                 <button
                   type="button"
                   onClick={() => setIsMedicalModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-stone-700 hover:bg-stone-600 text-stone-200"
+                  className="px-4 py-2 rounded-xl bg-[var(--text-2)] hover:bg-[var(--text-2)] text-[var(--line)]"
                 >
                   Отмена
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-rose-700 hover:bg-rose-600 text-white font-bold cursor-pointer active:scale-95 transition-all"
+                  className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-600 text-white font-semibold cursor-pointer active:scale-95 transition-all"
                 >
                   Сохранить
                 </button>
@@ -2559,28 +2561,28 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
       {/* ==================== ДИАЛОГ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ ==================== */}
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-stone-800 border border-red-500/50 rounded-3xl w-full max-w-sm p-6 text-stone-100 shadow-2xl space-y-4">
+          <div className="bg-[var(--text)] border border-red-500/50 rounded-3xl w-full max-w-sm p-6 text-[var(--surface-3)] shadow-2xl space-y-4">
             <div className="flex items-center space-x-3 text-red-400">
               <div className="w-10 h-10 rounded-2xl bg-red-500/20 flex items-center justify-center">
                 <Trash2 className="w-5 h-5 text-red-400" />
               </div>
-              <h3 className="font-bold text-white text-base">Подтверждение удаления</h3>
+              <h3 className="font-semibold text-white text-base">Подтверждение удаления</h3>
             </div>
 
-            <p className="text-xs text-stone-300 leading-relaxed">
+            <p className="text-xs text-[var(--line-strong)] leading-relaxed">
               Вы уверены, что хотите удалить {confirmDelete.title}? Это действие нельзя отменить.
             </p>
 
             <div className="flex items-center justify-end space-x-2 pt-2">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 rounded-xl bg-stone-700 hover:bg-stone-600 text-stone-200 text-xs font-semibold cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[var(--text-2)] hover:bg-[var(--text-2)] text-[var(--line)] text-xs font-semibold cursor-pointer"
               >
                 Отмена
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold cursor-pointer active:scale-95 transition-all shadow-md"
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold cursor-pointer active:scale-95 transition-all shadow-[var(--shadow)]"
               >
                 Удалить
               </button>
@@ -2590,10 +2592,10 @@ export const SOSView: React.FC<SOSViewProps> = ({ onClose, onNavigateToFirstAid 
       )}
 
       {/* Футер быстрого выхода */}
-      <footer className="sticky bottom-0 z-20 bg-stone-950 border-t border-stone-800 py-3 px-4 text-center">
+      <footer className="sticky bottom-0 z-20 bg-[var(--text)] border-t border-[var(--text)] py-3 px-4 text-center">
         <button
           onClick={onClose}
-          className="px-6 py-2 rounded-xl bg-red-700 hover:bg-red-600 text-white font-semibold text-sm active:scale-95 transition-all shadow-md inline-flex items-center gap-2 cursor-pointer"
+          className="px-6 py-2 rounded-xl bg-red-600 hover:bg-red-600 text-white font-semibold text-sm active:scale-95 transition-all shadow-[var(--shadow)] inline-flex items-center gap-2 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Закрыть экран экстренной помощи</span>

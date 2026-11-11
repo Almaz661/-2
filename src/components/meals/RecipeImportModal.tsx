@@ -133,21 +133,21 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-2xl bg-[#FAF7F2] rounded-3xl border border-[#E5DFD3] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-150">
+      <div className="w-full max-w-2xl bg-[var(--surface-3)] rounded-2xl border border-[var(--line)] shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-150">
         {/* Заголовок модального окна */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8E2D4] bg-white shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--line)] bg-[var(--surface)] shrink-0">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#E15A42] to-amber-500 text-white flex items-center justify-center shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-[var(--accent)] text-white flex items-center justify-center shadow-[var(--shadow)]">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-[#1F1E1C] flex items-center space-x-1.5">
+              <h3 className="font-semibold text-base text-[var(--text)] flex items-center space-x-1.5">
                 <span>AI-Импорт готового рецепта</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
+                <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
                   Smart AI
                 </span>
               </h3>
-              <p className="text-[11px] text-[#8C867D]">
+              <p className="text-[12px] text-[var(--muted)]">
                 С любого сайта, YouTube, Instagram или скопированного текста
               </p>
             </div>
@@ -155,7 +155,7 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#7A746B] hover:text-[#1F1E1C] hover:bg-[#EDE8DC] cursor-pointer"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--line)] cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -166,15 +166,11 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
           {!parsedRecipe ? (
             <>
               {/* Переключатель режима: Ссылка vs Текст */}
-              <div className="flex items-center space-x-1 p-1 bg-white rounded-2xl border border-[#E5DFD3] self-start max-w-sm">
+              <div className="flex items-center space-x-1 p-1 bg-[var(--surface)] rounded-2xl border border-[var(--line)] self-start max-w-sm">
                 <button
                   type="button"
                   onClick={() => setMode('url')}
-                  className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl font-bold transition-all cursor-pointer ${
-                    mode === 'url'
-                      ? 'bg-[#1F1E1C] text-white shadow-2xs'
-                      : 'text-[#6B6456] hover:text-[#1F1E1C]'
-                  }`}
+                  className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer ${ mode === 'url' ? 'bg-[var(--inverse)] text-white shadow-none' : 'text-[var(--text-2)] hover:text-[var(--text)]' }`}
                 >
                   <LinkIcon className="w-3.5 h-3.5" />
                   <span>По ссылке (URL)</span>
@@ -182,11 +178,7 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setMode('text')}
-                  className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl font-bold transition-all cursor-pointer ${
-                    mode === 'text'
-                      ? 'bg-[#1F1E1C] text-white shadow-2xs'
-                      : 'text-[#6B6456] hover:text-[#1F1E1C]'
-                  }`}
+                  className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer ${ mode === 'text' ? 'bg-[var(--inverse)] text-white shadow-none' : 'text-[var(--text-2)] hover:text-[var(--text)]' }`}
                 >
                   <FileText className="w-3.5 h-3.5" />
                   <span>Текст или пост</span>
@@ -195,10 +187,10 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
 
               {/* Поле ввода ссылки */}
               {mode === 'url' && (
-                <div className="space-y-3 bg-white p-4 rounded-2xl border border-[#EDE7DB]">
+                <div className="space-y-3 bg-[var(--surface)] p-4 rounded-2xl border border-[var(--line)]">
                   <div className="flex items-center justify-between">
-                    <label className="font-bold text-[#1F1E1C] flex items-center space-x-1.5">
-                      <Globe className="w-4 h-4 text-[#E15A42]" />
+                    <label className="font-semibold text-[var(--text)] flex items-center space-x-1.5">
+                      <Globe className="w-4 h-4 text-[var(--accent)]" />
                       <span>Ссылка на рецепт, видео или пост</span>
                     </label>
                     <div className="flex items-center space-x-1 text-stone-400">
@@ -214,7 +206,7 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
                       value={urlInput}
                       onChange={(e) => setUrlInput(e.target.value)}
                       placeholder="https://menunedeli.ru/... или https://youtube.com/watch?v=... или https://unilever..."
-                      className="w-full pl-3.5 pr-24 py-2.5 bg-[#FAF7F2] border border-[#DDD7CB] rounded-xl text-xs focus:outline-none focus:border-[#E15A42] focus:bg-white transition-all font-mono"
+                      className="w-full pl-3.5 pr-24 py-2.5 bg-[var(--surface-3)] border border-[var(--line-strong)] rounded-xl text-xs focus:outline-none focus:border-[var(--accent)] focus:bg-[var(--surface)] transition-all font-mono"
                     />
                     <button
                       type="button"
@@ -226,7 +218,7 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
                           }
                         } catch (_) {}
                       }}
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-white hover:bg-stone-100 text-stone-700 border border-[#DDD7CB] text-[10px] font-bold rounded-lg shadow-2xs transition-colors cursor-pointer"
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[var(--surface)] hover:bg-stone-100 text-stone-700 border border-[var(--line-strong)] text-[12px] font-semibold rounded-lg shadow-none transition-colors cursor-pointer"
                     >
                       Вставить
                     </button>
@@ -234,17 +226,17 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
 
                   {/* Быстрые ссылки для моментальной проверки примеров пользователя */}
                   <div className="space-y-1.5 pt-1">
-                    <span className="text-[10px] font-bold text-[#8C867D] block">
+                    <span className="text-[12px] font-semibold text-[var(--muted)] block">
                       Примеры ссылок для быстрой проверки:
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       <button
                         type="button"
                         onClick={() => setUrlInput('https://menunedeli.ru/recipe/krolik-suvid/')}
-                        className="px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-amber-100 text-[#4A453C] hover:text-[#1F1E1C] text-[11px] font-semibold border border-stone-200 transition-colors cursor-pointer"
+                        className="px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-amber-100 text-[var(--text-2)] hover:text-[var(--text)] text-[12px] font-semibold border border-stone-200 transition-colors cursor-pointer"
                         title="Кролик су-вид (menunedeli.ru)"
                       >
-                        🐇 Кролик су-вид (menunedeli.ru)
+                        Кролик су-вид (menunedeli.ru)
                       </button>
                       <button
                         type="button"
@@ -253,34 +245,34 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
                             'https://www.unileverfoodsolutions.io/recipe/filet-mignon-with-garlic-rosemary-sauce-R90025413.html'
                           )
                         }
-                        className="px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-amber-100 text-[#4A453C] hover:text-[#1F1E1C] text-[11px] font-semibold border border-stone-200 transition-colors cursor-pointer"
+                        className="px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-amber-100 text-[var(--text-2)] hover:text-[var(--text)] text-[12px] font-semibold border border-stone-200 transition-colors cursor-pointer"
                         title="Филе миньон с розмарином (Unilever)"
                       >
-                        🥩 Филе миньон (Unilever)
+                        Филе миньон (Unilever)
                       </button>
                       <button
                         type="button"
                         onClick={() => setUrlInput('https://www.youtube.com/watch?v=kQQTl7Om6KY')}
-                        className="px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-rose-100 text-[#4A453C] hover:text-rose-900 text-[11px] font-semibold border border-stone-200 transition-colors cursor-pointer"
+                        className="px-2.5 py-1 rounded-xl bg-stone-100 hover:bg-rose-100 text-[var(--text-2)] hover:text-rose-900 text-[12px] font-semibold border border-stone-200 transition-colors cursor-pointer"
                         title="Видео рецепта на YouTube"
                       >
-                        🎬 YouTube рецепт
+                        YouTube рецепт
                       </button>
                     </div>
                   </div>
 
-                  <p className="text-[11px] text-[#8C867D] leading-relaxed">
-                    💡 Приложение скачает содержимое страницы, найдёт ингредиенты с граммовками, выстроит понятные пошаговые инструкции и подберёт фото.
+                  <p className="text-[12px] text-[var(--muted)] leading-relaxed">
+                    Приложение скачает содержимое страницы, найдёт ингредиенты с граммовками, выстроит понятные пошаговые инструкции и подберёт фото.
                   </p>
                 </div>
               )}
 
               {/* Поле ввода сырого текста */}
               {mode === 'text' && (
-                <div className="space-y-3 bg-white p-4 rounded-2xl border border-[#EDE7DB]">
+                <div className="space-y-3 bg-[var(--surface)] p-4 rounded-2xl border border-[var(--line)]">
                   <div className="flex items-center justify-between">
-                    <label className="font-bold text-[#1F1E1C] flex items-center space-x-1.5">
-                      <FileText className="w-4 h-4 text-[#E15A42]" />
+                    <label className="font-semibold text-[var(--text)] flex items-center space-x-1.5">
+                      <FileText className="w-4 h-4 text-[var(--accent)]" />
                       <span>Вставьте текст рецепта или описание под постом</span>
                     </label>
                   </div>
@@ -290,12 +282,12 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
                     placeholder="Скопируйте сюда рецепт из соцсети, блога или мессенджера (на любом языке — AI всё переведёт и структурирует)..."
-                    className="w-full p-3 bg-[#FAF7F2] border border-[#DDD7CB] rounded-xl text-xs focus:outline-none focus:border-[#E15A42] focus:bg-white resize-none"
+                    className="w-full p-3 bg-[var(--surface-3)] border border-[var(--line-strong)] rounded-xl text-xs focus:outline-none focus:border-[var(--accent)] focus:bg-[var(--surface)] resize-none"
                   />
 
                   {/* Быстрые образцы для проверки */}
                   <div className="space-y-1.5 pt-1">
-                    <span className="text-[10px] font-semibold text-[#8C867D]">
+                    <span className="text-[12px] font-semibold text-[var(--muted)]">
                       Или попробуйте образец в один клик:
                     </span>
                     <div className="flex flex-wrap gap-2">
@@ -304,7 +296,7 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
                           key={idx}
                           type="button"
                           onClick={() => setTextInput(s.text)}
-                          className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-[#5C564B] font-semibold text-[11px] transition-colors cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-[var(--text-2)] font-semibold text-[12px] transition-colors cursor-pointer"
                         >
                           {s.title}
                         </button>
@@ -319,7 +311,7 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
                 <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-rose-800 text-xs flex items-start space-x-2.5 animate-in fade-in">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <div className="flex-1 space-y-1">
-                    <strong className="block font-bold">Не удалось распознать ссылку</strong>
+                    <strong className="block font-semibold">Не удалось распознать ссылку</strong>
                     <span>{error}</span>
                   </div>
                 </div>
@@ -330,7 +322,7 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
                 type="button"
                 disabled={isLoading}
                 onClick={handleParse}
-                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#E15A42] via-orange-600 to-amber-600 hover:brightness-105 active:scale-[0.99] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-60"
+                className="w-full py-3.5 px-4 rounded-2xl bg-[var(--accent)] hover:brightness-105 active:scale-[0.99] text-white font-semibold text-sm shadow-[var(--shadow)] transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-60"
               >
                 {isLoading ? (
                   <>
@@ -351,7 +343,7 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
               <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between text-emerald-900">
                 <div className="flex items-center space-x-2">
                   <Check className="w-4 h-4 text-emerald-600" />
-                  <span className="font-bold">Рецепт успешно распознан и структурирован!</span>
+                  <span className="font-semibold">Рецепт успешно распознан и структурирован!</span>
                 </div>
                 <button
                   type="button"
@@ -363,7 +355,7 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
               </div>
 
               {/* Карточка предпросмотра рецепта */}
-              <div className="bg-white rounded-3xl border border-[#EDE7DB] overflow-hidden shadow-xs space-y-4">
+              <div className="bg-[var(--surface)] rounded-2xl border border-[var(--line)] overflow-hidden shadow-[var(--shadow)] space-y-4">
                 {/* Шапка с фото и названием */}
                 <div className="relative h-48 bg-stone-100 overflow-hidden">
                   <img
@@ -375,53 +367,53 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
                   <div className="absolute bottom-3 left-4 right-4 text-white">
                     <div className="flex flex-wrap gap-1 mb-1">
                       {parsedRecipe.tags.map((t, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-xs text-[10px] font-semibold">
+                        <span key={idx} className="px-2 py-0.5 rounded-full bg-[var(--surface)]/20 backdrop-blur-xs text-[12px] font-semibold">
                           {t}
                         </span>
                       ))}
                     </div>
-                    <h3 className="font-extrabold text-lg leading-tight">{parsedRecipe.title}</h3>
+                    <h3 className="font-semibold text-lg leading-tight">{parsedRecipe.title}</h3>
                   </div>
                 </div>
 
                 <div className="p-5 space-y-4">
                   {/* Мета-показатели */}
-                  <div className="grid grid-cols-3 gap-2 p-3 rounded-2xl bg-[#FAF8F3] border border-[#EBE6DB] text-center">
+                  <div className="grid grid-cols-3 gap-2 p-3 rounded-2xl bg-[var(--surface-2)] border border-[var(--line)] text-center">
                     <div>
-                      <span className="text-[10px] text-[#8C867D] block">Время</span>
-                      <strong className="text-xs font-bold text-[#1F1E1C]">
+                      <span className="text-[12px] text-[var(--muted)] block">Время</span>
+                      <strong className="text-xs font-semibold text-[var(--text)]">
                         {parsedRecipe.prepTimeMinutes + parsedRecipe.cookTimeMinutes} мин
                       </strong>
                     </div>
                     <div className="border-x border-stone-200">
-                      <span className="text-[10px] text-[#8C867D] block">Порций</span>
-                      <strong className="text-xs font-bold text-[#1F1E1C]">
+                      <span className="text-[12px] text-[var(--muted)] block">Порций</span>
+                      <strong className="text-xs font-semibold text-[var(--text)]">
                         {parsedRecipe.servings} персоны
                       </strong>
                     </div>
                     <div>
-                      <span className="text-[10px] text-[#8C867D] block">Калории</span>
-                      <strong className="text-xs font-bold text-[#1F1E1C]">
+                      <span className="text-[12px] text-[var(--muted)] block">Калории</span>
+                      <strong className="text-xs font-semibold text-[var(--text)]">
                         {parsedRecipe.calories || 350} ккал
                       </strong>
                     </div>
                   </div>
 
-                  <p className="text-xs text-[#5C564B] leading-relaxed">{parsedRecipe.description}</p>
+                  <p className="text-xs text-[var(--text-2)] leading-relaxed">{parsedRecipe.description}</p>
 
                   {/* Ингредиенты */}
                   <div className="space-y-2">
-                    <span className="font-bold text-[#1F1E1C] block text-xs">
+                    <span className="font-semibold text-[var(--text)] block text-xs">
                       Распознанные ингредиенты ({parsedRecipe.ingredients.length} шт.):
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-48 overflow-y-auto p-1">
                       {parsedRecipe.ingredients.map((ing, i) => (
                         <div
                           key={i}
-                          className="flex items-center justify-between p-2 rounded-xl bg-[#FAF7F2] border border-[#EBE7DF] text-xs"
+                          className="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-3)] border border-[var(--line)] text-xs"
                         >
-                          <span className="font-semibold text-[#1F1E1C] truncate">{ing.name}</span>
-                          <span className="text-[11px] font-bold text-[#E15A42] bg-white px-2 py-0.5 rounded-md border border-[#DDD7CB] shrink-0 ml-1">
+                          <span className="font-semibold text-[var(--text)] truncate">{ing.name}</span>
+                          <span className="text-[12px] font-semibold text-[var(--accent)] bg-[var(--surface)] px-2 py-0.5 rounded-md border border-[var(--line-strong)] shrink-0 ml-1">
                             {ing.amount}
                           </span>
                         </div>
@@ -431,16 +423,16 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
 
                   {/* Шаги */}
                   <div className="space-y-2">
-                    <span className="font-bold text-[#1F1E1C] block text-xs">
+                    <span className="font-semibold text-[var(--text)] block text-xs">
                       Инструкция по шагам ({parsedRecipe.steps.length}):
                     </span>
                     <div className="space-y-2 max-h-48 overflow-y-auto p-1">
                       {parsedRecipe.steps.map((step, idx) => (
                         <div key={idx} className="flex items-start space-x-2 text-xs">
-                          <span className="w-5 h-5 rounded-full bg-[#E15A42] text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
+                          <span className="w-5 h-5 rounded-full bg-[var(--accent)] text-white flex items-center justify-center font-semibold text-[12px] shrink-0 mt-0.5">
                             {idx + 1}
                           </span>
-                          <p className="text-[#3A352C] leading-relaxed flex-1">{step}</p>
+                          <p className="text-[var(--text)] leading-relaxed flex-1">{step}</p>
                         </div>
                       ))}
                     </div>
@@ -453,8 +445,8 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
 
         {/* Закрепленный подвал с кнопками, если рецепт успешно распознан */}
         {parsedRecipe && (
-          <div className="px-6 py-4 border-t border-[#E8E2D4] bg-white flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-            <div className="flex items-center space-x-2 text-xs text-[#7A746B]">
+          <div className="px-6 py-4 border-t border-[var(--line)] bg-[var(--surface)] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center space-x-2 text-xs text-[var(--muted)]">
               <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
               <span>Рецепт переведен и адаптирован для домашней кухни</span>
             </div>
@@ -463,16 +455,16 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
               <button
                 type="button"
                 onClick={handleOpenInEditor}
-                className="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl border border-[#DDD7CB] hover:bg-stone-100 text-[#1F1E1C] font-semibold flex items-center justify-center space-x-1.5 cursor-pointer text-xs"
+                className="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl border border-[var(--line-strong)] hover:bg-stone-100 text-[var(--text)] font-semibold flex items-center justify-center space-x-1.5 cursor-pointer text-xs"
               >
-                <Edit2 className="w-3.5 h-3.5 text-[#E15A42]" />
+                <Edit2 className="w-3.5 h-3.5 text-[var(--accent)]" />
                 <span>В редактор</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleSaveAndAddToShopping}
-                className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-105 active:scale-[0.99] text-white font-bold shadow-md flex items-center justify-center space-x-1.5 cursor-pointer transition-all text-xs"
+                className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-emerald-700 hover:brightness-105 active:scale-[0.99] text-white font-semibold shadow-[var(--shadow)] flex items-center justify-center space-x-1.5 cursor-pointer transition-all text-xs"
                 title="Сохранить рецепт и сразу добавить ингредиенты в список покупок"
               >
                 <ShoppingCart className="w-3.5 h-3.5" />
@@ -482,7 +474,7 @@ export const RecipeImportModal: React.FC<RecipeImportModalProps> = ({
               <button
                 type="button"
                 onClick={handleSaveImmediately}
-                className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#E15A42] to-amber-600 hover:brightness-105 active:scale-[0.99] text-white font-bold shadow-md flex items-center justify-center space-x-1.5 cursor-pointer transition-all text-xs"
+                className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-[var(--accent)] hover:brightness-105 active:scale-[0.99] text-white font-semibold shadow-[var(--shadow)] flex items-center justify-center space-x-1.5 cursor-pointer transition-all text-xs"
               >
                 <Check className="w-4 h-4" />
                 <span>Сохранить рецепт</span>

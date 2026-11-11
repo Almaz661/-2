@@ -1,3 +1,4 @@
+import { ItemSpending } from './ItemSpending';
 import React, { useState, useRef } from 'react';
 import {
   Camera,
@@ -22,6 +23,7 @@ import {
   Coins,
   X,
 } from 'lucide-react';
+import { Btn, Card, CountUp, PageWrap } from '../ui/mercury';
 import { useHousehold } from '../../context/HouseholdContext';
 import { ScannedReceipt, ShoppingCategory } from '../../types';
 import { ReceiptScannerModal } from './ReceiptScannerModal';
@@ -41,7 +43,7 @@ import {
   getCurrencySymbol,
 } from '../../utils/currencyConstants';
 
-export const ReceiptsView: React.FC = () => {
+export const ReceiptsView: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
   const {
     receipts,
     saveReceipt,
@@ -181,7 +183,7 @@ export const ReceiptsView: React.FC = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
+    <PageWrap className={embedded ? '!p-0 max-w-none' : 'max-w-7xl'}>
       {/* Скрытый input для выбора файлов */}
       <input
         type="file"
@@ -203,82 +205,30 @@ export const ReceiptsView: React.FC = () => {
       {/* Оверлей загрузки Gemini AI */}
       {isAiProcessing && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-orange-200 text-center space-y-4 animate-in zoom-in-95">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#E15A42] to-[#F28C38] flex items-center justify-center text-white mx-auto shadow-lg shadow-orange-500/30 animate-pulse">
+          <div className="bg-[var(--surface)] rounded-2xl p-8 max-w-md w-full shadow-2xl border border-orange-200 text-center space-y-4 animate-in zoom-in-95">
+            <div className="w-16 h-16 rounded-full bg-[var(--accent)] flex items-center justify-center text-white mx-auto">
               <Sparkles className="w-8 h-8" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-lg font-extrabold text-[#1F1E1C]">
+              <h3 className="text-lg font-semibold text-[var(--text)]">
                 Gemini AI анализирует живой чек
               </h3>
-              <p className="text-xs text-[#7A746B]">
+              <p className="text-xs text-[var(--muted)]">
                 {aiStatusText || 'Автоматическая категоризация на продукты, бытовую химию и прочее...'}
               </p>
             </div>
-            <div className="w-full bg-[#EBE7DF] h-2 rounded-full overflow-hidden">
-              <div className="bg-gradient-to-r from-[#E15A42] to-[#F28C38] h-full w-2/3 animate-pulse" />
+            <div className="w-full bg-[var(--line)] h-2 rounded-full overflow-hidden">
+              <div className="bg-[var(--accent)] h-full w-2/3" />
             </div>
-            <span className="text-[11px] text-[#8C867D] block">
+            <span className="text-[12px] text-[var(--muted)] block">
               Без жестких шаблонов • Точное распознавание позиций и цен
             </span>
           </div>
         </div>
       )}
 
-      {/* Главный промо-баннер с кнопкой «Сканировать чек» */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1E1C1A] via-[#2D2825] to-[#1C1816] text-white p-6 md:p-8 shadow-xl border border-[#3D3733]">
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-xl">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-semibold text-orange-200 border border-white/10">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Интеллектуальный разбор Gemini API • Без жестких шаблонов</span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              Сканер кассовых чеков
-            </h1>
-            <p className="text-xs md:text-sm text-[#D4CFC7] leading-relaxed">
-              Загружайте реальные фото чеков с камеры или галереи. Gemini API автоматически извлекает все товары, сверяет суммы и распределяет позиции по категориям: продукты, бытовая химия, выпечка, напитки и прочее.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isAiProcessing}
-              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#E15A42] to-[#F28C38] hover:from-[#D14B33] hover:to-[#E07925] text-white font-bold text-sm shadow-lg shadow-orange-500/30 flex items-center justify-center space-x-2.5 transition-all transform active:scale-98 cursor-pointer disabled:opacity-50"
-            >
-              <Upload className="w-5 h-5" />
-              <span>Загрузить фото чека</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsScannerOpen(true)}
-              disabled={isAiProcessing}
-              className="px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/20 flex items-center justify-center space-x-2 transition-all cursor-pointer"
-            >
-              <Camera className="w-5 h-5 text-orange-200" />
-              <span>Камера</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => cameraInputRef.current?.click()}
-              disabled={isAiProcessing}
-              className="hidden sm:flex px-4 py-3.5 rounded-2xl bg-white/5 hover:bg-white/15 text-orange-200 font-semibold text-xs border border-white/10 items-center justify-center space-x-1.5 transition-all cursor-pointer"
-              title="Быстрый снимок чека камерой телефона или планшета"
-            >
-              <span>Быстрый снимок</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Фоновые декоративные элементы */}
-        <div className="absolute -right-12 -bottom-16 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute right-1/3 -top-12 w-48 h-48 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
-      </div>
-
-      {/* Зона загрузки живого чека Drag & Drop */}
-      <div
+      {/* Сканирование: перетащите чек на карточку или выберите способ */}
+      <Card
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragging(true);
@@ -291,85 +241,83 @@ export const ReceiptsView: React.FC = () => {
             handleDirectReceiptUpload(e.dataTransfer.files[0]);
           }
         }}
-        onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-3xl p-6 text-center cursor-pointer transition-all ${
-          isDragging
-            ? 'border-[#E15A42] bg-orange-50/80 scale-[1.01]'
-            : 'border-[#DDD8CD] bg-white hover:border-[#E15A42] hover:bg-[#FAF9F5]'
-        }`}
+        className={`p-6 sm:p-8 transition ${isDragging ? 'ring-2 ring-[var(--accent)] bg-[var(--accent-soft)]' : ''}`}
       >
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-3xl mx-auto">
-          <div className="flex items-center space-x-4 text-left">
-            <div className="w-12 h-12 rounded-2xl bg-orange-100 text-[#E15A42] flex items-center justify-center shrink-0">
-              <Upload className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-bold text-sm text-[#1F1E1C]">
-                Перетащите фото реального чека сюда или нажмите для выбора
-              </h4>
-              <p className="text-xs text-[#8C867D] mt-0.5">
-                Gemini API автоматически распознает все строки, цены и категоризирует покупки без шаблонов
-              </p>
-            </div>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="max-w-xl">
+            <h1 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.03em] leading-tight text-[var(--text)]">
+              Сканер чеков
+            </h1>
+            <p className="mt-2 text-[16px] text-[var(--text-2)] leading-relaxed">
+              Сфотографируйте чек или перетащите снимок сюда. Товары, суммы и категории распознаются автоматически.
+            </p>
           </div>
-          <span className="px-4 py-2 rounded-xl bg-orange-50 text-[#E15A42] text-xs font-bold shrink-0 border border-orange-200">
-            Выбрать файл
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <Btn
+              variant="primary"
+              icon={<Camera className="w-4 h-4" />}
+              onClick={() => setIsScannerOpen(true)}
+              disabled={isAiProcessing}
+            >
+              Сфотографировать
+            </Btn>
+            <Btn icon={<Upload className="w-4 h-4" />} onClick={() => fileInputRef.current?.click()} disabled={isAiProcessing}>
+              Загрузить фото
+            </Btn>
+            <Btn
+              variant="ghost"
+              className="hidden sm:inline-flex"
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={isAiProcessing}
+              title="Быстрый снимок камерой устройства"
+            >
+              Быстрый снимок
+            </Btn>
+          </div>
         </div>
-      </div>
+      </Card>
 
-      {/* Статистика расходов и истории */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E4DA] shadow-xs flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#E15A42] flex items-center justify-center">
-            <FileText className="w-6 h-6" />
-          </div>
-          <div>
-            <span className="text-xs text-[#8C867D] font-medium">Отсканировано чеков</span>
-            <div className="text-2xl font-bold text-[#1F1E1C]">{receipts.length}</div>
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E4DA] shadow-xs flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <DollarSign className="w-6 h-6" />
-          </div>
-          <div>
-            <span className="text-xs text-[#8C867D] font-medium">Сумма покупок</span>
-            <div className="text-xl font-bold text-[#1F1E1C] truncate">
-              {Object.entries(totalsByCurrency).length > 0
-                ? Object.entries(totalsByCurrency)
-                    .map(([c, val]) => `${val.toFixed(2)} ${c}`)
-                    .join(' / ')
-                : '0.00 €'}
+      {/* Сводка */}
+      <Card>
+        <div className="grid grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: 'Чеков', Icon: FileText, value: <CountUp value={receipts.length} /> },
+            {
+              label: 'Сумма покупок',
+              Icon: DollarSign,
+              value:
+                Object.entries(totalsByCurrency).length > 0
+                  ? Object.entries(totalsByCurrency)
+                      .map(([c, val]) => `${Math.round(val).toLocaleString('ru-RU')} ${c}`)
+                      .join(' / ')
+                  : '0',
+            },
+            { label: 'Магазинов', Icon: Store, value: <CountUp value={uniqueStores.length} /> },
+            {
+              label: 'Товаров распознано',
+              Icon: ShoppingCart,
+              value: <CountUp value={receipts.reduce((acc, r) => acc + (r.items?.length || 0), 0)} />,
+            },
+          ].map((k, i) => (
+            <div
+              key={k.label}
+              className={`p-5 sm:p-6 border-[var(--line)] ${i % 2 === 1 ? 'border-l' : ''} ${i >= 2 ? 'border-t lg:border-t-0' : ''} ${ i === 2 ? 'lg:border-l' : '' }`}
+            >
+              <div className="flex items-center gap-2 text-[14px] text-[var(--muted)]">
+                <k.Icon className="w-4 h-4" />
+                {k.label}
+              </div>
+              <div className="mt-2 text-[28px] leading-none font-semibold tabular-nums tracking-[-0.02em] text-[var(--text)] truncate">
+                {k.value}
+              </div>
             </div>
-          </div>
+          ))}
         </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E4DA] shadow-xs flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-            <Store className="w-6 h-6" />
-          </div>
-          <div>
-            <span className="text-xs text-[#8C867D] font-medium">Магазинов в базе</span>
-            <div className="text-2xl font-bold text-[#1F1E1C]">{uniqueStores.length}</div>
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E4DA] shadow-xs flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
-            <ShoppingCart className="w-6 h-6" />
-          </div>
-          <div>
-            <span className="text-xs text-[#8C867D] font-medium">Распознано товаров</span>
-            <div className="text-2xl font-bold text-[#1F1E1C]">
-              {receipts.reduce((acc, r) => acc + (r.items?.length || 0), 0)}
-            </div>
-          </div>
-        </div>
-      </div>
+      </Card>
 
       {/* Интерактивная визуализация расходов Recharts по категориям за текущий месяц */}
+      <ItemSpending receipts={receipts} />
+
       <ReceiptsMonthlyExpensesChart
         receipts={
           currencyFilter === 'all'
@@ -387,16 +335,16 @@ export const ReceiptsView: React.FC = () => {
       />
 
       {/* Панель поиска и фильтрации */}
-      <div className="bg-white p-4 rounded-2xl border border-[#E8E4DA] shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="bg-[var(--surface)] p-4 rounded-2xl border border-[var(--line)] shadow-[var(--shadow)] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         {/* Поиск */}
         <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 text-[#8C867D] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[var(--muted)] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Поиск по магазину или товарам..."
-            className="w-full pl-9 pr-4 py-2 text-xs bg-[#FAF9F5] border border-[#DDD8CD] rounded-xl focus:outline-none focus:border-[#E15A42]"
+            className="w-full pl-9 pr-4 py-2 text-xs bg-[var(--surface-2)] border border-[var(--line-strong)] rounded-xl focus:outline-none focus:border-[var(--accent)]"
           />
         </div>
 
@@ -406,7 +354,7 @@ export const ReceiptsView: React.FC = () => {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value as any)}
-            className="text-xs bg-[#FAF9F5] border border-[#DDD8CD] rounded-xl px-3 py-2 text-[#3D3A36] focus:outline-none font-medium"
+            className="text-xs bg-[var(--surface-2)] border border-[var(--line-strong)] rounded-xl px-3 py-2 text-[var(--text)] focus:outline-none font-medium"
           >
             <option value="all">Все категории ({receipts.length})</option>
             {Object.entries(CATEGORY_METADATA).map(([catKey, meta]) => (
@@ -420,7 +368,7 @@ export const ReceiptsView: React.FC = () => {
             <select
               value={storeFilter}
               onChange={(e) => setStoreFilter(e.target.value)}
-              className="text-xs bg-[#FAF9F5] border border-[#DDD8CD] rounded-xl px-3 py-2 text-[#3D3A36] focus:outline-none"
+              className="text-xs bg-[var(--surface-2)] border border-[var(--line-strong)] rounded-xl px-3 py-2 text-[var(--text)] focus:outline-none"
             >
               <option value="all">Все магазины</option>
               {uniqueStores.map((st) => (
@@ -436,11 +384,7 @@ export const ReceiptsView: React.FC = () => {
             <select
               value={currencyFilter}
               onChange={(e) => setCurrencyFilter(e.target.value)}
-              className={`text-xs rounded-xl px-3 py-2 focus:outline-none font-medium border transition-colors ${
-                currencyFilter !== 'all'
-                  ? 'bg-orange-50 border-[#E15A42] text-[#E15A42] font-semibold'
-                  : 'bg-[#FAF9F5] border-[#DDD8CD] text-[#3D3A36]'
-              }`}
+              className={`text-xs rounded-xl px-3 py-2 focus:outline-none font-medium border transition-colors ${ currencyFilter !== 'all' ? 'bg-orange-50 border-[var(--accent)] text-[var(--accent)] font-semibold' : 'bg-[var(--surface-2)] border-[var(--line-strong)] text-[var(--text)]' }`}
               title="Переключатель валюты для фильтрации чеков и аналитики"
             >
               <option value="all">
@@ -475,7 +419,7 @@ export const ReceiptsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setCurrencyFilter('all')}
-                className="p-1.5 text-xs text-[#8C867D] hover:text-[#E15A42] hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-xs text-[var(--muted)] hover:text-[var(--accent)] hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
                 title="Сбросить фильтр валюты (показать все)"
               >
                 <X className="w-3.5 h-3.5" />
@@ -499,19 +443,19 @@ export const ReceiptsView: React.FC = () => {
 
       {/* Список сохраненных чеков */}
       {filteredReceipts.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[#E8E4DA] p-12 text-center space-y-4">
-          <div className="w-16 h-16 rounded-3xl bg-[#FAF9F5] text-[#8C867D] flex items-center justify-center mx-auto border border-[#EBE7DF]">
+        <div className="bg-[var(--surface)] rounded-2xl border border-[var(--line)] p-12 text-center space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-[var(--surface-2)] text-[var(--muted)] flex items-center justify-center mx-auto border border-[var(--line)]">
             <Camera className="w-8 h-8" />
           </div>
           <div className="space-y-1">
-            <h3 className="font-bold text-base text-[#1F1E1C]">
+            <h3 className="font-semibold text-base text-[var(--text)]">
               {receipts.length === 0
                 ? 'История чеков пока пуста'
                 : currencyFilter !== 'all' && receipts.every((r) => (r.currency || 'EUR') !== currencyFilter)
                 ? `Чеков в валюте ${formatCurrencyLabel(currencyFilter)} пока нет`
                 : 'По выбранным фильтрам ничего не найдено'}
             </h3>
-            <p className="text-xs text-[#7A746B] max-w-sm mx-auto">
+            <p className="text-xs text-[var(--muted)] max-w-sm mx-auto">
               {receipts.length === 0
                 ? 'Загрузите фото чека или сделайте снимок на камеру — Gemini AI автоматически извлечет товары и распределит их по категориям.'
                 : currencyFilter !== 'all' && receipts.every((r) => (r.currency || 'EUR') !== currencyFilter)
@@ -524,7 +468,7 @@ export const ReceiptsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsScannerOpen(true)}
-                className="px-5 py-2.5 rounded-xl bg-[#E15A42] hover:bg-[#D04A33] text-white text-xs font-bold inline-flex items-center space-x-2 shadow-sm transition-colors cursor-pointer"
+                className="px-5 py-2.5 rounded-full bg-[var(--accent)] hover:brightness-110 text-white text-xs font-semibold inline-flex items-center space-x-2 transition-colors cursor-pointer"
               >
                 <Camera className="w-4 h-4" />
                 <span>Сканировать первый чек</span>
@@ -532,9 +476,9 @@ export const ReceiptsView: React.FC = () => {
               <button
                 type="button"
                 onClick={loadSampleReceipts}
-                className="px-4 py-2.5 rounded-xl bg-[#FAF9F5] hover:bg-orange-50 text-[#E15A42] border border-[#DDD8CD] hover:border-orange-300 text-xs font-bold inline-flex items-center space-x-2 transition-all cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-[var(--surface-2)] hover:bg-orange-50 text-[var(--accent)] border border-[var(--line-strong)] hover:border-orange-300 text-xs font-semibold inline-flex items-center space-x-2 transition-all cursor-pointer"
               >
-                <Sparkles className="w-4 h-4 text-[#E15A42]" />
+                <Sparkles className="w-4 h-4 text-[var(--accent)]" />
                 <span>Загрузить примеры чеков для графиков</span>
               </button>
             </div>
@@ -548,7 +492,7 @@ export const ReceiptsView: React.FC = () => {
                   setStoreFilter('all');
                   setSearchQuery('');
                 }}
-                className="px-4 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-[#E15A42] text-xs font-bold inline-flex items-center space-x-1.5 border border-orange-200 transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-[var(--accent)] text-xs font-semibold inline-flex items-center space-x-1.5 border border-orange-200 transition-colors cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
                 <span>Сбросить все фильтры</span>
@@ -567,14 +511,14 @@ export const ReceiptsView: React.FC = () => {
               <div
                 key={receipt.id}
                 onClick={() => setSelectedReceiptDetail(receipt)}
-                className="bg-white rounded-2xl border border-[#E8E4DA] hover:border-[#D5D0C5] hover:shadow-md p-4 transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
+                className="bg-[var(--surface)] rounded-2xl border border-[var(--line)] hover:border-[var(--line-strong)] hover:shadow-[var(--shadow)] p-4 transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
               >
                 <div>
                   {/* Верхняя строка карточки */}
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex items-center space-x-2.5">
                       {receipt.images && receipt.images.length > 0 && receipt.images[0] ? (
-                        <div className="w-10 h-12 rounded-lg bg-[#181716] overflow-hidden border border-[#DDD8CD] shrink-0 shadow-2xs group-hover:border-[#E15A42] transition-colors">
+                        <div className="w-10 h-12 rounded-lg bg-[var(--inverse)] overflow-hidden border border-[var(--line-strong)] shrink-0 shadow-none group-hover:border-[var(--accent)] transition-colors">
                           <img
                             src={receipt.images[0]}
                             alt=""
@@ -582,15 +526,15 @@ export const ReceiptsView: React.FC = () => {
                           />
                         </div>
                       ) : (
-                        <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#E15A42] flex items-center justify-center shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-orange-50 text-[var(--accent)] flex items-center justify-center shrink-0">
                           <Store className="w-5 h-5" />
                         </div>
                       )}
                       <div>
-                        <h4 className="font-bold text-sm text-[#1F1E1C] group-hover:text-[#E15A42] transition-colors truncate max-w-[150px]">
+                        <h4 className="font-semibold text-sm text-[var(--text)] group-hover:text-[var(--accent)] transition-colors truncate max-w-[150px]">
                           {receipt.storeName || 'Покупки'}
                         </h4>
-                        <div className="flex items-center space-x-1.5 text-[11px] text-[#8C867D]">
+                        <div className="flex items-center space-x-1.5 text-[12px] text-[var(--muted)]">
                           <span>{receipt.date}</span>
                           {receipt.time && <span>• {receipt.time}</span>}
                         </div>
@@ -598,32 +542,32 @@ export const ReceiptsView: React.FC = () => {
                     </div>
 
                     <div className="text-right">
-                      <div className="text-base font-extrabold text-[#1F1E1C]">
+                      <div className="text-base font-semibold text-[var(--text)]">
                         {receipt.totalAmount.toFixed(2)} {receipt.currency}
                       </div>
-                      <span className="text-[10px] text-[#8C867D] block">
+                      <span className="text-[12px] text-[var(--muted)] block">
                         {receipt.items.length} поз.
                       </span>
                     </div>
                   </div>
 
                   {/* Превью товаров из чека */}
-                  <div className="bg-[#FAF9F5] rounded-xl p-2.5 border border-[#EBE7DF] space-y-1 text-xs">
+                  <div className="bg-[var(--surface-2)] rounded-xl p-2.5 border border-[var(--line)] space-y-1 text-xs">
                     {receipt.items.slice(0, 3).map((it, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between text-[11px] text-[#555047]"
+                        className="flex items-center justify-between text-[12px] text-[var(--text-2)]"
                       >
                         <span className="truncate pr-2 font-medium">
                           • {it.normalizedTitle || it.originalText}
                         </span>
-                        <span className="shrink-0 font-semibold text-[#1F1E1C]">
+                        <span className="shrink-0 font-semibold text-[var(--text)]">
                           {it.totalPrice.toFixed(2)} {receipt.currency}
                         </span>
                       </div>
                     ))}
                     {receipt.items.length > 3 && (
-                      <div className="text-[10px] text-[#8C867D] pt-0.5">
+                      <div className="text-[12px] text-[var(--muted)] pt-0.5">
                         Еще +{receipt.items.length - 3} поз...
                       </div>
                     )}
@@ -632,11 +576,11 @@ export const ReceiptsView: React.FC = () => {
                   {/* Распределение по категориям данного чека */}
                   {receiptBreakdown.length > 0 && (
                     <div className="space-y-1.5 pt-2">
-                      <div className="flex items-center justify-between text-[10px] text-[#7A746B]">
-                        <span className="font-semibold uppercase tracking-wider">Категории покупок:</span>
+                      <div className="flex items-center justify-between text-[12px] text-[var(--muted)]">
+                        <span className="font-semibold">Категории покупок:</span>
                         <span>{receiptBreakdown.length} {receiptBreakdown.length === 1 ? 'кат.' : 'категории'}</span>
                       </div>
-                      <div className="w-full h-2 rounded-full bg-[#EBE7DF] overflow-hidden flex shadow-2xs">
+                      <div className="w-full h-2 rounded-full bg-[var(--line)] overflow-hidden flex shadow-none">
                         {receiptBreakdown.map((b) => (
                           <div
                             key={b.category}
@@ -650,11 +594,11 @@ export const ReceiptsView: React.FC = () => {
                         {receiptBreakdown.map((b) => (
                           <span
                             key={b.category}
-                            className={`text-[10px] px-1.5 py-0.5 rounded-md border font-medium flex items-center space-x-1 ${b.meta.badgeClass}`}
+                            className={`text-[12px] px-1.5 py-0.5 rounded-md border font-medium flex items-center space-x-1 ${b.meta.badgeClass}`}
                           >
                             <span>{b.meta.icon}</span>
-                            <span className="font-bold">{b.totalAmount.toFixed(2)} {receipt.currency}</span>
-                            <span className="text-[9px] opacity-75 font-normal">({b.percentage}%)</span>
+                            <span className="font-semibold">{b.totalAmount.toFixed(2)} {receipt.currency}</span>
+                            <span className="text-[12px] opacity-75 font-normal">({b.percentage}%)</span>
                           </span>
                         ))}
                       </div>
@@ -663,26 +607,26 @@ export const ReceiptsView: React.FC = () => {
                 </div>
 
                 {/* Подвал карточки */}
-                <div className="flex items-center justify-between pt-2 border-t border-[#F2EFE9] text-xs">
+                <div className="flex items-center justify-between pt-2 border-t border-[var(--surface-3)] text-xs">
                   <div className="flex items-center space-x-1 flex-wrap gap-1">
                     {hasDiscrepancy ? (
-                      <span className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 flex items-center space-x-1">
+                      <span className="text-[12px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 flex items-center space-x-1">
                         <AlertCircle className="w-3 h-3 text-amber-600" />
                         <span>±{receipt.matchedSumDiff?.toFixed(2)}</span>
                       </span>
                     ) : (
-                      <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 flex items-center space-x-1">
+                      <span className="text-[12px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 flex items-center space-x-1">
                         <CheckCircle className="w-3 h-3 text-emerald-600" />
                         <span>Сверено</span>
                       </span>
                     )}
                     {receipt.images && receipt.images.length > 0 && (
-                      <span className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 flex items-center space-x-1">
-                        <Camera className="w-2.5 h-2.5 text-blue-600" />
+                      <span className="text-[12px] text-[var(--accent)] bg-[var(--accent-soft)] px-1.5 py-0.5 rounded border border-[var(--line)] flex items-center space-x-1">
+                        <Camera className="w-2.5 h-2.5 text-[var(--accent)]" />
                         <span>Фото</span>
                       </span>
                     )}
-                    <span className="text-[10px] text-[#8C867D] uppercase font-mono px-1">
+                    <span className="text-[12px] text-[var(--muted)] font-mono px-1">
                       {receipt.language}
                     </span>
                   </div>
@@ -694,7 +638,7 @@ export const ReceiptsView: React.FC = () => {
                         e.stopPropagation();
                         importReceiptItemsToShopping(receipt.items);
                       }}
-                      className="p-1.5 text-[#7A746B] hover:text-[#E15A42] hover:bg-[#FFF5F2] rounded-lg transition-colors"
+                      className="p-1.5 text-[var(--muted)] hover:text-[var(--accent)] hover:bg-[var(--accent-soft)] rounded-lg transition-colors"
                       title="Экспорт в список покупок"
                     >
                       <ShoppingCart className="w-3.5 h-3.5" />
@@ -705,7 +649,7 @@ export const ReceiptsView: React.FC = () => {
                         e.stopPropagation();
                         setReceiptToDelete(receipt);
                       }}
-                      className="p-1.5 text-[#7A746B] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                      className="p-1.5 text-[var(--muted)] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                       title="Удалить чек"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -751,13 +695,13 @@ export const ReceiptsView: React.FC = () => {
       {/* Модальное окно подтверждения удаления одного чека */}
       {receiptToDelete && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-rose-100 text-center space-y-4 animate-in zoom-in-95 duration-150">
+          <div className="bg-[var(--surface)] rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-rose-100 text-center space-y-4 animate-in zoom-in-95 duration-150">
             <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-[#1F1E1C]">Удалить чек?</h3>
-              <p className="text-xs text-[#7A746B] mt-1">
+              <h3 className="text-base font-semibold text-[var(--text)]">Удалить чек?</h3>
+              <p className="text-xs text-[var(--muted)] mt-1">
                 Чек «{receiptToDelete.storeName || 'Покупки'}» на сумму {receiptToDelete.totalAmount.toFixed(2)} {receiptToDelete.currency} будет безвозвратно удален из истории.
               </p>
             </div>
@@ -765,7 +709,7 @@ export const ReceiptsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setReceiptToDelete(null)}
-                className="flex-1 py-2 px-3 rounded-xl border border-[#DDD8CD] text-xs font-semibold text-[#5A554D] hover:bg-[#F2EFE9] transition-colors cursor-pointer"
+                className="flex-1 py-2 px-3 rounded-xl border border-[var(--line-strong)] text-xs font-semibold text-[var(--text-2)] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
               >
                 Отмена
               </button>
@@ -775,7 +719,7 @@ export const ReceiptsView: React.FC = () => {
                   deleteReceipt(receiptToDelete.id);
                   setReceiptToDelete(null);
                 }}
-                className="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-colors flex items-center justify-center space-x-1 cursor-pointer"
+                className="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-[var(--shadow)] transition-colors flex items-center justify-center space-x-1 cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Да, удалить</span>
@@ -788,13 +732,13 @@ export const ReceiptsView: React.FC = () => {
       {/* Модальное окно подтверждения очистки всей истории чеков */}
       {isConfirmingClearAll && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-rose-100 text-center space-y-4 animate-in zoom-in-95 duration-150">
+          <div className="bg-[var(--surface)] rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-rose-100 text-center space-y-4 animate-in zoom-in-95 duration-150">
             <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-[#1F1E1C]">Очистить все чеки?</h3>
-              <p className="text-xs text-[#7A746B] mt-1">
+              <h3 className="text-base font-semibold text-[var(--text)]">Очистить все чеки?</h3>
+              <p className="text-xs text-[var(--muted)] mt-1">
                 Все {receipts.length} сохраненных чеков и прикрепленные к ним фотографии будут удалены. История чеков станет полностью пустой для добавления новых живых чеков.
               </p>
             </div>
@@ -802,7 +746,7 @@ export const ReceiptsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsConfirmingClearAll(false)}
-                className="flex-1 py-2 px-3 rounded-xl border border-[#DDD8CD] text-xs font-semibold text-[#5A554D] hover:bg-[#F2EFE9] transition-colors cursor-pointer"
+                className="flex-1 py-2 px-3 rounded-xl border border-[var(--line-strong)] text-xs font-semibold text-[var(--text-2)] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
               >
                 Отмена
               </button>
@@ -812,7 +756,7 @@ export const ReceiptsView: React.FC = () => {
                   clearAllReceipts();
                   setIsConfirmingClearAll(false);
                 }}
-                className="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-colors flex items-center justify-center space-x-1 cursor-pointer"
+                className="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-[var(--shadow)] transition-colors flex items-center justify-center space-x-1 cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Очистить всё</span>
@@ -821,6 +765,6 @@ export const ReceiptsView: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </PageWrap>
   );
 };

@@ -1,5 +1,5 @@
 /**
- * Утилита полной очистки кэша приложения, Service Worker и локального хранилища.
+ * Очистка кэша приложения и Service Worker с перезагрузкой. Данные пользователя (localStorage) сохраняются.
  */
 
 export async function clearAllCacheAndReload() {
@@ -16,10 +16,9 @@ export async function clearAllCacheAndReload() {
       await Promise.all(registrations.map((r) => r.unregister()));
     }
 
-    // 3. Очистка LocalStorage и SessionStorage
-    if (typeof localStorage !== 'undefined') {
-      localStorage.clear();
-    }
+    // 3. ДАННЫЕ НЕ ТРОГАЕМ: задачи, документы, паспорт дома и всё остальное хранятся в localStorage.
+    //    Раньше здесь был localStorage.clear() — он молча стирал все данные, хотя окно обещало «данные сохранятся».
+    //    Полный сброс данных — только в «Настройки → Данные → Сброс», с отдельным подтверждением.
     if (typeof sessionStorage !== 'undefined') {
       sessionStorage.clear();
     }
