@@ -1,6 +1,10 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// ESM: __dirname нет по умолчанию — вычисляем сами
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 

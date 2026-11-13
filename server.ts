@@ -277,7 +277,9 @@ async function callGeminiWithFallback(
 
 async function startServer() {
   const app = express();
-  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+  // AI Studio: переменная PORT занята внутренним прокси (8080) — приложение всегда слушает 3000.
+  // Для своего хостинга порт можно задать через APP_PORT.
+  const port = process.env.APP_PORT ? parseInt(process.env.APP_PORT, 10) : 3000;
   const isProd = process.env.NODE_ENV === 'production';
 
   // Базовые заголовки безопасности
@@ -1150,6 +1152,10 @@ ${scrapedText.slice(0, 7500)}
     });
   }
 
+  httpServer.on('error', (err: NodeJS.ErrnoException) => {
+    if (err.code === 'EADDRINUSE') console.error(`Порт ${port} уже занят — сервер не запущен`);
+    else console.error('Ошибка сервера:', err);
+  });
   httpServer.listen(port, '0.0.0.0', () => {
     console.log(`Server listening on port ${port}`);
   });
