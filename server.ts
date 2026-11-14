@@ -277,15 +277,23 @@ async function callGeminiWithFallback(
 
 async function startServer() {
   const app = express();
-  // AI Studio: переменная PORT занята внутренним прокси (8080) — приложение всегда слушает 3000.
-  // Для своего хостинга порт можно задать через APP_PORT.
-  const port = process.env.APP_PORT ? parseInt(process.env.APP_PORT, 10) : 3000;
   const isProd = process.env.NODE_ENV === 'production';
+  // Разработка в AI Studio: PORT=8080 занят прокси — слушаем 3000.
+  // Публикация (Cloud Run и др.): слушаем PORT, который задаёт хостинг.
+  const port =
+    !isProd && (!process.env.PORT || process.env.PORT === '8080')
+      ? 3000
+      : process.env.PORT
+      ? parseInt(process.env.PORT, 10)
+      : 3000;
 
   // Базовые заголовки безопасности
   app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    // Не блокируем предпросмотр AI Studio во фрейме; строгий режим — по переменной
+    if (process.env.STRICT_X_FRAME_OPTIONS === 'true') {
+      res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    }
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     next();
   });
@@ -1125,12 +1133,16 @@ ${scrapedText.slice(0, 7500)}
       res.sendFile(distIndex);
     });
   } else {
+    const disableHmr = process.env.DISABLE_HMR === 'true';
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
-        hmr: {
-          server: httpServer,
-        },
+        hmr: disableHmr
+          ? false
+          : {
+              server: httpServer,
+            },
+        watch: disableHmr ? null : {},
       },
       appType: 'spa',
     });
